@@ -55,7 +55,36 @@ try {
         throw 'This release is already public. Publish a new version instead of overwriting it.'
     }
     $assets = [Collections.Generic.List[IO.FileInfo]]::new()
-    Get-ChildItem -LiteralPath $AssetsDirectory -File | ForEach-Object { $assets.Add($_) }
+    $assetNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($manifestName in @('launcher-update.json', 'pack-update.json')) {
+        $manifestPath = Join-Path $AssetsDirectory $manifestName
+        if (-not (Test-Path -LiteralPath $manifestPath)) {
+            continue
+        }
+        foreach ($name in @($manifestName, $manifestName + '.sig')) {
+            $assets.Add((Get-Item -LiteralPath (Join-Path $AssetsDirectory $name)))
+            $assetNames.Add($name) | Out-Null
+        }
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        foreach ($record in $manifest.Files) {
+            $prefix = "https://github.com/$Repository/releases/download/$Tag/"
+            $address = $record.Downloads | Where-Object { $_.StartsWith($prefix, [StringComparison]::Ordinal) } | Select-Object -First 1
+            if (-not $address) {
+                continue
+            }
+            $name = [uri]::UnescapeDataString(([uri]$address).Segments[-1])
+            if ([IO.Path]::GetFileName($name) -ne $name) {
+                throw 'A release asset name contains a path.'
+            }
+            $file = Get-Item -LiteralPath (Join-Path $AssetsDirectory $name)
+            if ($file.Length -ne $record.Size -or (Get-FileHash -LiteralPath $file.FullName).Hash -ne $record.Sha256) {
+                throw "Release file does not match its manifest: $name"
+            }
+            if ($assetNames.Add($name)) {
+                $assets.Add($file)
+            }
+        }
+    }
     foreach ($path in $Attachment) {
         $assets.Add((Get-Item -LiteralPath $path))
     }

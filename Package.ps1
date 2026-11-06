@@ -37,7 +37,15 @@ $portable = Join-Path $artifacts "ArysLauncher-$version-Portable.zip"
 if (Test-Path -LiteralPath $portable) {
     Remove-Item -LiteralPath $portable
 }
-[IO.Compression.ZipFile]::CreateFromDirectory($application, $portable, [IO.Compression.CompressionLevel]::Optimal, $false)
+$portableArchive = [IO.Compression.ZipFile]::Open($portable, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem -LiteralPath $application -Recurse -File | Where-Object Name -ne 'BrowserRuntime.cab' | ForEach-Object {
+        $relative = [IO.Path]::GetRelativePath($application, $_.FullName).Replace('\', '/')
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($portableArchive, $_.FullName, $relative, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+} finally {
+    $portableArchive.Dispose()
+}
 $source = Join-Path $artifacts 'source'
 if (Test-Path -LiteralPath $source) {
     $resolved = (Resolve-Path -LiteralPath $source).Path
