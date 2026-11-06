@@ -91,6 +91,10 @@ try {
             throw
         }
     }
+    if (-not $existing) {
+        $releases = Invoke-RestMethod -Uri "$api/releases?per_page=30" -Headers $headers
+        $existing = $releases | Where-Object tag_name -eq $Tag | Select-Object -First 1
+    }
     if ($existing -and -not $existing.draft) {
         throw 'This release is already public. Publish a new version instead of overwriting it.'
     }
@@ -157,6 +161,9 @@ try {
     if ($assets.Name | Group-Object | Where-Object Count -gt 1) {
         throw 'Release attachments have duplicate names.'
     }
+    if ($existing -and @($existing.assets | Where-Object { $_.name -notin $assets.Name }).Count -ne 0) {
+        throw 'The draft contains attachments outside this verified release. Remove the stale attachments before publishing.'
+    }
     foreach ($asset in $assets) {
         Confirm-PublicArchive $asset ($dataPacks.Contains($asset.Name))
     }
@@ -187,7 +194,11 @@ try {
         }
         Write-Output $file.Name
     }
-    $body = @{ draft = $false; prerelease = $false; make_latest = 'true'; name = $Title; body = $notes } | ConvertTo-Json
+    $finalRelease = @{ draft = $false; prerelease = $false; make_latest = 'true'; name = $Title; body = $notes }
+    if ($TargetCommit) {
+        $finalRelease.target_commitish = $TargetCommit
+    }
+    $body = $finalRelease | ConvertTo-Json
     $release = Invoke-RestMethod -Method Patch -Uri "$api/releases/$($existing.id)" -Headers $headers -ContentType 'application/json' -Body $body
     Write-Output $release.html_url
 } finally {
