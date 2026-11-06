@@ -61,7 +61,7 @@ try {
         if (-not (Test-Path -LiteralPath $manifestPath)) {
             continue
         }
-        foreach ($name in @($manifestName, $manifestName + '.sig')) {
+        foreach ($name in @($manifestName, ($manifestName + '.sig'))) {
             $assets.Add((Get-Item -LiteralPath (Join-Path $AssetsDirectory $name)))
             $assetNames.Add($name) | Out-Null
         }
@@ -101,7 +101,7 @@ try {
             }
             throw
         }
-        foreach ($assetName in @($name, $name + '.sig')) {
+        foreach ($assetName in @($name, ($name + '.sig'))) {
             $old = $latest.assets | Where-Object name -eq $assetName | Select-Object -First 1
             if ($old) {
                 $path = Join-Path $AssetsDirectory $assetName
