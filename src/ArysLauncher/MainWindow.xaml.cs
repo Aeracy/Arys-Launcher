@@ -16,6 +16,8 @@ namespace ArysLauncher;
 
 public partial class MainWindow : Window
 {
+    private static readonly string BundledPackPath = Path.Combine(AppContext.BaseDirectory, "Arys-Modpack.mrpack");
+
     public static readonly DependencyProperty WorkProgressValueProperty = DependencyProperty.Register(nameof(WorkProgressValue),
         typeof(double), typeof(MainWindow), new PropertyMetadata(0.0));
     public static readonly DependencyProperty IsWorkIndeterminateProperty = DependencyProperty.Register(nameof(IsWorkIndeterminate),
@@ -23,6 +25,9 @@ public partial class MainWindow : Window
 
     private readonly LauncherStorage storage;
     private readonly JavaRuntimeCatalog javaCatalog;
+    private readonly AccountPortraits portraits;
+    private CancellationTokenSource? portraitCancellation;
+    private string portraitAccountId = "";
     private readonly CancellationTokenSource windowLifetime = new();
     private readonly DispatcherTimer memoryRefresh = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly List<string> history = new();
@@ -62,6 +67,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         this.storage = storage;
+        portraits = new AccountPortraits(storage);
         javaCatalog = new JavaRuntimeCatalog(storage);
         ConcurrencyCombo.ItemsSource = new[] { 1, 2, 4, 6, 8, 12, 16, 24, 32 };
         HostConcurrencyCombo.ItemsSource = new[] { 1, 2, 4, 6, 8, 12, 16 };
@@ -69,13 +75,16 @@ public partial class MainWindow : Window
         LoadSettings();
         RefreshPresentation();
         ShowPage("home");
-        AddHistory("启动器已就绪。");
+        AddHistory(LauncherText.Get("LauncherReady"));
         memoryRefresh.Tick += (_, _) => RefreshMemoryStatus();
         StateChanged += (_, _) => ApplyMotionPreference();
+        Activated += (_, _) => ApplyMotionPreference();
+        Deactivated += (_, _) => ApplyMotionPreference();
         SystemParameters.StaticPropertyChanged += SystemParameters_Changed;
         Closed += (_, _) =>
         {
             closed = true;
+            CancelPortraitLoad();
             memoryRefresh.Stop();
             SystemParameters.StaticPropertyChanged -= SystemParameters_Changed;
             windowLifetime.Cancel();
@@ -124,11 +133,11 @@ public partial class MainWindow : Window
         SettingsPage.Visibility = page == "settings" ? Visibility.Visible : Visibility.Collapsed;
         (PageTitle.Text, PageSubtitle.Text) = page switch
         {
-            "instances" => ("整合包", "查看安装位置和游戏资源。"),
-            "accounts" => ("账号", "选择用于启动游戏的账号。"),
-            "tasks" => ("下载任务", "查看当前进度与操作记录。"),
-            "settings" => ("设置", "按你的电脑与网络调整运行方式。"),
-            _ => ("准备游戏", "整合包与启动状态")
+            "instances" => (LauncherText.Get("Modpack"), LauncherText.Get("ModpackPageDescription")),
+            "accounts" => (LauncherText.Get("Accounts"), LauncherText.Get("AccountsPageDescription")),
+            "tasks" => (LauncherText.Get("Downloads"), LauncherText.Get("DownloadsPageDescription")),
+            "settings" => (LauncherText.Get("Settings"), LauncherText.Get("SettingsPageDescription")),
+            _ => (LauncherText.Get("HomePageTitle"), LauncherText.Get("HomePageDescription"))
         };
         var item = Navigation.Items.OfType<ListBoxItem>().FirstOrDefault(item => (string)item.Tag == page);
         if (item != null && Navigation.SelectedItem != item)
@@ -141,6 +150,10 @@ public partial class MainWindow : Window
             LauncherMotion.Reset(HomeSidebar);
         }
         UpdateWorkStrip();
+        if (page == "settings")
+        {
+            RefreshMemoryStatus();
+        }
         AnimatePage(GetPage(page));
     }
 
@@ -173,15 +186,18 @@ public partial class MainWindow : Window
     private void ApplyMotionPreference()
     {
         var reduced = storage.Settings.ReducedMotion || !SystemParameters.ClientAreaAnimation ||
-            WindowState == WindowState.Minimized;
+            WindowState == WindowState.Minimized || !IsActive || SystemParameters.HighContrast;
+        WindowAtmosphere.Opacity = SystemParameters.HighContrast ? 0 : 1;
         if (LauncherMotion.GetReducedMotion(this) == reduced)
         {
             return;
         }
         LauncherMotion.SetReducedMotion(this, reduced);
         Atmosphere.ReducedMotion = reduced;
+        WindowAtmosphere.ReducedMotion = reduced;
         if (reduced)
         {
+            AccountPortraitImage.BeginAnimation(OpacityProperty, null);
             LauncherMotion.Reset(GetPage(activePage));
             LauncherMotion.Reset(HomeSidebar);
             LauncherMotion.Reset(WorkStrip);
@@ -239,30 +255,34 @@ public partial class MainWindow : Window
                 ?? storage.Accounts.FirstOrDefault();
             AccountList.ItemsSource = storage.Accounts.ToArray();
             AccountList.SelectedItem = selectedAccount;
-            HomeAccountName.Text = selectedAccount?.PlayerName ?? "尚未登录";
-            HomeAccountKind.Text = selectedAccount?.Description ?? "登录后启动游戏";
-            HomeAccountButton.Content = selectedAccount == null ? "添加账号  ↗" : "管理账号  ↗";
+            HomeAccountName.Text = selectedAccount?.PlayerName ?? LauncherText.Get("SignedOut");
+            HomeAccountKind.Text = selectedAccount?.Description ?? LauncherText.Get("SignInToPlay");
+            HomeAccountButton.Content = selectedAccount == null ? LauncherText.Get("AddAccountLink") : LauncherText.Get("ManageAccountsLink");
             AccountInitial.Text = selectedAccount == null ? "◇" : StringInfo.GetNextTextElement(selectedAccount.PlayerName);
+            RefreshAccountPortrait(selectedAccount);
             HomeMemory.Text = $"{(physicalMemory == null ? storage.Settings.MaximumMemoryMb : MemoryAllocation.MaximumMb(storage.Settings, physicalMemory)) / 1024.0:0.0} GiB";
             var selectedJava = SelectedJavaRuntime(storage.Settings.AutomaticJavaSelection, storage.Settings.JavaPath);
-            HomeJava.Text = selectedJava == null ? "自动获取" : "Java " + selectedJava.MajorVersion;
+            HomeJava.Text = selectedJava == null ? LauncherText.Get("JavaAutomatic") : "Java " + selectedJava.MajorVersion;
             ApplyMotionPreference();
             UpdateWorkStrip();
             var installation = storage.Installation;
-            HomeInstanceHeading.Text = installation == null ? "安装整合包" : "已安装";
-            HomeInstanceDescription.Text = installation?.VersionLabel ?? "将整合包文件拖到窗口，或从本地选择。";
-            HomeInstanceDetails.Text = installation == null ? "支持 .mrpack 和整合包 ZIP" :
-                $"{installation.ModCount} 个 Mod  ·  {installation.Name}";
-            HomeInstanceButton.Content = installation == null ? "浏览文件  →" : "查看整合包  →";
-            InstallationHeading.Text = installation?.Name ?? "专属整合包";
-            InstallationSummary.Text = installation == null ? "尚未导入整合包" :
-                $"{installation.VersionLabel}  ·  {installation.ModCount} 个 Mod";
+            var bundledPack = installation == null && File.Exists(BundledPackPath);
+            var importLabel = bundledPack ? LauncherText.Get("InstallModpack") : LauncherText.Get("ImportModpack");
+            HomeInstanceHeading.Text = installation == null ? LauncherText.Get("InstallModpack") : LauncherText.Get("Installed");
+            HomeInstanceDescription.Text = installation?.VersionLabel ?? (bundledPack ?
+                LauncherText.Get("BundledPackDescription") : LauncherText.Get("ChoosePackDescription"));
+            HomeInstanceDetails.Text = installation == null ? (bundledPack ? LauncherText.Get("OfficialPackName") : LauncherText.Get("SupportedPackFormats")) :
+                LauncherText.Get("ModCountAndPackName", installation.ModCount, installation.Name);
+            HomeInstanceButton.Content = installation == null ? (bundledPack ? LauncherText.Get("InstallModpackLink") : LauncherText.Get("BrowseFilesLink")) : LauncherText.Get("ViewModpackLink");
+            InstallationHeading.Text = installation?.Name ?? LauncherText.Get("OfficialModpack");
+            InstallationSummary.Text = installation == null ? LauncherText.Get("PackNotInstalled") :
+                LauncherText.Get("VersionAndModCount", installation.VersionLabel, installation.ModCount);
             InstallationPath.Text = installation?.DirectoryPath ?? storage.GameDirectory;
-            FooterDetail.Text = installation == null ? "导入整合包后开始游戏" :
-                selectedAccount == null ? "整合包已导入，请先登录账号" : $"{selectedAccount.PlayerName}  ·  {installation.MinecraftVersion}";
-            HeaderImportButton.Content = installation == null ? "导入整合包" : "打开游戏目录  ↗";
-            LaunchButton.Content = runningGame != null ? "游戏运行中" : installation == null ? "导入整合包" :
-                selectedAccount == null ? "登录账号" : "开始游戏";
+            FooterDetail.Text = installation == null ? (bundledPack ? LauncherText.Get("InstallBeforePlaying") : LauncherText.Get("ImportBeforePlaying")) :
+                selectedAccount == null ? LauncherText.Get("SignInAfterImport") : $"{selectedAccount.PlayerName}  ·  {installation.MinecraftVersion}";
+            HeaderImportButton.Content = installation == null ? importLabel : LauncherText.Get("OpenGameDirectoryLink");
+            LaunchButton.Content = runningGame != null ? LauncherText.Get("GameRunning") : installation == null ? importLabel :
+                selectedAccount == null ? LauncherText.Get("SignIn") : LauncherText.Get("Play");
             LaunchButton.IsEnabled = !IsBusy && runningGame == null;
             HeaderImportButton.IsEnabled = !IsBusy;
             PrepareButton.IsEnabled = !IsBusy && runningGame == null && installation != null;
@@ -285,17 +305,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Import_Click(object sender, RoutedEventArgs e)
+    private async void Import_Click(object sender, RoutedEventArgs e)
     {
         if (storage.Installation != null)
         {
             OpenDirectory(storage.Installation.DirectoryPath);
             return;
         }
-        ShowImport();
+        await ShowImportAsync();
     }
 
-    private void ShowImport()
+    private async Task ShowImportAsync(bool selectBundledPack = true)
     {
         if (IsBusy)
         {
@@ -304,31 +324,41 @@ public partial class MainWindow : Window
         if (storage.Installation != null)
         {
             ShowPage("instances");
-            SetStatus("本整合包已导入。现有游戏目录会保留。");
+            SetStatus(LauncherText.Get("PackAlreadyImported"));
             return;
         }
         importPlan = null;
         editingInstallation = null;
-        ImportTitle.Text = "导入整合包";
+        ImportTitle.Text = LauncherText.Get("ImportModpack");
         ImportSourcePanel.Visibility = Visibility.Visible;
-        ImportSummary.Text = "选择文件后显示整合包信息。文件会安装到启动器下的 .minecraft 目录。";
+        ImportSummary.Text = LauncherText.Get("ChoosePackFileHelp");
         ArchivePathText.Clear();
-        ImportNameText.Text = "少女の永恒地牢";
+        ImportNameText.Text = LauncherText.Get("OfficialPackName");
         ImportMinecraftText.Text = "1.20.1";
         ImportForgeText.Text = "47.4.16";
         ImportErrorText.Visibility = Visibility.Collapsed;
-        CommitImportButton.Content = "开始导入";
+        CommitImportButton.Content = LauncherText.Get("StartImport");
         CommitImportButton.IsEnabled = false;
         OpenImportDialog();
-        ChooseArchiveButton.Focus();
+        if (selectBundledPack && File.Exists(BundledPackPath))
+        {
+            ImportTitle.Text = LauncherText.Get("InstallModpack");
+            CommitImportButton.Content = LauncherText.Get("StartInstallation");
+            await InspectArchiveAsync(BundledPackPath);
+            CommitImportButton.Focus();
+        }
+        else
+        {
+            ChooseArchiveButton.Focus();
+        }
     }
 
     private async void ChooseArchive_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
         {
-            Title = "选择整合包文件",
-            Filter = "Minecraft 整合包 (*.mrpack;*.zip)|*.mrpack;*.zip",
+            Title = LauncherText.Get("ChooseModpackFile"),
+            Filter = LauncherText.Get("PackFileFilter"),
             CheckFileExists = true
         };
         if (dialog.ShowDialog(this) == true)
@@ -342,18 +372,21 @@ public partial class MainWindow : Window
         importPlan = null;
         ImportErrorText.Visibility = Visibility.Collapsed;
         ArchivePathText.Text = path;
-        ImportSummary.Text = "正在读取整合包信息。";
-        await RunOperationAsync("读取整合包", async (token, _) =>
+        ImportSummary.Text = LauncherText.Get("ReadingPackDetails");
+        await RunOperationAsync(LauncherText.Get("ReadModpack"), async (token, _) =>
         {
             var importer = new PackImporter(storage);
             var plan = await Task.Run(() => importer.Inspect(path, storage.Settings.IncludeOptionalMods, token), token);
             importPlan = plan;
-            ImportNameText.Text = plan.Name;
+            var bundledPack = path.Equals(BundledPackPath, StringComparison.OrdinalIgnoreCase);
+            ImportTitle.Text = bundledPack ? LauncherText.Get("InstallModpack") : LauncherText.Get("ImportModpack");
+            CommitImportButton.Content = bundledPack ? LauncherText.Get("StartInstallation") : LauncherText.Get("StartImport");
+            ImportNameText.Text = bundledPack ? LauncherText.Get("OfficialPackName") : plan.Name;
             ImportMinecraftText.Text = plan.MinecraftVersion;
             ImportForgeText.Text = string.IsNullOrEmpty(plan.ForgeVersion) ? "47.4.16" : plan.ForgeVersion;
-            ImportSummary.Text = $"{plan.Format}  ·  {plan.Entries.Count + plan.Downloads.Count} 个文件\n" +
-                $"本地提取 {FormatBytes(plan.ExtractedBytes)}  ·  依赖文件 {FormatBytes(plan.DownloadBytes)}" +
-                (plan.OptionalFiles > 0 ? $"  ·  可选文件 {plan.OptionalFiles} 个" : "");
+            ImportSummary.Text = LauncherText.Get("PackFormatAndFileCount", plan.Format, plan.Entries.Count + plan.Downloads.Count) +
+                LauncherText.Get("PackDownloadSummary", FormatBytes(plan.ExtractedBytes), FormatBytes(plan.DownloadBytes)) +
+                (plan.OptionalFiles > 0 ? LauncherText.Get("OptionalPackFileCount", plan.OptionalFiles) : "");
         }, false);
     }
 
@@ -375,7 +408,7 @@ public partial class MainWindow : Window
                 edited.Name = ImportNameText.Text.Trim();
                 if (string.IsNullOrWhiteSpace(edited.Name))
                 {
-                    throw new InvalidOperationException("请填写整合包名称。");
+                    throw new InvalidOperationException(LauncherText.Get("PackNameRequired"));
                 }
                 if (edited.MinecraftVersion != minecraft || edited.ForgeVersion != forge)
                 {
@@ -387,7 +420,7 @@ public partial class MainWindow : Window
                 HideImportDialog();
                 editingInstallation = null;
                 RefreshPresentation();
-                SetStatus("整合包配置已保存。");
+                SetStatus(LauncherText.Get("PackSettingsSaved"));
             }
             catch (Exception exception)
             {
@@ -405,7 +438,7 @@ public partial class MainWindow : Window
         var minecraftVersion = ImportMinecraftText.Text.Trim();
         var forgeVersion = ImportForgeText.Text.Trim();
         HideImportDialog();
-        await RunOperationAsync("导入整合包", async (token, progress) =>
+        await RunOperationAsync(LauncherText.Get("ImportModpack"), async (token, progress) =>
         {
             var importer = new PackImporter(storage);
             var installation = await Task.Run(() => importer.ImportAsync(plan, name, minecraftVersion, forgeVersion, progress, token), token);
@@ -416,28 +449,28 @@ public partial class MainWindow : Window
         });
     }
 
-    private void EditInstance_Click(object sender, RoutedEventArgs e)
+    private async void EditInstance_Click(object sender, RoutedEventArgs e)
     {
         if (IsBusy || runningGame != null)
         {
-            SetStatus("请在当前任务和游戏结束后修改整合包配置。");
+            SetStatus(LauncherText.Get("PackSettingsBusy"));
             return;
         }
         if (storage.Installation is not { } installation)
         {
-            ShowImport();
+            await ShowImportAsync();
             return;
         }
         importPlan = null;
         editingInstallation = installation;
-        ImportTitle.Text = "整合包配置";
+        ImportTitle.Text = LauncherText.Get("ModpackSettings");
         ImportSourcePanel.Visibility = Visibility.Collapsed;
-        ImportSummary.Text = "请保持版本与本整合包要求一致。更改版本后，下一次启动会重新准备对应环境。";
+        ImportSummary.Text = LauncherText.Get("PackVersionsHelp");
         ImportNameText.Text = installation.Name;
         ImportMinecraftText.Text = installation.MinecraftVersion;
         ImportForgeText.Text = installation.ForgeVersion;
         ImportErrorText.Visibility = Visibility.Collapsed;
-        CommitImportButton.Content = "保存配置";
+        CommitImportButton.Content = LauncherText.Get("SaveConfiguration");
         CommitImportButton.IsEnabled = true;
         OpenImportDialog();
         ImportNameText.Focus();
@@ -450,7 +483,7 @@ public partial class MainWindow : Window
 
     private async Task OpenMicrosoftLoginAsync()
     {
-        await RunOperationAsync("Microsoft 正版登录", async (token, _) =>
+        await RunOperationAsync(LauncherText.Get("MicrosoftJavaSignIn"), async (token, _) =>
         {
             var window = new MicrosoftLoginWindow(storage, token) { Owner = this };
             await window.SignInAsync();
@@ -464,7 +497,7 @@ public partial class MainWindow : Window
         var username = ExternalUsernameText.Text.Trim();
         var password = ExternalPasswordBox.Password;
         ExternalPasswordBox.Clear();
-        await RunOperationAsync("外置认证登录", async (token, _) =>
+        await RunOperationAsync(LauncherText.Get("ExternalAuthenticationSignIn"), async (token, _) =>
         {
             SaveAuthenticationSettings();
             using var service = new AccountService(storage);
@@ -478,7 +511,7 @@ public partial class MainWindow : Window
         var dialog = new Window
         {
             Owner = this,
-            Title = "选择游戏角色",
+            Title = LauncherText.Get("ChooseCharacter"),
             Width = 400,
             Height = 225,
             ResizeMode = ResizeMode.NoResize,
@@ -487,16 +520,16 @@ public partial class MainWindow : Window
             Foreground = (Brush)FindResource("TextBrush")
         };
         var panel = new StackPanel { Margin = new Thickness(25) };
-        panel.Children.Add(new TextBlock { Text = "选择此账号下的游戏角色", FontSize = 16, Margin = new Thickness(0, 0, 0, 17) });
+        panel.Children.Add(new TextBlock { Text = LauncherText.Get("ChooseAccountCharacter"), FontSize = 16, Margin = new Thickness(0, 0, 0, 17) });
         var choices = new ComboBox { ItemsSource = profiles, DisplayMemberPath = "Name", SelectedIndex = 0 };
         panel.Children.Add(choices);
-        var confirm = new Button { Content = "使用此角色", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
+        var confirm = new Button { Content = LauncherText.Get("UseCharacter"), HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
         confirm.Click += (_, _) => dialog.DialogResult = true;
         panel.Children.Add(confirm);
         dialog.Content = panel;
         if (dialog.ShowDialog() != true || choices.SelectedItem is not GameProfile profile)
         {
-            throw new OperationCanceledException("已取消角色选择。");
+            throw new OperationCanceledException(LauncherText.Get("CharacterSelectionCancelled"));
         }
         return Task.FromResult(profile);
     }
@@ -507,10 +540,11 @@ public partial class MainWindow : Window
         {
             return;
         }
-        await RunOperationAsync("移除账号", async (token, _) =>
+        await RunOperationAsync(LauncherText.Get("RemoveAccount"), async (token, _) =>
         {
             using var service = new AccountService(storage);
             await service.RemoveAccountAsync(account, token);
+            portraits.Remove(account);
             RefreshPresentation();
         }, false);
     }
@@ -541,7 +575,7 @@ public partial class MainWindow : Window
         }
         if (storage.Installation is not { } installation)
         {
-            ShowImport();
+            await ShowImportAsync();
             return;
         }
         var account = storage.Accounts.FirstOrDefault(account => account.Id == storage.Settings.SelectedAccountId)
@@ -552,14 +586,14 @@ public partial class MainWindow : Window
             await OpenMicrosoftLoginAsync();
             return;
         }
-        await RunOperationAsync("启动游戏", async (token, progress) =>
+        await RunOperationAsync(LauncherText.Get("LaunchGame"), async (token, progress) =>
         {
             var runtime = new GameRuntime(storage, javaCatalog);
             var game = await Task.Run(() => runtime.LaunchAsync(installation, account, progress, token), token);
             runningGame = game;
             storage.SaveInstallation(installation);
             RefreshPresentation();
-            AddHistory($"游戏进程已启动。日志：{game.LogPath}");
+            AddHistory(LauncherText.Get("GameProcessStarted", game.LogPath));
             _ = ObserveGameAsync(game);
             if (storage.Settings.MinimizeOnLaunch)
             {
@@ -575,15 +609,15 @@ public partial class MainWindow : Window
             var exitCode = await game.Completion;
             if (!closed)
             {
-                AddHistory($"游戏已退出，退出码 {exitCode}。日志：{game.LogPath}");
-                SetStatus(exitCode == 0 ? "游戏已退出。" : $"游戏退出码为 {exitCode}，可从下载任务页打开日志目录。", exitCode != 0);
+                AddHistory(LauncherText.Get("GameExitLog", exitCode, game.LogPath));
+                SetStatus(exitCode == 0 ? LauncherText.Get("GameExited") : LauncherText.Get("GameExitedWithError", exitCode), exitCode != 0);
             }
         }
         catch (Exception exception)
         {
             if (!closed)
             {
-                SetStatus("游戏日志采集已结束：" + exception.Message, true);
+                SetStatus(LauncherText.Get("GameLogCaptureEnded") + exception.Message, true);
             }
         }
         finally
@@ -608,10 +642,10 @@ public partial class MainWindow : Window
         }
         if (storage.Installation is not { } installation)
         {
-            ShowImport();
+            await ShowImportAsync();
             return;
         }
-        await RunOperationAsync("补全游戏环境", async (token, progress) =>
+        await RunOperationAsync(LauncherText.Get("PrepareGameFiles"), async (token, progress) =>
         {
             var runtime = new GameRuntime(storage, javaCatalog);
             await Task.Run(() => runtime.PrepareAsync(installation, progress, token), token);
@@ -626,6 +660,7 @@ public partial class MainWindow : Window
         {
             return;
         }
+        CancelPortraitLoad();
         using var cancellation = new CancellationTokenSource();
         operationCancellation = cancellation;
         lastStage = "";
@@ -634,10 +669,10 @@ public partial class MainWindow : Window
         speedSampleBytes = 0;
         measuredSpeed = 0;
         TaskTitle.Text = title;
-        TaskDetail.Text = "正在准备";
+        TaskDetail.Text = LauncherText.Get("Preparing");
         PresentProgress(0, indeterminate: true, immediate: true);
         WorkStripTitle.Text = title;
-        TaskStatistics.Text = "正在准备";
+        TaskStatistics.Text = LauncherText.Get("Preparing");
         AddHistory(title);
         if (showTasks)
         {
@@ -663,29 +698,29 @@ public partial class MainWindow : Window
         {
             await operation(cancellation.Token, progress);
             RefreshTaskProgress();
-            TaskTitle.Text = title + "完成";
-            TaskDetail.Text = "任务已完成。";
+            TaskTitle.Text = title + LauncherText.Get("Complete");
+            TaskDetail.Text = LauncherText.Get("TaskCompleted");
             if (latest == null)
             {
-                TaskStatistics.Text = "已完成";
+                TaskStatistics.Text = LauncherText.Get("Completed");
             }
             PresentProgress(100, indeterminate: false);
-            AddHistory(title + "完成。");
-            SetStatus(title + "完成。");
+            AddHistory(title + LauncherText.Get("Done"));
+            SetStatus(title + LauncherText.Get("Done"));
         }
         catch (OperationCanceledException)
         {
             RefreshTaskProgress();
-            TaskTitle.Text = "任务已取消";
-            TaskDetail.Text = "当前操作已取消。";
-            AddHistory(title + "已取消。");
-            SetStatus("任务已取消。");
+            TaskTitle.Text = LauncherText.Get("TaskCancelled");
+            TaskDetail.Text = LauncherText.Get("OperationCancelled");
+            AddHistory(title + LauncherText.Get("Cancelled"));
+            SetStatus(LauncherText.Get("TaskCancelledMessage"));
         }
         catch (Exception exception)
         {
             RefreshTaskProgress();
-            var message = exception is JsonException or KeyNotFoundException ? "整合包或服务响应缺少必要字段，请检查文件格式与认证配置。" : exception.Message;
-            TaskTitle.Text = title + "未完成";
+            var message = exception is JsonException or KeyNotFoundException ? LauncherText.Get("TaskResponseMissingFields") : exception.Message;
+            TaskTitle.Text = title + LauncherText.Get("Incomplete");
             TaskDetail.Text = message;
             AddHistory(message);
             SetStatus(message, true);
@@ -693,7 +728,7 @@ public partial class MainWindow : Window
             {
                 ImportErrorText.Text = message;
                 ImportErrorText.Visibility = Visibility.Visible;
-                ImportSummary.Text = "文件未能读取，请重新选择。";
+                ImportSummary.Text = LauncherText.Get("PackReadFailed");
             }
         }
         finally
@@ -756,9 +791,9 @@ public partial class MainWindow : Window
             speedSampleTime = now;
         }
         var bytes = snapshot.TotalBytes > 0 ? $"{FormatBytes(snapshot.CompletedBytes)} / {FormatBytes(snapshot.TotalBytes)}" : "";
-        var files = snapshot.TotalFiles > 0 ? $"{snapshot.CompletedFiles} / {snapshot.TotalFiles} 文件" : "";
+        var files = snapshot.TotalFiles > 0 ? LauncherText.Get("FileProgress", snapshot.CompletedFiles, snapshot.TotalFiles) : "";
         var speed = measuredSpeed > 0 ? FormatBytes((long)measuredSpeed) + "/s" : "";
-        var cache = snapshot.CacheHits > 0 ? $"缓存命中 {snapshot.CacheHits}" : "";
+        var cache = snapshot.CacheHits > 0 ? LauncherText.Get("CacheHitCount", snapshot.CacheHits) : "";
         var statistics = string.Join("  ·  ", new[] { bytes, files, speed, cache }.Where(value => value.Length > 0));
         if (TaskStatistics.Text != statistics)
         {
@@ -837,8 +872,8 @@ public partial class MainWindow : Window
             settings.AutomaticJavaSelection = JavaRuntimeCombo.SelectedItem is not JavaChoice { Runtime: not null };
             settings.AutomaticMemoryAllocation = AutomaticMemoryRadio.IsChecked == true;
             settings.MaximumMemoryMb = ParseMemoryGiB(MaximumMemoryText.Text);
-            settings.WindowWidth = ParseInteger(WindowWidthText.Text, "窗口宽度");
-            settings.WindowHeight = ParseInteger(WindowHeightText.Text, "窗口高度");
+            settings.WindowWidth = ParseInteger(WindowWidthText.Text, LauncherText.Get("WindowWidth"));
+            settings.WindowHeight = ParseInteger(WindowHeightText.Text, LauncherText.Get("WindowHeight"));
             settings.Fullscreen = FullscreenCheck.IsChecked == true;
             settings.MinimizeOnLaunch = MinimizeOnLaunchCheck.IsChecked == true;
             settings.JvmArguments = JvmArgumentsText.Text.Trim();
@@ -848,7 +883,7 @@ public partial class MainWindow : Window
             settings.AutomaticDownloadConnections = ManualDownloadConnectionsCheck.IsChecked != true;
             if (!double.TryParse(DownloadLimitText.Text.Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var downloadLimit))
             {
-                throw new InvalidOperationException("下载总限速请填写 MiB/s 数值，0 表示不限速。");
+                throw new InvalidOperationException(LauncherText.Get("SpeedLimitNumberRequired"));
             }
             settings.DownloadLimitMiBPerSecond = downloadLimit;
             settings.DownloadConcurrency = ConcurrencyCombo.SelectedItem is int concurrency ? concurrency : 8;
@@ -860,7 +895,7 @@ public partial class MainWindow : Window
             settings.CheckUpdatesAtStartup = AutomaticUpdatesCheck.IsChecked == true;
             storage.SaveSettings(settings);
             RefreshPresentation();
-            SetStatus("设置已保存，将用于下一次任务。");
+            SetStatus(LauncherText.Get("SettingsSaved"));
         }
         catch (Exception exception)
         {
@@ -878,7 +913,7 @@ public partial class MainWindow : Window
         WindowWidthText.Text = LauncherSettings.DefaultWindowWidth.ToString(CultureInfo.InvariantCulture);
         WindowHeightText.Text = LauncherSettings.DefaultWindowHeight.ToString(CultureInfo.InvariantCulture);
         FullscreenCheck.IsChecked = LauncherSettings.DefaultFullscreen;
-        SetStatus("已恢复窗口默认值，保存后生效。");
+        SetStatus(LauncherText.Get("WindowDefaultsRestored"));
     }
 
     private void DownloadConnections_Changed(object sender, RoutedEventArgs e)
@@ -916,7 +951,7 @@ public partial class MainWindow : Window
 
     private async void ChooseJava_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Title = "选择 Java 程序", Filter = "Java 程序 (javaw.exe;java.exe)|javaw.exe;java.exe", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Title = LauncherText.Get("ChooseJavaExecutable"), Filter = LauncherText.Get("JavaExecutableFilter"), CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
             JavaPathText.Text = dialog.FileName;
@@ -954,11 +989,14 @@ public partial class MainWindow : Window
         {
             physicalMemory = MemoryAllocation.ReadPhysicalMemory();
             HomeMemory.Text = $"{MemoryAllocation.MaximumMb(storage.Settings, physicalMemory) / 1024.0:0.0} GiB";
-            UpdateMemoryPresentation();
+            if (SettingsPage.IsVisible)
+            {
+                UpdateMemoryPresentation();
+            }
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            PhysicalMemoryText.Text = "暂时无法读取系统内存";
+            PhysicalMemoryText.Text = LauncherText.Get("SystemMemoryUnavailable");
         }
     }
 
@@ -1012,7 +1050,7 @@ public partial class MainWindow : Window
         if (!double.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var gib) ||
             !double.IsFinite(gib) || gib < 1 || gib > 128)
         {
-            throw new InvalidOperationException("游戏内存上限应为 1–128 GiB。");
+            throw new InvalidOperationException(LauncherText.Get("MemoryLimitGibInvalid"));
         }
         return (int)Math.Round(gib * 1024);
     }
@@ -1026,7 +1064,7 @@ public partial class MainWindow : Window
         scanningJava = true;
         RefreshPresentation();
         RescanJavaButton.IsEnabled = false;
-        JavaStatusText.Text = "正在扫描本机 Java…";
+        JavaStatusText.Text = LauncherText.Get("ScanningLocalJava");
         var previousChoice = JavaRuntimeCombo.SelectedItem as JavaChoice;
         var requestedPath = explicitPath ?? previousChoice?.Runtime?.ExecutablePath ?? storage.Settings.JavaPath;
         try
@@ -1054,7 +1092,7 @@ public partial class MainWindow : Window
         {
             if (!closed)
             {
-                JavaStatusText.Text = "Java 扫描未完成，可以手动选择 Java 程序。";
+                JavaStatusText.Text = LauncherText.Get("JavaScanIncomplete");
             }
         }
         finally
@@ -1081,20 +1119,20 @@ public partial class MainWindow : Window
         JavaStatusText.Foreground = (Brush)FindResource("MutedBrush");
         if (runtime == null)
         {
-            JavaStatusText.Text = "未发现本机 Java，补全环境时会获取游戏所需的 Java 17，也可手动选择。";
+            JavaStatusText.Text = LauncherText.Get("JavaWillDownload");
         }
         else if (runtime.MajorVersion != 17)
         {
-            JavaStatusText.Text = $"{(javaRuntimes.All(item => item.MajorVersion != 17) ? "未找到 Java 17，已选用" : "当前选用")} Java {runtime.MajorVersion}。本整合包推荐 Java 17，遇到兼容问题时请切换。";
+            JavaStatusText.Text = LauncherText.Get("JavaFallbackHint", (javaRuntimes.All(item => item.MajorVersion != 17) ? LauncherText.Get("Java17Fallback") : LauncherText.Get("JavaCurrentlySelected")), runtime.MajorVersion);
             JavaStatusText.Foreground = new SolidColorBrush(Color.FromRgb(229, 179, 129));
         }
         else
         {
-            JavaStatusText.Text = $"已选用 Java 17 · {(runtime.Is64Bit ? "64 位" : "32 位")} · {runtime.Vendor}。共发现 {javaRuntimes.Count} 个本机 Java。";
+            JavaStatusText.Text = LauncherText.Get("Java17Selection", (runtime.Is64Bit ? LauncherText.Get("Java64Bit") : LauncherText.Get("Java32Bit")), runtime.Vendor, javaRuntimes.Count);
         }
         if (runtime is { Is64Bit: false })
         {
-            JavaStatusText.Text += " 当前为 32 位 Java，请安装 64 位 Java 17 以使用较大内存。";
+            JavaStatusText.Text += LauncherText.Get("Java32BitSuggestion");
             JavaStatusText.Foreground = new SolidColorBrush(Color.FromRgb(229, 179, 129));
         }
     }
@@ -1170,7 +1208,7 @@ public partial class MainWindow : Window
         try
         {
             SaveAuthenticationSettings();
-            SetStatus("认证服务器设置已保存。");
+            SetStatus(LauncherText.Get("AuthenticationSettingsSaved"));
         }
         catch (Exception exception) when (exception is IOException or InvalidOperationException or UnauthorizedAccessException)
         {
@@ -1185,7 +1223,7 @@ public partial class MainWindow : Window
             var registration = AuthenticationServer.ValidateRegistrationUrl(ExternalRegistrationText.Text);
             if (registration == null)
             {
-                SetStatus("请先填写认证站提供的注册链接。");
+                SetStatus(LauncherText.Get("RegistrationAddressRequired"));
                 return;
             }
             Process.Start(new ProcessStartInfo(registration.AbsoluteUri) { UseShellExecute = true });
@@ -1198,7 +1236,7 @@ public partial class MainWindow : Window
 
     private void ChooseInjector_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Title = "选择 authlib-injector", Filter = "Java 组件 (*.jar)|*.jar", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Title = LauncherText.Get("ChooseAuthlibInjector"), Filter = LauncherText.Get("JavaComponentFilter"), CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
             InjectorPathText.Text = dialog.FileName;
@@ -1219,10 +1257,10 @@ public partial class MainWindow : Window
         }
         if (!new[] { ".zip", ".mrpack" }.Contains(Path.GetExtension(files[0]), StringComparer.OrdinalIgnoreCase))
         {
-            SetStatus("请选择 .mrpack 或整合包 ZIP 文件。", true);
+            SetStatus(LauncherText.Get("PackFileRequired"), true);
             return;
         }
-        ShowImport();
+        await ShowImportAsync(selectBundledPack: false);
         await InspectArchiveAsync(files[0]);
     }
 
@@ -1242,7 +1280,7 @@ public partial class MainWindow : Window
             e.Cancel = true;
             closeAfterOperation = true;
             operationCancellation?.Cancel();
-            SetStatus("正在结束任务并保存可恢复的下载数据。");
+            SetStatus(LauncherText.Get("FinishingTaskForExit"));
         }
     }
 
@@ -1270,7 +1308,7 @@ public partial class MainWindow : Window
         {
             if (!Directory.Exists(directory))
             {
-                SetStatus("目录尚未创建，导入整合包后即可打开。");
+                SetStatus(LauncherText.Get("FolderNotCreated"));
                 return;
             }
             Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
@@ -1284,7 +1322,7 @@ public partial class MainWindow : Window
     private static int ParseInteger(string value, string label)
     {
         return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? number :
-            throw new InvalidOperationException(label + "应为整数。");
+            throw new InvalidOperationException(label + LauncherText.Get("IntegerRequired"));
     }
 
     private static void ValidateVersionFields(string minecraft, string forge)
@@ -1292,7 +1330,7 @@ public partial class MainWindow : Window
         if (!Regex.IsMatch(minecraft, "^[A-Za-z0-9_.-]{1,100}$") ||
             !string.IsNullOrEmpty(forge) && !Regex.IsMatch(forge, "^[0-9]+(\\.[0-9]+){1,5}$"))
         {
-            throw new InvalidOperationException("请填写有效的 Minecraft 与 Forge 版本号。");
+            throw new InvalidOperationException(LauncherText.Get("PackVersionsInvalid"));
         }
     }
 
@@ -1332,16 +1370,16 @@ public partial class MainWindow : Window
         if (operationCancellation is { IsCancellationRequested: false } cancellation)
         {
             TaskCancelButton.IsEnabled = StripCancelButton.IsEnabled = false;
-            SetStatus("正在取消任务。");
+            SetStatus(LauncherText.Get("CancellingTask"));
             cancellation.Cancel();
         }
     }
 
-    private void HomeInstance_Click(object sender, RoutedEventArgs e)
+    private async void HomeInstance_Click(object sender, RoutedEventArgs e)
     {
         if (storage.Installation == null)
         {
-            ShowImport();
+            await ShowImportAsync();
         }
         else
         {

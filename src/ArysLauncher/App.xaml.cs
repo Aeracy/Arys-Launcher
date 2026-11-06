@@ -22,7 +22,7 @@ public partial class App : Application
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, "启动器更新未完成", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(exception.Message, LauncherText.Get("LauncherUpdateIncomplete"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             Shutdown();
             return;
@@ -32,7 +32,7 @@ public partial class App : Application
         instanceMutex = new Mutex(true, "Local\\ArysLauncher." + identity, out var created);
         if (!created)
         {
-            MessageBox.Show("启动器已在运行，请切回已打开的窗口。", "Arys Launcher", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LauncherText.Get("LauncherAlreadyRunning"), "Arys Launcher", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
@@ -47,7 +47,7 @@ public partial class App : Application
             catch (IOException)
             {
             }
-            MessageBox.Show(args.Exception.Message, "启动器遇到问题", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(args.Exception.Message, LauncherText.Get("LauncherErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
         };
         base.OnStartup(e);
@@ -60,7 +60,7 @@ public partial class App : Application
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "启动器需要处理未完成的更新", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(exception.Message, LauncherText.Get("LauncherRecoveryRequired"), MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown();
         }
     }

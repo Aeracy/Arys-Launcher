@@ -14,8 +14,8 @@ public sealed class WorkProgress
     private long lastReport;
     private int completedFiles;
     private int cacheHits;
-    private string stage = "准备导入";
-    private string detail = "正在读取整合包";
+    private string stage = LauncherText.Get("PreparingImport");
+    private string detail = LauncherText.Get("ReadingPack");
 
     public WorkProgress(IProgress<WorkSnapshot> progress, int fileCount, long totalBytes)
     {

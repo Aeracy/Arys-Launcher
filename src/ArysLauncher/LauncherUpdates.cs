@@ -20,7 +20,7 @@ internal sealed class LauncherUpdates
         var channelPath = Path.Combine(applicationRoot, "release-channel.json");
         Channel = File.Exists(channelPath) ?
             JsonSerializer.Deserialize<UpdateChannel>(File.ReadAllText(channelPath), LauncherStorage.JsonOptions) ??
-                throw new InvalidDataException("更新来源配置为空。") : new UpdateChannel();
+                throw new InvalidDataException(LauncherText.Get("UpdateChannelEmpty")) : new UpdateChannel();
     }
 
     public async Task<UpdateManifest?> CheckAsync(UpdateKind kind, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ internal sealed class LauncherUpdates
         }
         if (string.IsNullOrWhiteSpace(Channel.PublicKey))
         {
-            throw new InvalidDataException("更新来源尚未配置发行公钥。");
+            throw new InvalidDataException(LauncherText.Get("UpdatePublicKeyMissing"));
         }
         using var client = NetworkClients.Create(storage.Settings);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -52,25 +52,40 @@ internal sealed class LauncherUpdates
         }
         catch (Exception exception) when (exception is CryptographicException or FormatException)
         {
-            throw new InvalidDataException("更新清单签名无效，请稍后重新检查。", exception);
+            throw new InvalidDataException(LauncherText.Get("UpdateSignatureInvalid"), exception);
         }
         var release = JsonSerializer.Deserialize<UpdateManifest>(bytes, LauncherStorage.JsonOptions)
-            ?? throw new InvalidDataException("更新清单为空。");
+            ?? throw new InvalidDataException(LauncherText.Get("UpdateManifestEmpty"));
         release.Validate(kind);
         var currentVersion = kind == UpdateKind.Launcher ? App.LauncherVersion : storage.Installation?.PackVersion;
         if (kind == UpdateKind.Pack && storage.Installation == null)
         {
             return null;
         }
-        if (Version.TryParse(currentVersion, out var installed) && Version.Parse(release.Version) <= installed)
+        var releaseVersion = Version.Parse(release.Version);
+        if (Version.TryParse(currentVersion, out var installed) &&
+            (releaseVersion < installed || kind == UpdateKind.Launcher && releaseVersion == installed))
         {
             return null;
+        }
+        if (kind == UpdateKind.Pack)
+        {
+            var journal = await BuildJournalAsync(release, cancellationToken);
+            if (journal.Changes.Count == 0)
+            {
+                await AddModReplacementsAsync(journal, null, cancellationToken);
+            }
+            var instance = storage.Installation!;
+            if (journal.Changes.Count == 0 && releaseVersion == installed &&
+                instance.MinecraftVersion == release.Pack!.MinecraftVersion && instance.ForgeVersion == release.Pack.ForgeVersion)
+            {
+                return null;
+            }
         }
         return release;
     }
 
-    public async Task<FileUpdateTransaction> PrepareAsync(UpdateManifest release, IProgress<WorkSnapshot> progress,
-        CancellationToken cancellationToken)
+    private async Task<UpdateJournal> BuildJournalAsync(UpdateManifest release, CancellationToken cancellationToken)
     {
         release.Validate(release.Kind);
         var targetRoot = release.Kind == UpdateKind.Launcher ? applicationRoot : storage.GameDirectory;
@@ -78,9 +93,15 @@ internal sealed class LauncherUpdates
         var productId = release.Kind == UpdateKind.Launcher ? "ArysLauncher" : release.Pack!.Id;
         if (installed.ProductId.Length > 0 && installed.ProductId != productId)
         {
-            throw new InvalidDataException("更新来源与已安装的整合包不同。");
+            throw new InvalidDataException(LauncherText.Get("UpdateProductMismatch"));
         }
-        progress.Report(new WorkSnapshot("正在检查更新文件", "比较本地文件和发行清单。", 0, 0, 0, 0, 0, 0, true));
+        if (release.Kind == UpdateKind.Pack && installed.ProductId.Length == 0 &&
+            (!Directory.Exists(Path.Combine(targetRoot, "mods")) ||
+                !Directory.EnumerateFiles(Path.Combine(targetRoot, "mods"), "*.jar")
+                    .Any(path => PackContentPolicy.IsArysMod("mods/" + Path.GetFileName(path)))))
+        {
+            throw new InvalidDataException(LauncherText.Get("PackUpdateSourceUnlinked"));
+        }
         var knownFiles = installed.Files.Concat(release.RetiredFiles).ToArray();
         foreach (var file in knownFiles)
         {
@@ -104,6 +125,7 @@ internal sealed class LauncherUpdates
                 continue;
             }
             ManagedFile? original = null;
+            var checkModIdentity = false;
             if (File.Exists(target))
             {
                 original = await FindMatchingAsync(target, knownByPath[file.Path], cancellationToken);
@@ -115,12 +137,23 @@ internal sealed class LauncherUpdates
                     }
                     continue;
                 }
+                if (original == null && release.Kind == UpdateKind.Pack && ModIdentity.IsModPath(file.Path))
+                {
+                    original = await ReadLocalFileAsync(targetRoot, file.Path, cancellationToken);
+                    checkModIdentity = true;
+                }
                 if (original == null)
                 {
-                    throw new IOException($"文件与已有发行版本不同，请先备份并处理该文件。{file.Path}");
+                    throw new IOException(LauncherText.Get("UpdateUnrecognizedLocalFile", file.Path));
                 }
             }
-            journal.Changes.Add(new PendingFileChange { Path = file.Path, Original = original, Replacement = file });
+            journal.Changes.Add(new PendingFileChange
+            {
+                Path = file.Path,
+                Original = original,
+                Replacement = file,
+                CheckModIdentity = checkModIdentity
+            });
             journal.Installed.Files.Add(file);
         }
         var targetPaths = release.Files.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -131,15 +164,27 @@ internal sealed class LauncherUpdates
             {
                 continue;
             }
-            var original = await FindMatchingAsync(target, group, cancellationToken) ??
-                throw new IOException($"待移除的发行文件已被修改，请先处理该文件。{group.Key}");
+            var original = await FindMatchingAsync(target, group, cancellationToken);
+            if (original == null)
+            {
+                throw new IOException(LauncherText.Get("UpdateRetiredFileModified", group.Key));
+            }
             journal.Changes.Add(new PendingFileChange { Path = group.Key, Original = original });
         }
+        return journal;
+    }
+
+    public async Task<FileUpdateTransaction> PrepareAsync(UpdateManifest release, IProgress<WorkSnapshot> progress,
+        CancellationToken cancellationToken)
+    {
+        progress.Report(new WorkSnapshot(LauncherText.Get("CheckingUpdateFiles"), LauncherText.Get("ComparingUpdateFiles"), 0, 0, 0, 0, 0, 0, true));
+        var journal = await BuildJournalAsync(release, cancellationToken);
+        var targetRoot = journal.TargetRoot;
         var bytesNeeded = journal.Changes.Sum(change => change.Replacement?.Size ?? 0);
         var drive = new DriveInfo(Path.GetPathRoot(targetRoot)!);
         if (drive.IsReady && drive.AvailableFreeSpace < bytesNeeded * 2 + 64L * 1024 * 1024)
         {
-            throw new IOException("安装位置的可用空间不足以完成更新。");
+            throw new IOException(LauncherText.Get("UpdateDiskSpaceLow"));
         }
         var transaction = FileUpdateTransaction.Create(storage, journal);
         try
@@ -148,7 +193,7 @@ internal sealed class LauncherUpdates
             using var downloader = new ContentDownloader(storage, client);
             var downloads = journal.Changes.Where(change => change.Replacement != null).ToArray();
             var reporter = new WorkProgress(progress, downloads.Length, bytesNeeded);
-            reporter.Stage("正在下载更新", $"需要获取 {downloads.Length} 个文件。");
+            reporter.Stage(LauncherText.Get("DownloadingUpdate"), LauncherText.Get("UpdateFilesNeeded", downloads.Length));
             await Parallel.ForEachAsync(downloads.Select((change, index) => (change, index)), new ParallelOptions
             {
                 MaxDegreeOfParallelism = DownloadPolicy.FileConcurrency(storage.Settings),
@@ -163,6 +208,11 @@ internal sealed class LauncherUpdates
                 File.Copy(cached, staged);
                 reporter.FileDone(item.index);
             });
+            if (release.Kind == UpdateKind.Pack)
+            {
+                await AddModReplacementsAsync(journal, transaction, cancellationToken);
+                transaction.Save();
+            }
             reporter.Report(true);
             return transaction;
         }
@@ -173,12 +223,92 @@ internal sealed class LauncherUpdates
         }
     }
 
+    private static async Task AddModReplacementsAsync(UpdateJournal journal, FileUpdateTransaction? transaction, CancellationToken token)
+    {
+        var owners = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var file in journal.Release.Files.Where(file => ModIdentity.IsModPath(file.Path)))
+        {
+            token.ThrowIfCancellationRequested();
+            var change = journal.Changes.FirstOrDefault(change => change.Path.Equals(file.Path, StringComparison.OrdinalIgnoreCase));
+            var path = change?.Replacement != null && transaction != null ? transaction.StagedPath(file.Path) :
+                UpdatePaths.Target(journal.TargetRoot, file.Path);
+            var identities = ModIdentity.Read(path);
+            foreach (var identity in identities)
+            {
+                if (!owners.TryAdd(identity, file.Path))
+                {
+                    throw new InvalidDataException(LauncherText.Get("UpdateDuplicateMod", owners[identity], file.Path));
+                }
+            }
+            if (change is { CheckModIdentity: true, Original: not null })
+            {
+                var original = ModIdentity.Read(UpdatePaths.Target(journal.TargetRoot, file.Path));
+                if (original.Count == 0 || !original.SetEquals(identities))
+                {
+                    throw new IOException(LauncherText.Get("UpdateModIdentityMismatch", file.Path));
+                }
+            }
+        }
+        var directory = Path.Combine(journal.TargetRoot, "mods");
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+        var releasePaths = journal.Release.Files.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var changedPaths = journal.Changes.Select(change => change.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var local in Directory.EnumerateFiles(directory, "*.jar"))
+        {
+            token.ThrowIfCancellationRequested();
+            var relative = "mods/" + Path.GetFileName(local);
+            if (releasePaths.Contains(relative) || changedPaths.Contains(relative))
+            {
+                continue;
+            }
+            var path = UpdatePaths.Target(journal.TargetRoot, relative);
+            HashSet<string> identities;
+            try
+            {
+                identities = ModIdentity.Read(path);
+            }
+            catch (InvalidDataException)
+            {
+                continue;
+            }
+            if (!identities.Any(owners.ContainsKey))
+            {
+                continue;
+            }
+            if (!identities.All(owners.ContainsKey))
+            {
+                throw new IOException(LauncherText.Get("UpdateSharedJarConflict", relative));
+            }
+            journal.Changes.Add(new PendingFileChange
+            {
+                Path = relative,
+                Original = await ReadLocalFileAsync(journal.TargetRoot, relative, token)
+            });
+        }
+        journal.Changes = journal.Changes.OrderBy(change => change.Replacement != null).ToList();
+    }
+
+    private static async Task<ManagedFile> ReadLocalFileAsync(string root, string relative, CancellationToken token)
+    {
+        var path = UpdatePaths.Target(root, relative);
+        await using var stream = File.OpenRead(path);
+        return new ManagedFile
+        {
+            Path = relative,
+            Size = stream.Length,
+            Sha256 = Convert.ToHexString(await SHA256.HashDataAsync(stream, token)).ToLowerInvariant()
+        };
+    }
+
     public void StartLauncherReplacement(FileUpdateTransaction transaction)
     {
-        var executable = Environment.ProcessPath ?? throw new IOException("无法读取启动器程序位置。");
+        var executable = Environment.ProcessPath ?? throw new IOException(LauncherText.Get("LauncherPathUnavailable"));
         if (File.Exists(Path.Combine(applicationRoot, "ArysLauncher.dll")))
         {
-            throw new IOException("请使用打包后的 ArysLauncher.exe 更新启动器。");
+            throw new IOException(LauncherText.Get("LauncherUpdateRequiresExe"));
         }
         var helper = UpdatePaths.Target(transaction.DirectoryPath, "helper/ArysLauncher.exe");
         Directory.CreateDirectory(Path.GetDirectoryName(helper)!);
@@ -193,7 +323,7 @@ internal sealed class LauncherUpdates
         {
             info.ArgumentList.Add(argument);
         }
-        using var process = Process.Start(info) ?? throw new IOException("无法启动更新程序。");
+        using var process = Process.Start(info) ?? throw new IOException(LauncherText.Get("LauncherUpdaterStartFailed"));
     }
 
     public static async Task RecoverAsync(LauncherStorage storage, string applicationRoot)
@@ -264,7 +394,7 @@ internal sealed class LauncherUpdates
         response.EnsureSuccessStatusCode();
         if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps || response.Content.Headers.ContentLength > maximumBytes)
         {
-            throw new InvalidDataException("更新服务响应超出允许范围。");
+            throw new InvalidDataException(LauncherText.Get("UpdateResponseOutOfRange"));
         }
         await using var input = await response.Content.ReadAsStreamAsync(token);
         using var output = new MemoryStream();
@@ -274,7 +404,7 @@ internal sealed class LauncherUpdates
         {
             if (output.Length + count > maximumBytes)
             {
-                throw new InvalidDataException("更新服务响应过大。");
+                throw new InvalidDataException(LauncherText.Get("UpdateResponseTooLarge"));
             }
             output.Write(buffer, 0, count);
         }

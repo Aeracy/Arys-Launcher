@@ -31,12 +31,12 @@ public sealed class GameFileInstaller : ParallelGameInstaller, IDisposable
     {
         if (string.IsNullOrEmpty(file.Path) || string.IsNullOrEmpty(file.Url))
         {
-            throw new InvalidDataException("游戏依赖缺少文件位置或下载地址。");
+            throw new InvalidDataException(LauncherText.Get("GameDependencyAddressMissing"));
         }
         var source = new Uri(file.Url);
         if (source.Scheme != "https")
         {
-            throw new InvalidDataException("游戏依赖必须使用 HTTPS 下载地址。");
+            throw new InvalidDataException(LauncherText.Get("GameDependencyRequiresHttps"));
         }
         if (file.Size > 0 && file.Hash?.Length == 40 && file.Hash.All(Uri.IsHexDigit))
         {
@@ -67,7 +67,7 @@ public sealed class GameFileInstaller : ParallelGameInstaller, IDisposable
                 await base.Download(file with { Path = temporary }, progress, cancellationToken);
                 if (file.Size > 0 && new FileInfo(temporary).Length != file.Size)
                 {
-                    throw new IOException("游戏依赖下载大小不匹配。");
+                    throw new IOException(LauncherText.Get("GameDependencySizeMismatch"));
                 }
                 if (!string.IsNullOrEmpty(file.Hash))
                 {
@@ -75,7 +75,7 @@ public sealed class GameFileInstaller : ParallelGameInstaller, IDisposable
                     var hash = Convert.ToHexString(await SHA1.HashDataAsync(input, cancellationToken));
                     if (!hash.Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new IOException("游戏依赖未通过 SHA-1 校验。");
+                        throw new IOException(LauncherText.Get("GameDependencyHashMismatch"));
                     }
                 }
                 File.Move(temporary, file.Path, true);
@@ -91,7 +91,7 @@ public sealed class GameFileInstaller : ParallelGameInstaller, IDisposable
                 }
             }
         }
-        throw new IOException("游戏依赖下载失败，请检查网络或代理后重试。", lastException);
+        throw new IOException(LauncherText.Get("GameDependencyDownloadFailed"), lastException);
     }
 
     public void Dispose()

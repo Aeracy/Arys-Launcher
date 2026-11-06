@@ -56,7 +56,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         {
             return Task.FromResult(authenticatedAccount);
         }
-        throw new OperationCanceledException("已关闭 Microsoft 登录窗口。");
+        throw new OperationCanceledException(LauncherText.Get("MicrosoftWindowClosed"));
     }
 
     public Task<CodeFlowAuthorizationResult> DisplayDialogAndInterceptUri(Uri uri, ICodeFlowUrlChecker uriChecker,
@@ -111,7 +111,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
                     LoginStatusText.Text = message;
                     if (authorizationCompletion?.Task.IsCompletedSuccessfully == true)
                     {
-                        ShowMessage("正在验证游戏账号", message);
+                        ShowMessage(LauncherText.Get("VerifyingGameAccount"), message);
                     }
                 }
             });
@@ -127,7 +127,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             RecordDiagnostic("login.cancelled");
             if (!windowClosed && !lifetime.IsCancellationRequested)
             {
-                ShowMessage("本次授权已结束", "登录等待已超时，可以重新打开 Microsoft 登录。");
+                ShowMessage(LauncherText.Get("MicrosoftAuthorizationEnded"), LauncherText.Get("MicrosoftSignInTimedOut"));
                 RetryButton.Visibility = Visibility.Visible;
             }
         }
@@ -136,7 +136,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             RecordDiagnostic("browser.runtime-missing");
             if (!windowClosed)
             {
-                ShowMessage("登录组件缺失", "请重新解压完整启动器，保留随附的 WebView2Runtime 文件夹，然后重试。");
+                ShowMessage(LauncherText.Get("SignInComponentMissing"), LauncherText.Get("SignInComponentRepair"));
                 RetryButton.Visibility = Visibility.Visible;
             }
         }
@@ -147,8 +147,8 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             RecordDiagnostic($"login.failed {exception.GetType().Name} HRESULT=0x{exception.HResult:X8}");
             if (!windowClosed)
             {
-                ShowMessage("Microsoft 登录未完成", exception is JsonException or KeyNotFoundException or FormatException ?
-                    "认证服务返回的信息不完整，请稍后重试。" : exception.Message);
+                ShowMessage(LauncherText.Get("MicrosoftSignInIncomplete"), exception is JsonException or KeyNotFoundException or FormatException ?
+                    LauncherText.Get("MicrosoftResponseIncomplete") : exception.Message);
                 RetryButton.Visibility = Visibility.Visible;
             }
         }
@@ -183,9 +183,9 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             !Uri.TryCreate(redirect, UriKind.Absolute, out var callback) ||
             !IsSamePage(callback, new Uri(CodeFlowLiveApiClient.OAuthDesktop)) || string.IsNullOrEmpty(state) || state.Length != 64)
         {
-            throw new InvalidDataException("兼容认证组件生成了非预期的登录请求，请重新打开登录窗口。");
+            throw new InvalidDataException(LauncherText.Get("MicrosoftRequestUnexpected"));
         }
-        ShowMessage("正在打开 Microsoft 登录", "请在微软官方网页中登录。授权页面中的应用名称以微软实际显示为准。");
+        ShowMessage(LauncherText.Get("OpeningMicrosoftSignIn"), LauncherText.Get("MicrosoftConsentPageHelp"));
         callbackChecker = uriChecker;
         expectedState = state;
         authorizationCompletion = new TaskCompletionSource<CodeFlowAuthorizationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -198,9 +198,9 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
     {
         if (uri.Scheme != "https" || !string.IsNullOrEmpty(uri.UserInfo))
         {
-            throw new InvalidDataException("Microsoft 登录窗口仅允许 HTTPS 网页。");
+            throw new InvalidDataException(LauncherText.Get("MicrosoftRequiresHttps"));
         }
-        ShowMessage("正在加载 Microsoft 网页", "请稍候。");
+        ShowMessage(LauncherText.Get("LoadingMicrosoftPage"), LauncherText.Get("PleaseWait"));
         await EnsureBrowserAsync(cancellationToken);
         await NavigateAndWaitForDocumentAsync(uri, cancellationToken);
     }
@@ -213,14 +213,14 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             return;
         }
         browserAttempted = true;
-        ShowMessage("正在准备登录窗口", "正在初始化内嵌浏览器，请稍候。");
+        ShowMessage(LauncherText.Get("PreparingSignInWindow"), LauncherText.Get("StartingEmbeddedBrowser"));
         RecordDiagnostic("browser.layout");
         Browser.Visibility = Visibility.Visible;
         Browser.ApplyTemplate();
         BrowserHost.UpdateLayout();
         await System.Windows.Threading.Dispatcher.Yield(DispatcherPriority.Loaded);
         cancellationToken.ThrowIfCancellationRequested();
-        var options = new CoreWebView2EnvironmentOptions();
+        var options = new CoreWebView2EnvironmentOptions { Language = LauncherText.Culture.Name };
         if (!string.IsNullOrWhiteSpace(storage.Settings.ProxyAddress))
         {
             options.AdditionalBrowserArguments = "--proxy-server=" + new Uri(storage.Settings.ProxyAddress).GetLeftPart(UriPartial.Authority);
@@ -247,13 +247,13 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             RecordDiagnostic("browser.initialization-timeout");
-            throw new TimeoutException("登录组件未能在 30 秒内启动。请点击重试；启动阶段已记录到 data/logs/microsoft-login.log。");
+            throw new TimeoutException(LauncherText.Get("SignInBrowserTimedOut"));
         }
     }
 
     private async Task NavigateAndWaitForDocumentAsync(Uri uri, CancellationToken cancellationToken)
     {
-        ShowMessage("正在加载微软登录页", "内嵌浏览器已就绪，正在等待登录页面显示。");
+        ShowMessage(LauncherText.Get("LoadingMicrosoftSignIn"), LauncherText.Get("WaitingForMicrosoftPage"));
         navigationCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         activeNavigationId = 0;
         RecordDiagnostic("page.requested");
@@ -271,7 +271,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         catch (TimeoutException)
         {
             RecordDiagnostic("page.first-document-timeout");
-            throw new TimeoutException("微软登录页在 45 秒内未能显示。请点击重试；加载阶段已记录到 data/logs/microsoft-login.log。");
+            throw new TimeoutException(LauncherText.Get("MicrosoftPageTimedOut"));
         }
     }
 
@@ -305,7 +305,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
             if (!windowClosed && !browserDisposed && ReferenceEquals(core, Browser.CoreWebView2))
             {
                 RecordDiagnostic("browser.process-failed");
-                var failure = new InvalidOperationException("登录网页已中断，请重新打开 Microsoft 登录。");
+                var failure = new InvalidOperationException(LauncherText.Get("MicrosoftPageInterrupted"));
                 authorizationCompletion?.TrySetException(failure);
                 navigationCompletion?.TrySetException(failure);
             }
@@ -321,7 +321,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         if (!Uri.TryCreate(e.Uri, UriKind.Absolute, out var target) || target.Scheme != "https" || !string.IsNullOrEmpty(target.UserInfo))
         {
             e.Cancel = true;
-            LoginStatusText.Text = "此登录窗口仅允许 HTTPS 授权网页";
+            LoginStatusText.Text = LauncherText.Get("MicrosoftPageRequiresHttps");
             return;
         }
         if (IsSamePage(target, new Uri(CodeFlowLiveApiClient.OAuthDesktop)))
@@ -334,7 +334,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
                 var state = Encoding.UTF8.GetBytes(expectedState);
                 if (!CryptographicOperations.FixedTimeEquals(state, receivedState))
                 {
-                    authorizationCompletion.TrySetException(new InvalidDataException("Microsoft 登录状态校验失败，请重新登录。"));
+                    authorizationCompletion.TrySetException(new InvalidDataException(LauncherText.Get("MicrosoftSignInStateInvalid")));
                 }
                 else
                 {
@@ -346,7 +346,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         }
         activeNavigationId = e.NavigationId;
         OriginText.Text = target.GetLeftPart(UriPartial.Authority);
-        LoginStatusText.Text = "正在加载 Microsoft 授权网页";
+        LoginStatusText.Text = LauncherText.Get("LoadingMicrosoftConsent");
         RecordDiagnostic("page.navigation " + target.GetLeftPart(UriPartial.Authority));
     }
 
@@ -375,7 +375,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         else if (e.WebErrorStatus != CoreWebView2WebErrorStatus.OperationCanceled)
         {
             RecordDiagnostic("page.failed " + e.WebErrorStatus);
-            var failure = new IOException($"登录网页未能加载：{e.WebErrorStatus}。请检查网络或代理后重试。");
+            var failure = new IOException(LauncherText.Get("MicrosoftPageLoadFailed", e.WebErrorStatus));
             authorizationCompletion?.TrySetException(failure);
             navigationCompletion?.TrySetException(failure);
         }
@@ -385,7 +385,7 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
     {
         Browser.IsHitTestVisible = true;
         LoadingPanel.Visibility = Visibility.Collapsed;
-        LoginStatusText.Text = "请在微软官方网页中完成登录与授权";
+        LoginStatusText.Text = LauncherText.Get("MicrosoftSignInPageHelp");
         navigationCompletion?.TrySetResult();
     }
 

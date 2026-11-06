@@ -38,7 +38,7 @@ internal static class BrowserRuntime
         var archive = Path.Combine(AppContext.BaseDirectory, "BrowserRuntime.cab");
         if (!await UpdatePaths.MatchesAsync(archive, expected, token))
         {
-            throw new FileNotFoundException("未找到离线登录组件。请使用完整安装包修复启动器。");
+            throw new FileNotFoundException(LauncherText.Get("OfflineBrowserMissing"));
         }
         var stagingRoot = Path.Combine(components, "staging");
         var staging = Path.Combine(stagingRoot, Guid.NewGuid().ToString("N"));
@@ -56,7 +56,7 @@ internal static class BrowserRuntime
             {
                 info.ArgumentList.Add(argument);
             }
-            using var process = Process.Start(info) ?? throw new IOException("无法解压离线登录组件。");
+            using var process = Process.Start(info) ?? throw new IOException(LauncherText.Get("OfflineBrowserExtractionFailed"));
             var output = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null, token);
             var error = process.StandardError.BaseStream.CopyToAsync(Stream.Null, token);
             try
@@ -78,7 +78,7 @@ internal static class BrowserRuntime
             var runtime = Path.Combine(staging, $"Microsoft.WebView2.FixedVersionRuntime.{Version}.x64");
             if (process.ExitCode != 0 || !File.Exists(Path.Combine(runtime, "msedgewebview2.exe")))
             {
-                throw new IOException("离线登录组件解压未完成。");
+                throw new IOException(LauncherText.Get("OfflineBrowserExtractionIncomplete"));
             }
             File.WriteAllText(Path.Combine(runtime, "runtime.ready"), ArchiveHash);
             if (Directory.Exists(installed))

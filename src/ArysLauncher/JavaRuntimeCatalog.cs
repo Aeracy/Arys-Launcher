@@ -12,7 +12,7 @@ public sealed record JavaRuntime(string ExecutablePath, string Version, int Majo
     {
         get
         {
-            return $"Java {Version} · {(Is64Bit ? "64 位" : "32 位")} · {Vendor}";
+            return $"Java {Version} · {(Is64Bit ? LauncherText.Get("Java64Bit") : LauncherText.Get("Java32Bit"))} · {Vendor}";
         }
     }
 }
@@ -23,7 +23,7 @@ public sealed record JavaChoice(JavaRuntime? Runtime)
     {
         get
         {
-            return Runtime?.Label ?? "自动选择 · 优先 Java 17";
+            return Runtime?.Label ?? LauncherText.Get("JavaAutomaticChoice");
         }
     }
 }
@@ -84,10 +84,10 @@ public sealed class JavaRuntimeCatalog
         }
         if (string.IsNullOrWhiteSpace(settings.JavaPath))
         {
-            throw new InvalidOperationException("请先选择本机 Java，或启用自动选择。");
+            throw new InvalidOperationException(LauncherText.Get("JavaSelectionRequired"));
         }
         return runtimes.FirstOrDefault(runtime => SameExecutable(runtime.ExecutablePath, settings.JavaPath) && File.Exists(runtime.ExecutablePath))
-            ?? throw new InvalidOperationException("所选 Java 不可用，请在设置中重新扫描或选择 Java 程序。");
+            ?? throw new InvalidOperationException(LauncherText.Get("JavaSelectionUnavailable"));
     }
 
     public static bool SameExecutable(string first, string second)
@@ -323,6 +323,6 @@ public sealed class JavaRuntimeCatalog
             return null;
         }
         return new JavaRuntime(path, version, major, architecture.Contains("64", StringComparison.OrdinalIgnoreCase),
-            string.IsNullOrEmpty(vendor) ? "本机 Java" : vendor);
+            string.IsNullOrEmpty(vendor) ? LauncherText.Get("JavaLocalRuntime") : vendor);
     }
 }

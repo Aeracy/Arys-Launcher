@@ -1,5 +1,6 @@
 param(
-    [string]$NsisDirectory = $env:NSIS_HOME
+    [string]$NsisDirectory = $env:NSIS_HOME,
+    [string]$BundledPack
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +30,16 @@ $deleteLines = Get-ChildItem -LiteralPath (Join-Path $launcherRoot 'docs') -File
 }
 [IO.File]::WriteAllLines($uninstallList, $deleteLines, [Text.UTF8Encoding]::new($false))
 $installer = Join-Path $artifacts "ArysLauncher-$version-Setup.exe"
-& $compiler '/V2' "/DAppDirectory=$application" "/DAppVersion=$version" "/DOutputFile=$installer" "/DUninstallLicenses=$uninstallList" (Join-Path $launcherRoot 'Setup.nsi')
+$appIcon = Join-Path $launcherRoot 'src\ArysLauncher\Assets\app.ico'
+$packArguments = @()
+if ($BundledPack) {
+    $BundledPack = (Get-Item -LiteralPath $BundledPack).FullName
+    if ([IO.Path]::GetExtension($BundledPack) -ne '.mrpack') {
+        throw 'Use a prepared .mrpack for the bundled modpack.'
+    }
+    $packArguments = @("/DBundledPack=$BundledPack")
+}
+& $compiler '/V2' "/DAppDirectory=$application" "/DAppVersion=$version" "/DAppIcon=$appIcon" "/DOutputFile=$installer" "/DUninstallLicenses=$uninstallList" @packArguments (Join-Path $launcherRoot 'Setup.nsi')
 if ($LASTEXITCODE -ne 0) {
     throw "Installer compilation failed with exit code $LASTEXITCODE."
 }
@@ -43,6 +53,10 @@ try {
         $relative = [IO.Path]::GetRelativePath($application, $_.FullName).Replace('\', '/')
         [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($portableArchive, $_.FullName, $relative, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
     }
+    if ($BundledPack) {
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($portableArchive, $BundledPack, 'Arys-Modpack.mrpack',
+            [IO.Compression.CompressionLevel]::NoCompression) | Out-Null
+    }
 } finally {
     $portableArchive.Dispose()
 }
@@ -55,19 +69,28 @@ if (Test-Path -LiteralPath $source) {
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 New-Item -ItemType Directory -Path $source | Out-Null
-$files = @('Build.ps1', 'Package.ps1', 'Setup.nsi', 'PrepareWebView2.ps1', 'New-UpdateRelease.ps1', 'Publish-GitHubRelease.ps1', 'release-channel.json', 'Start.cmd', '.gitignore', 'SourceREADME.md')
+$files = @('Build.ps1', 'Package.ps1', 'Setup.nsi', 'PrepareWebView2.ps1', 'Prepare-Pack.py', 'pack_worlds.py', 'Publish-Pack.ps1', 'New-UpdateRelease.ps1', 'Publish-GitHubRelease.ps1', 'release-channel.json', 'Start.cmd', '.gitignore', 'SourceREADME.md')
 foreach ($file in $files) {
     Copy-Item -LiteralPath (Join-Path $launcherRoot $file) -Destination (Join-Path $source $file)
 }
 Copy-Item -LiteralPath (Join-Path $launcherRoot 'SourceREADME.md') -Destination (Join-Path $source 'README.md')
 $sourceCode = Join-Path $source 'src\ArysLauncher'
 New-Item -ItemType Directory -Path $sourceCode -Force | Out-Null
-Get-ChildItem -LiteralPath (Join-Path $launcherRoot 'src\ArysLauncher') -File | Where-Object Extension -in @('.cs', '.xaml', '.csproj', '.json', '.manifest') | ForEach-Object {
+Get-ChildItem -LiteralPath (Join-Path $launcherRoot 'src\ArysLauncher') -File | Where-Object {
+    $_.Extension -in @('.cs', '.xaml', '.csproj', '.manifest') -or
+    $_.Name -in @('packages.lock.json', 'pack-content-policy.json')
+} | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $sourceCode $_.Name)
 }
 $assetDirectory = Join-Path $sourceCode 'Assets'
 New-Item -ItemType Directory -Path $assetDirectory -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $launcherRoot 'src\ArysLauncher\Assets\hero.png') -Destination $assetDirectory
+foreach ($asset in @('hero.png', 'app.png', 'app.ico')) {
+    Copy-Item -LiteralPath (Join-Path $launcherRoot ('src\ArysLauncher\Assets\' + $asset)) -Destination $assetDirectory
+}
+$resources = Join-Path $sourceCode 'Resources'
+New-Item -ItemType Directory -Path $resources | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $launcherRoot 'src\ArysLauncher\Resources') -File -Filter '*.resx' |
+    Copy-Item -Destination $resources
 $sourceDocs = Join-Path $source 'docs'
 New-Item -ItemType Directory -Path $sourceDocs -Force | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $launcherRoot 'docs') -File | Where-Object {

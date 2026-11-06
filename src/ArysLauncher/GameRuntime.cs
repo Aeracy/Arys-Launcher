@@ -43,19 +43,19 @@ public sealed class GameRuntime
         var maximumMemory = MemoryAllocation.MaximumMb(storage.Settings, MemoryAllocation.ReadPhysicalMemory());
         if (selectedJava is { Is64Bit: false } && maximumMemory > 1536)
         {
-            throw new InvalidOperationException("当前选中的 Java 为 32 位，无法使用设定的较大内存。请在设置中改选 64 位 Java，推荐 Java 17。");
+            throw new InvalidOperationException(LauncherText.Get("Java32BitMemoryLimit"));
         }
         if (instance.ModCount > 0 && string.IsNullOrWhiteSpace(instance.ForgeVersion) && string.IsNullOrWhiteSpace(instance.LaunchVersion))
         {
-            throw new InvalidOperationException("整合包包含 Mod，但尚未指定加载器。请在整合包配置中填写要求的 Forge 版本。");
+            throw new InvalidOperationException(LauncherText.Get("ForgeVersionRequired"));
         }
         if (!Directory.Exists(instance.DirectoryPath))
         {
-            throw new DirectoryNotFoundException("整合包的游戏目录不存在，请检查安装位置。");
+            throw new DirectoryNotFoundException(LauncherText.Get("GameDirectoryMissing"));
         }
         using var accounts = new AccountService(storage);
         var session = await accounts.GetSessionAsync(account,
-            message => progress.Report(new WorkSnapshot("正在登录", message, 0, 0, 0, 0, 0, 0, true)), cancellationToken);
+            message => progress.Report(new WorkSnapshot(LauncherText.Get("SigningIn"), message, 0, 0, 0, 0, 0, 0, true)), cancellationToken);
         using var client = NetworkClients.Create(storage.Settings, download: true);
         var launcher = CreateLauncher(instance, client, selectedJava?.ExecutablePath);
         using var installer = (GameFileInstaller)launcher.GameInstaller;
@@ -97,7 +97,7 @@ public sealed class GameRuntime
         };
         if (reserved.Overlaps(argumentNames))
         {
-            throw new InvalidOperationException("附加游戏参数不能覆盖账号身份、版本或游戏目录。");
+            throw new InvalidOperationException(LauncherText.Get("ProtectedGameArguments"));
         }
         option.ExtraJvmArguments = JvmArgumentPolicy.Build(settings);
         var extraArguments = gameArguments.Select(argument => new MArgument(argument)).ToList();
@@ -123,7 +123,21 @@ public sealed class GameRuntime
             }).ToArray();
         }
         cancellationToken.ThrowIfCancellationRequested();
-        progress.Report(new WorkSnapshot("正在启动", "正在准备游戏进程", 0, 0, 0, 0, 0, 0, true));
+        progress.Report(new WorkSnapshot(LauncherText.Get("StartingGame"), LauncherText.Get("PreparingGameProcess"), 0, 0, 0, 0, 0, 0, true));
+        if (instance.NeedsFirstLaunchCleanup)
+        {
+            PackContentPolicy.PrepareFirstLaunch(instance.DirectoryPath);
+            instance.NeedsFirstLaunchCleanup = false;
+            try
+            {
+                storage.SaveInstallation(instance);
+            }
+            catch
+            {
+                instance.NeedsFirstLaunchCleanup = true;
+                throw;
+            }
+        }
         var process = await launcher.BuildProcessAsync(version, option, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         process.StartInfo.UseShellExecute = false;
@@ -143,7 +157,7 @@ public sealed class GameRuntime
         parameters.GameInstaller = new GameFileInstaller(storage, client);
         if (!string.IsNullOrWhiteSpace(selectedJavaPath))
         {
-            var extractors = parameters.FileExtractors ?? throw new InvalidOperationException("游戏文件安装入口未就绪。");
+            var extractors = parameters.FileExtractors ?? throw new InvalidOperationException(LauncherText.Get("GameInstallerUnavailable"));
             foreach (var extractor in extractors.Where(extractor => extractor is JavaFileExtractor or LegacyJavaFileExtractor).ToArray())
             {
                 extractors.Remove(extractor);
@@ -163,13 +177,13 @@ public sealed class GameRuntime
             if (!string.IsNullOrWhiteSpace(instance.ForgeVersion))
             {
                 var vanillaProgress = new GameInstallProgress(progress, gameInstaller,
-                    "正在安装 Minecraft", "检查游戏文件，补全缺失的资源。");
+                    LauncherText.Get("InstallingMinecraft"), LauncherText.Get("CheckingMinecraftFiles"));
                 var vanilla = await launcher.GetVersionAsync(instance.MinecraftVersion, cancellationToken);
                 await launcher.InstallAsync(vanilla, vanillaProgress.Files, vanillaProgress.Bytes, cancellationToken);
                 var javaPath = selectedJavaPath ?? launcher.GetJavaPath(vanilla) ?? launcher.GetDefaultJavaPath();
                 if (string.IsNullOrEmpty(javaPath) || !File.Exists(javaPath))
                 {
-                    throw new InvalidOperationException("没有找到可用的 Java。请在设置中选择与整合包兼容的 Java，Minecraft 1.20.1 建议使用 64 位 Java 17。");
+                    throw new InvalidOperationException(LauncherText.Get("JavaRuntimeMissing"));
                 }
                 version = $"{instance.MinecraftVersion}-forge-{instance.ForgeVersion}";
                 var artifactCoordinate = $"{instance.MinecraftVersion}-{instance.ForgeVersion}";
@@ -177,7 +191,7 @@ public sealed class GameRuntime
                     $"https://maven.minecraftforge.net/net/minecraftforge/forge/{artifactCoordinate}/forge-{artifactCoordinate}-installer.jar",
                     $"maven/net/minecraftforge/forge/{artifactCoordinate}/forge-{artifactCoordinate}.jar");
                 var forgeProgress = new GameInstallProgress(progress, gameInstaller,
-                    "正在安装 Forge", "获取 Forge 依赖并准备加载器。", hasSingleBatch: false);
+                    LauncherText.Get("InstallingForge"), LauncherText.Get("PreparingForge"), hasSingleBatch: false);
                 var installer = new ForgeV12Installer(artifact);
                 await installer.Install(launcher.MinecraftPath, launcher.GameInstaller, new ForgeInstallOptions
                 {
@@ -189,7 +203,7 @@ public sealed class GameRuntime
             }
         }
         var resourceProgress = new GameInstallProgress(progress, gameInstaller,
-            "正在校验游戏资源", "复用已校验的文件，补全整合包所需资源。");
+            LauncherText.Get("VerifyingGameResources"), LauncherText.Get("CheckingGameResources"));
         await launcher.InstallAsync(version, resourceProgress.Files, resourceProgress.Bytes, cancellationToken);
         instance.LaunchVersion = version;
         return version;
@@ -202,7 +216,7 @@ public sealed class GameRuntime
         {
             if (!File.Exists(storage.Settings.AuthlibInjectorPath))
             {
-                throw new FileNotFoundException("指定的 authlib-injector JAR 不存在。");
+                throw new FileNotFoundException(LauncherText.Get("AuthlibJarMissing"));
             }
             return Path.GetFullPath(storage.Settings.AuthlibInjectorPath);
         }
@@ -211,12 +225,12 @@ public sealed class GameRuntime
         if (File.Exists(metadataPath))
         {
             var artifact = JsonSerializer.Deserialize<AuthlibArtifact>(await File.ReadAllTextAsync(metadataPath, cancellationToken),
-                LauncherStorage.JsonOptions) ?? throw new InvalidDataException("外置认证组件缓存无效，请在设置中指定 authlib-injector 文件。");
+                LauncherStorage.JsonOptions) ?? throw new InvalidDataException(LauncherText.Get("AuthlibCacheInvalid"));
             request = new ContentRequest(artifact.Size, artifact.Sha256, HashAlgorithmName.SHA256, new[] { artifact.Source });
         }
         else
         {
-            progress.Report(new WorkSnapshot("正在准备外置认证", "正在获取 authlib-injector 组件", 0, 0, 0, 0, 0, 0, true));
+            progress.Report(new WorkSnapshot(LauncherText.Get("PreparingExternalAuth"), LauncherText.Get("DownloadingAuthlib"), 0, 0, 0, 0, 0, 0, true));
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(TimeSpan.FromSeconds(45));
             using var metadataResponse = await client.GetAsync("https://authlib-injector.yushi.moe/artifact/latest.json",
@@ -227,18 +241,18 @@ public sealed class GameRuntime
             var source = new Uri(metadata.RootElement.GetProperty("download_url").GetString()!);
             if (source.Scheme != "https" || source.Host != "authlib-injector.yushi.moe")
             {
-                throw new InvalidDataException("外置认证组件返回了非预期的下载地址。");
+                throw new InvalidDataException(LauncherText.Get("AuthlibAddressUnexpected"));
             }
             var sha256 = metadata.RootElement.GetProperty("checksums").GetProperty("sha256").GetString()!;
             using var head = new HttpRequestMessage(HttpMethod.Head, source);
             using var headResponse = await client.SendAsync(head, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
             headResponse.EnsureSuccessStatusCode();
-            var size = headResponse.Content.Headers.ContentLength ?? throw new IOException("外置认证组件的下载源未提供文件大小，请在设置中指定组件文件。");
+            var size = headResponse.Content.Headers.ContentLength ?? throw new IOException(LauncherText.Get("AuthlibSizeMissing"));
             request = new ContentRequest(size, sha256, HashAlgorithmName.SHA256, new[] { source });
         }
         using var downloader = new ContentDownloader(storage, client);
         var reporter = new WorkProgress(progress, 1, request.Size);
-        reporter.Stage("正在准备外置认证", "正在校验 authlib-injector 组件");
+        reporter.Stage(LauncherText.Get("PreparingExternalAuth"), LauncherText.Get("VerifyingAuthlib"));
         var cached = await downloader.FetchAsync(request, 0, reporter, cancellationToken);
         reporter.FileDone(0);
         if (!File.Exists(metadataPath))
@@ -295,7 +309,7 @@ public sealed class RunningGame
         {
             if (!process.Start())
             {
-                throw new InvalidOperationException("游戏进程未能启动。");
+                throw new InvalidOperationException(LauncherText.Get("GameStartFailed"));
             }
         }
         catch

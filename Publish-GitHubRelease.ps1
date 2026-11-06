@@ -4,10 +4,42 @@ param(
     [string[]]$Attachment = @(),
     [string]$Title,
     [string]$NotesFile,
+    [string]$TargetCommit,
     [string]$Repository = 'Aeracy/Arys-Launcher'
 )
 
 $ErrorActionPreference = 'Stop'
+
+function Confirm-PublicArchive([IO.FileInfo]$File) {
+    if ($File.Extension -notin @('.zip', '.mrpack')) {
+        return
+    }
+    $forbidden = '(?i)(?:^|/)(?:accounts\.json(?:\.[^/]*)?|launcher_accounts\.json|launcher_profiles\.json|cookies|login data|[^/]+\.pem)$|(?:^|/)(?:data|browser|startup-logs|\.tools|\.staging|\.git)/'
+    $secrets = '(?:ghp|gho|ghu|ghs)_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{50,}|(?i:"(?:accessToken|refreshToken|protectedTokens)"\s*:\s*"[^"\s]{12,}")'
+    $archive = [IO.Compression.ZipFile]::OpenRead($File.FullName)
+    try {
+        foreach ($entry in $archive.Entries) {
+            $path = $entry.FullName.Replace('\', '/')
+            if ($path -match $forbidden) {
+                throw "The public archive contains private runtime data: $($File.Name)/$path"
+            }
+            if ($entry.Length -gt 4MB -or [IO.Path]::GetExtension($path) -notin @('.json', '.cs', '.ps1', '.txt', '.md', '.xml', '.config', '.ini')) {
+                continue
+            }
+            $reader = [IO.StreamReader]::new($entry.Open())
+            try {
+                if ($reader.ReadToEnd() -match $secrets) {
+                    throw "The public archive contains a possible saved credential: $($File.Name)/$path"
+                }
+            } finally {
+                $reader.Dispose()
+            }
+        }
+    } finally {
+        $archive.Dispose()
+    }
+}
+
 if ($Repository -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' -or $Repository -eq 'Aeracy/arysmod') {
     throw 'Choose the separate public launcher repository.'
 }
@@ -15,9 +47,12 @@ if (-not $AssetsDirectory) {
     $AssetsDirectory = Join-Path $PSScriptRoot ('artifacts\release-' + $Tag)
 }
 if (-not $Title) {
-    $Title = "Ary's Launcher $Tag"
+    $Title = $Tag
 }
-$notes = if ($NotesFile) { Get-Content -LiteralPath $NotesFile -Raw } else { "Released by Aeracy." }
+$notes = if ($NotesFile) { Get-Content -LiteralPath $NotesFile -Raw } else { '' }
+if ($TargetCommit -and $TargetCommit -notmatch '^[0-9a-f]{40}$') {
+    throw 'Provide the full Git commit ID for the release tag.'
+}
 $env:GCM_INTERACTIVE = 'Never'
 $credentialInput = "protocol=https`nhost=github.com`nusername=$($Repository.Split('/')[0])`n`n"
 $credentialLines = $credentialInput | git -c credential.interactive=never credential fill
@@ -113,8 +148,15 @@ try {
     if ($assets.Name | Group-Object | Where-Object Count -gt 1) {
         throw 'Release attachments have duplicate names.'
     }
+    foreach ($asset in $assets) {
+        Confirm-PublicArchive $asset
+    }
     if (-not $existing) {
-        $body = @{ tag_name = $Tag; name = $Title; body = $notes; draft = $true } | ConvertTo-Json
+        $releaseDefinition = @{ tag_name = $Tag; name = $Title; body = $notes; draft = $true; prerelease = $false }
+        if ($TargetCommit) {
+            $releaseDefinition.target_commitish = $TargetCommit
+        }
+        $body = $releaseDefinition | ConvertTo-Json
         $existing = Invoke-RestMethod -Method Post -Uri "$api/releases" -Headers $headers -ContentType 'application/json' -Body $body
     }
     foreach ($file in $assets) {
@@ -136,7 +178,7 @@ try {
         }
         Write-Output $file.Name
     }
-    $body = @{ draft = $false; make_latest = 'true'; body = $notes } | ConvertTo-Json
+    $body = @{ draft = $false; prerelease = $false; make_latest = 'true'; name = $Title; body = $notes } | ConvertTo-Json
     $release = Invoke-RestMethod -Method Patch -Uri "$api/releases/$($existing.id)" -Headers $headers -ContentType 'application/json' -Body $body
     Write-Output $release.html_url
 } finally {

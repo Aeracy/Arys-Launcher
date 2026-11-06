@@ -27,6 +27,8 @@ public sealed class LauncherStorage
     public LauncherSettings Settings { get; private set; }
     public GameInstallation? Installation { get; private set; }
     public List<LauncherAccount> Accounts { get; private set; }
+    internal SemaphoreSlim AccountSessionGate { get; } = new(1, 1);
+    private readonly object writeGate = new();
 
     public LauncherStorage(string? applicationRoot = null)
     {
@@ -62,25 +64,35 @@ public sealed class LauncherStorage
         Installation = installation;
     }
 
-    public void SaveAccount(LauncherAccount account, AccountTokens tokens)
+    public void SaveAccount(LauncherAccount account, AccountTokens tokens, bool selectAccount = true)
     {
         account.ProtectedTokens = Protect(tokens);
-        Accounts.RemoveAll(existing => existing.Kind == account.Kind && existing.PlayerUuid == account.PlayerUuid &&
-            existing.ServerAddress.Equals(account.ServerAddress, StringComparison.OrdinalIgnoreCase));
-        Accounts.Add(account);
-        Write("accounts.json", Accounts);
-        Settings.SelectedAccountId = account.Id;
-        SaveSettings(Settings);
+        lock (writeGate)
+        {
+            var accounts = Accounts.Where(existing => !(existing.Kind == account.Kind && existing.PlayerUuid == account.PlayerUuid &&
+                existing.ServerAddress.Equals(account.ServerAddress, StringComparison.OrdinalIgnoreCase))).Append(account).ToList();
+            Write("accounts.json", accounts);
+            Accounts = accounts;
+            if (selectAccount)
+            {
+                Settings.SelectedAccountId = account.Id;
+                SaveSettings(Settings);
+            }
+        }
     }
 
     public void RemoveAccount(LauncherAccount account)
     {
-        Accounts.RemoveAll(existing => existing.Id == account.Id);
-        Write("accounts.json", Accounts);
-        if (Settings.SelectedAccountId == account.Id)
+        lock (writeGate)
         {
-            Settings.SelectedAccountId = Accounts.FirstOrDefault()?.Id ?? "";
-            SaveSettings(Settings);
+            var accounts = Accounts.Where(existing => existing.Id != account.Id).ToList();
+            Write("accounts.json", accounts);
+            Accounts = accounts;
+            if (Settings.SelectedAccountId == account.Id)
+            {
+                Settings.SelectedAccountId = Accounts.FirstOrDefault()?.Id ?? "";
+                SaveSettings(Settings);
+            }
         }
     }
 
@@ -101,7 +113,7 @@ public sealed class LauncherStorage
         }
         catch (Exception exception) when (exception is CryptographicException or FormatException or JsonException)
         {
-            throw new InvalidOperationException("无法解密此账号的会话，请重新登录。账号会话仅供当前 Windows 用户使用。", exception);
+            throw new InvalidOperationException(LauncherText.Get("AccountDecryptionFailed"), exception);
         }
     }
 
@@ -111,7 +123,7 @@ public sealed class LauncherStorage
         if (string.IsNullOrWhiteSpace(normalized) || normalized.StartsWith('/') || normalized.Contains(':') ||
             normalized.Split('/').Any(part => string.IsNullOrEmpty(part) || part is ".." or "." || part.EndsWith(' ') || part.EndsWith('.')))
         {
-            throw new InvalidDataException($"整合包含有不安全的路径：{relativePath}");
+            throw new InvalidDataException(LauncherText.Get("PackPathUnsafe", relativePath));
         }
         foreach (var component in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -119,14 +131,14 @@ public sealed class LauncherStorage
             if (component.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
                 ReservedNames.Contains(stem))
             {
-                throw new InvalidDataException($"Windows 不支持此整合包路径：{relativePath}");
+                throw new InvalidDataException(LauncherText.Get("PackPathUnsupported", relativePath));
             }
         }
         var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         var target = Path.GetFullPath(Path.Combine(fullRoot, normalized.Replace('/', Path.DirectorySeparatorChar)));
         if (!target.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException("整合包路径超出了游戏目录。");
+            throw new InvalidDataException(LauncherText.Get("PackPathOutsideGameDirectory"));
         }
         return target;
     }
@@ -137,7 +149,7 @@ public sealed class LauncherStorage
         var fullPath = Path.GetFullPath(path);
         if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("临时目录超出启动器管理范围。");
+            throw new InvalidOperationException(LauncherText.Get("StagingDirectoryOutOfBounds"));
         }
         if (Directory.Exists(fullPath))
         {
@@ -153,7 +165,7 @@ public sealed class LauncherStorage
             return fallback;
         }
         return JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions)
-            ?? throw new InvalidDataException($"启动器数据为空：{filename}");
+            ?? throw new InvalidDataException(LauncherText.Get("LauncherDataEmpty", filename));
     }
 
     internal T ReadRecord<T>(string filename, T fallback)
@@ -163,14 +175,17 @@ public sealed class LauncherStorage
 
     internal void Write<T>(string filename, T value)
     {
-        var destination = Path.Combine(Root, filename);
-        var temporary = destination + ".new";
-        using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+        lock (writeGate)
         {
-            JsonSerializer.Serialize(stream, value, JsonOptions);
-            stream.Flush(true);
+            var destination = Path.Combine(Root, filename);
+            var temporary = destination + ".new";
+            using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                JsonSerializer.Serialize(stream, value, JsonOptions);
+                stream.Flush(true);
+            }
+            File.Move(temporary, destination, true);
         }
-        File.Move(temporary, destination, true);
     }
 
     private static string Protect(AccountTokens tokens)

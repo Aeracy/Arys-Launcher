@@ -6,7 +6,8 @@
         Title="Arys Launcher" Width="1320" Height="860" MinWidth="1080" MinHeight="730"
         WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize"
         Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextBrush}" FontFamily="{StaticResource UiFont}" FontSize="13"
-        TextOptions.TextFormattingMode="Display"
+        Icon="Assets/app.png"
+        Language="{x:Static local:LauncherText.Language}" TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True" SnapsToDevicePixels="True" AllowDrop="True"
         DragOver="Window_DragOver" Drop="Window_Drop" PreviewKeyDown="Window_PreviewKeyDown"
         Closing="Window_Closing" Loaded="Window_Loaded">
@@ -87,7 +88,7 @@
             <Setter Property="Text" Value="{Binding WorkProgressValue, RelativeSource={RelativeSource AncestorType=local:MainWindow}, StringFormat={}{0:0}%}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsWorkIndeterminate, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" Value="True">
-                    <Setter Property="Text" Value="处理中" />
+                    <Setter Property="Text" Value="{local:Text Working}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -123,25 +124,30 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="30" />
             </Grid.RowDefinitions>
+            <local:AtmosphereView x:Name="WindowAtmosphere" Grid.RowSpan="3" IsBackdrop="True"
+                                  IsHitTestVisible="False" ClipToBounds="True" />
             <Border Grid.Row="0" Background="#A016101D" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0">
                 <Grid Margin="17,0,11,0">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Width="31" Height="31" CornerRadius="9" Background="#30223B" BorderBrush="#5B4367" BorderThickness="1">
-                            <Path Data="M 10,1 L 18,10 L 10,19 L 2,10 Z M 10,5 L 14,10 L 10,15 L 6,10 Z"
-                                  Stroke="{StaticResource GoldBrush}" StrokeThickness="1.15" Width="20" Height="20" />
+                            <Image Source="Assets/app.png" Stretch="UniformToFill">
+                                <Image.Clip>
+                                    <RectangleGeometry Rect="0,0,29,29" RadiusX="8" RadiusY="8" />
+                                </Image.Clip>
+                            </Image>
                         </Border>
                         <TextBlock Text="ARYS" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" Margin="11,0,0,0" />
                         <TextBlock Text="LAUNCHER" Style="{StaticResource Caption}" FontSize="10" VerticalAlignment="Center" Margin="8,2,0,0" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                        <Button Style="{StaticResource ChromeButton}" Click="Minimize_Click" ToolTip="最小化" AutomationProperties.Name="最小化">
+                        <Button Style="{StaticResource ChromeButton}" Click="Minimize_Click" ToolTip="{local:Text Minimize}" AutomationProperties.Name="{local:Text Minimize}">
                             <Path Style="{StaticResource ChromeIcon}" Data="M 1,6 L 11,6" />
                         </Button>
-                        <Button Style="{StaticResource ChromeButton}" Click="Maximize_Click" ToolTip="最大化或还原" AutomationProperties.Name="最大化或还原">
+                        <Button Style="{StaticResource ChromeButton}" Click="Maximize_Click" ToolTip="{local:Text MaximizeOrRestore}" AutomationProperties.Name="{local:Text MaximizeOrRestore}">
                             <Path Style="{StaticResource ChromeIcon}" Data="M 2,2 H 10 V 10 H 2 Z" />
                         </Button>
-                        <Button Style="{StaticResource CloseChromeButton}" Click="Close_Click" ToolTip="关闭" AutomationProperties.Name="关闭">
+                        <Button Style="{StaticResource CloseChromeButton}" Click="Close_Click" ToolTip="{local:Text Close}" AutomationProperties.Name="{local:Text Close}">
                             <Path Style="{StaticResource ChromeIcon}" Data="M 2,2 L 10,10 M 10,2 L 2,10" />
                         </Button>
                     </StackPanel>
@@ -152,26 +158,26 @@
                 <Border Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
                     <Grid Margin="15,26,15,20">
                         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                        <TextBlock Text="游戏与设置" Style="{StaticResource Caption}" Margin="13,0,0,14" />
+                        <TextBlock Text="{local:Text GameAndSettings}" Style="{StaticResource Caption}" Margin="13,0,0,14" />
                         <ListBox x:Name="Navigation" Grid.Row="1" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource NavItem}"
                                  SelectionChanged="Navigation_SelectionChanged" SelectedIndex="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                            <ListBoxItem Tag="home" AutomationProperties.Name="首页">
-                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 2,8 L 9,2 L 16,8 V 16 H 11 V 11 H 7 V 16 H 2 Z" /><TextBlock Text="首页" VerticalAlignment="Center" /></StackPanel>
+                            <ListBoxItem Tag="home" AutomationProperties.Name="{local:Text Home}">
+                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 2,8 L 9,2 L 16,8 V 16 H 11 V 11 H 7 V 16 H 2 Z" /><TextBlock Text="{local:Text Home}" VerticalAlignment="Center" /></StackPanel>
                             </ListBoxItem>
-                            <ListBoxItem Tag="instances" AutomationProperties.Name="整合包">
-                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,1 L 16,5 V 13 L 9,17 L 2,13 V 5 Z M 2,5 L 9,9 L 16,5 M 9,9 V 17 M 5.5,3 L 12.5,7" /><TextBlock Text="整合包" VerticalAlignment="Center" /></StackPanel>
+                            <ListBoxItem Tag="instances" AutomationProperties.Name="{local:Text Modpack}">
+                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,1 L 16,5 V 13 L 9,17 L 2,13 V 5 Z M 2,5 L 9,9 L 16,5 M 9,9 V 17 M 5.5,3 L 12.5,7" /><TextBlock Text="{local:Text Modpack}" VerticalAlignment="Center" /></StackPanel>
                             </ListBoxItem>
-                            <ListBoxItem Tag="accounts" AutomationProperties.Name="账号">
-                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,2 A 3.2,3.2 0 1 1 8.99,2 M 2,16 V 14 C 2,9 16,9 16,14 V 16 Z" /><TextBlock Text="账号" VerticalAlignment="Center" /></StackPanel>
+                            <ListBoxItem Tag="accounts" AutomationProperties.Name="{local:Text Accounts}">
+                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,2 A 3.2,3.2 0 1 1 8.99,2 M 2,16 V 14 C 2,9 16,9 16,14 V 16 Z" /><TextBlock Text="{local:Text Accounts}" VerticalAlignment="Center" /></StackPanel>
                             </ListBoxItem>
-                            <ListBoxItem Tag="tasks" AutomationProperties.Name="下载任务">
-                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,2 V 12 M 5,8 L 9,12 L 13,8 M 2,12 V 16 H 16 V 12" /><TextBlock Text="下载任务" VerticalAlignment="Center" /></StackPanel>
+                            <ListBoxItem Tag="tasks" AutomationProperties.Name="{local:Text Downloads}">
+                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 9,2 V 12 M 5,8 L 9,12 L 13,8 M 2,12 V 16 H 16 V 12" /><TextBlock Text="{local:Text Downloads}" VerticalAlignment="Center" /></StackPanel>
                             </ListBoxItem>
-                            <ListBoxItem Tag="settings" AutomationProperties.Name="设置">
-                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 2,4 H 7 M 11,4 H 16 M 7,2 V 6 M 2,9 H 11 M 15,9 H 16 M 11,7 V 11 M 2,14 H 5 M 9,14 H 16 M 5,12 V 16" /><TextBlock Text="设置" VerticalAlignment="Center" /></StackPanel>
+                            <ListBoxItem Tag="settings" AutomationProperties.Name="{local:Text Settings}">
+                                <StackPanel Orientation="Horizontal"><Path Style="{StaticResource NavIcon}" Data="M 2,4 H 7 M 11,4 H 16 M 7,2 V 6 M 2,9 H 11 M 15,9 H 16 M 11,7 V 11 M 2,14 H 5 M 9,14 H 16 M 5,12 V 16" /><TextBlock Text="{local:Text Settings}" VerticalAlignment="Center" /></StackPanel>
                             </ListBoxItem>
                         </ListBox>
-                        <Button Grid.Row="2" Content="启动器目录  ↗" Style="{StaticResource QuietButton}" HorizontalAlignment="Stretch"
+                        <Button Grid.Row="2" Content="{local:Text LauncherDirectoryLink}" Style="{StaticResource QuietButton}" HorizontalAlignment="Stretch"
                                 Margin="0,14,0,0" Padding="11,8" Click="OpenLauncherDirectory_Click" />
                     </Grid>
                 </Border>
@@ -180,13 +186,13 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,18,16">
-                            <TextBlock x:Name="PageTitle" Text="准备游戏" FontSize="27" FontWeight="SemiBold" />
-                            <TextBlock x:Name="PageSubtitle" Text="整合包与启动状态" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
+                            <TextBlock x:Name="PageTitle" Text="{local:Text HomePageTitle}" FontSize="27" FontWeight="SemiBold" />
+                            <TextBlock x:Name="PageSubtitle" Text="{local:Text HomePageDescription}" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
                         </StackPanel>
-                        <Button x:Name="HeaderImportButton" Grid.Column="1" Content="导入整合包" VerticalAlignment="Top" Click="Import_Click" Margin="0,4,0,0" />
+                        <Button x:Name="HeaderImportButton" Grid.Column="1" Content="{local:Text ImportModpack}" VerticalAlignment="Top" Click="Import_Click" Margin="0,4,0,0" />
                     </Grid>
                     <Grid x:Name="PageViewport" Grid.Row="1" ClipToBounds="True">
-                        <ScrollViewer x:Name="HomePage">
+                        <local:SmoothScrollViewer x:Name="HomePage">
                             <Grid Margin="0,2,4,18">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="17" /><ColumnDefinition Width="246" /></Grid.ColumnDefinitions>
                                 <StackPanel>
@@ -218,10 +224,10 @@
                                             <StackPanel VerticalAlignment="Center" Margin="30,0,0,0">
                                                 <Border Style="{StaticResource Badge}" Background="#A3332439" BorderBrush="#816378"
                                                         HorizontalAlignment="Left" Margin="0,0,0,16">
-                                                    <TextBlock Text="专属整合包" Style="{StaticResource Caption}" Foreground="{StaticResource GoldBrush}" />
+                                                    <TextBlock Text="{local:Text OfficialModpack}" Style="{StaticResource Caption}" Foreground="{StaticResource GoldBrush}" />
                                                 </Border>
-                                                <TextBlock Text="少女の&#x0a;永恒地牢" FontFamily="Microsoft YaHei UI" FontSize="37" FontWeight="SemiBold" LineHeight="49" />
-                                                <TextBlock Text="准备好游戏，随时出发。" Style="{StaticResource MutedText}" Foreground="#E8CFDF" Margin="0,9,0,0" />
+                                                <TextBlock Text="{local:Text OfficialPackBanner}" FontFamily="Microsoft YaHei UI" FontSize="37" FontWeight="SemiBold" LineHeight="49" />
+                                                <TextBlock Text="{local:Text HomeMotto}" Style="{StaticResource MutedText}" Foreground="#E8CFDF" Margin="0,9,0,0" />
                                                 <StackPanel Orientation="Horizontal" Margin="0,19,0,0">
                                                     <Border Style="{StaticResource Badge}" Background="#8432233E"><TextBlock Text="Minecraft 1.20.1" FontSize="10" /></Border>
                                                     <Border Style="{StaticResource Badge}" Background="#8432233E" Margin="7,0,0,0"><TextBlock Text="Forge" FontSize="10" /></Border>
@@ -233,65 +239,86 @@
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center" Margin="0,0,15,0">
-                                                <TextBlock x:Name="HomeInstanceHeading" Text="安装整合包" FontSize="16" FontWeight="SemiBold" />
-                                                <TextBlock x:Name="HomeInstanceDescription" Text="将整合包文件拖到窗口，或从本地选择。" Style="{StaticResource MutedText}" Margin="0,6,0,0" />
-                                                <TextBlock x:Name="HomeInstanceDetails" Text="支持 .mrpack 和整合包 ZIP" Style="{StaticResource MutedText}" FontSize="11" Margin="0,4,0,0" />
+                                                <TextBlock x:Name="HomeInstanceHeading" Text="{local:Text InstallModpack}" FontSize="16" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="HomeInstanceDescription" Text="{local:Text ChoosePackDescription}" Style="{StaticResource MutedText}" Margin="0,6,0,0" />
+                                                <TextBlock x:Name="HomeInstanceDetails" Text="{local:Text SupportedPackFormats}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,4,0,0" />
                                             </StackPanel>
-                                            <Button x:Name="HomeInstanceButton" Grid.Column="1" Content="浏览文件  →" VerticalAlignment="Center" Click="HomeInstance_Click" Padding="14,10" />
+                                            <Button x:Name="HomeInstanceButton" Grid.Column="1" Content="{local:Text BrowseFilesLink}" VerticalAlignment="Center" Click="HomeInstance_Click" Padding="14,10" />
                                         </Grid>
                                     </Border>
                                 </StackPanel>
                                 <StackPanel x:Name="HomeSidebar" Grid.Column="2">
                                     <Border Style="{StaticResource Card}" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="当前账号" Style="{StaticResource Caption}" />
+                                            <TextBlock Text="{local:Text CurrentAccount}" Style="{StaticResource Caption}" />
                                             <Grid Margin="0,14,0,12">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                                 <Border Width="43" Height="43" Background="#3A2A46" BorderBrush="#73577D" BorderThickness="1" CornerRadius="11">
-                                                    <TextBlock x:Name="AccountInitial" Text="◇" Foreground="{StaticResource AccentBrush}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Grid>
+                                                        <TextBlock x:Name="AccountInitial" Text="◇" Foreground="{StaticResource AccentBrush}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        <Image x:Name="AccountPortraitImage" Stretch="UniformToFill" Visibility="Collapsed"
+                                                               AutomationProperties.Name="{local:Text CurrentAccountAvatar}">
+                                                            <Image.Clip>
+                                                                <RectangleGeometry Rect="0,0,41,41" RadiusX="10" RadiusY="10" />
+                                                            </Image.Clip>
+                                                        </Image>
+                                                    </Grid>
                                                 </Border>
                                                 <StackPanel Grid.Column="1" Margin="11,0,0,0" VerticalAlignment="Center">
-                                                    <TextBlock x:Name="HomeAccountName" Text="尚未登录" Foreground="White"
+                                                    <TextBlock x:Name="HomeAccountName" Text="{local:Text SignedOut}" Foreground="White"
                                                                FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock x:Name="HomeAccountKind" Text="登录后启动游戏" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock x:Name="HomeAccountKind" Text="{local:Text SignInToPlay}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
                                             </Grid>
-                                            <Button x:Name="HomeAccountButton" Content="添加账号  ↗" MinHeight="32" Padding="12,5" Click="Accounts_Click" />
+                                            <Button x:Name="HomeAccountButton" Content="{local:Text AddAccountLink}" MinHeight="32" Padding="12,5" Click="Accounts_Click" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,15,0,0" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="运行配置" Style="{StaticResource Caption}" Margin="0,0,0,15" />
-                                            <Grid Margin="0,0,0,12"><TextBlock Text="内存上限" Foreground="{StaticResource MutedBrush}" /><TextBlock x:Name="HomeMemory" HorizontalAlignment="Right" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" /></Grid>
-                                            <Grid><TextBlock Text="Java" Foreground="{StaticResource MutedBrush}" /><TextBlock x:Name="HomeJava" Text="自动选择" HorizontalAlignment="Right" /></Grid>
+                                            <TextBlock Text="{local:Text RuntimeSettings}" Style="{StaticResource Caption}" Margin="0,0,0,15" />
+                                            <Grid Margin="0,0,0,12"><TextBlock Text="{local:Text MemoryLimit}" Foreground="{StaticResource MutedBrush}" /><TextBlock x:Name="HomeMemory" HorizontalAlignment="Right" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" /></Grid>
+                                            <Grid><TextBlock Text="Java" Foreground="{StaticResource MutedBrush}" /><TextBlock x:Name="HomeJava" Text="{local:Text Automatic}" HorizontalAlignment="Right" /></Grid>
                                             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,10" />
-                                            <Button Content="调整运行设置  →" Style="{StaticResource QuietButton}" MinHeight="30" Padding="11,4" Click="Settings_Click" />
+                                            <Button Content="{local:Text RuntimeSettingsLink}" Style="{StaticResource QuietButton}" MinHeight="30" Padding="11,4" Click="Settings_Click" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </Grid>
-                        </ScrollViewer>
-                        <ScrollViewer x:Name="InstallationPage" Visibility="Collapsed">
+                        </local:SmoothScrollViewer>
+                        <local:SmoothScrollViewer x:Name="InstallationPage" Visibility="Collapsed">
                             <StackPanel Margin="0,2,0,20">
                                 <Border Style="{StaticResource Card}">
                                     <StackPanel>
-                                        <TextBlock x:Name="InstallationHeading" Text="专属整合包" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                        <TextBlock x:Name="InstallationSummary" Text="尚未导入整合包" Style="{StaticResource MutedText}" Margin="0,12,0,0" />
+                                        <TextBlock x:Name="InstallationHeading" Text="{local:Text OfficialModpack}" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="InstallationSummary" Text="{local:Text PackNotInstalled}" Style="{StaticResource MutedText}" Margin="0,12,0,0" />
                                         <Border Height="1" Background="#3C2946" Margin="0,23,0,20" />
-                                        <TextBlock Text="安装位置" Foreground="#AB93B9" FontSize="11" />
+                                        <TextBlock Text="{local:Text InstallLocation}" Foreground="#AB93B9" FontSize="11" />
                                         <TextBox x:Name="InstallationPath" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0,12" TextWrapping="Wrap" FontSize="12" />
-                                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                                            <Button Content="打开游戏目录 ↗" Click="OpenInstance_Click" Margin="0,0,10,0" />
-                                            <Button Content="整合包配置" Click="EditInstance_Click" />
-                                        </StackPanel>
+                                        <Grid Margin="0,15,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <WrapPanel VerticalAlignment="Bottom" Margin="0,0,16,0">
+                                                <Button Content="{local:Text OpenGameFolderLink}" Click="OpenInstance_Click" Margin="0,0,10,0" />
+                                                <Button Content="{local:Text ModpackSettings}" Click="EditInstance_Click" />
+                                            </WrapPanel>
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" MaxWidth="240">
+                                                <TextBlock x:Name="InstallationUpdateStatus" Text="{local:Text CompareReleaseAndLocalFiles}"
+                                                           Style="{StaticResource MutedText}" FontSize="11" TextAlignment="Right"
+                                                           Margin="0,0,0,9" TextWrapping="Wrap" />
+                                                <Button x:Name="CheckPackUpdatesButton" Content="{local:Text CheckForUpdates}"
+                                                        HorizontalAlignment="Right" MinWidth="120" Click="CheckPackUpdates_Click" />
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource Card}" Margin="0,18,0,0">
-                                    <StackPanel><TextBlock Text="安装与资源" Style="{StaticResource SectionTitle}" /><TextBlock Text="启动器会按包内要求准备 Minecraft 和 Forge，复用已校验的资源。存档、截图和游戏设置都保存在上方目录。" Style="{StaticResource MutedText}" /><Button Content="补全游戏环境" HorizontalAlignment="Left" Margin="0,17,0,0" Click="Prepare_Click" /></StackPanel>
+                                    <StackPanel><TextBlock Text="{local:Text InstallAndResources}" Style="{StaticResource SectionTitle}" /><TextBlock Text="{local:Text InstallationResourcesHelp}" Style="{StaticResource MutedText}" /><Button Content="{local:Text PrepareGameFiles}" HorizontalAlignment="Left" Margin="0,17,0,0" Click="Prepare_Click" /></StackPanel>
                                 </Border>
                             </StackPanel>
-                        </ScrollViewer>
-                        <ScrollViewer x:Name="AccountsPage" Visibility="Collapsed">
+                        </local:SmoothScrollViewer>
+                        <local:SmoothScrollViewer x:Name="AccountsPage" Visibility="Collapsed">
                             <StackPanel Margin="0,2,0,20">
                                 <ListBox x:Name="AccountList" Background="Transparent" BorderThickness="0" MaxHeight="200" ItemContainerStyle="{StaticResource CardListItem}" SelectionChanged="AccountList_SelectionChanged">
                                     <ListBox.ItemTemplate>
@@ -309,7 +336,7 @@
                                                     </DockPanel>
                                                     <TextBlock Text="{Binding Description}" Style="{StaticResource MutedText}" Margin="18,5,0,0" />
                                                 </StackPanel>
-                                                <Button Grid.Column="1" Content="移除此账号" VerticalAlignment="Center" Click="RemoveAccount_Click" />
+                                                <Button Grid.Column="1" Content="{local:Text RemoveThisAccount}" VerticalAlignment="Center" Click="RemoveAccount_Click" />
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
@@ -318,10 +345,10 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                         <StackPanel Margin="0,0,20,0">
-                                            <TextBlock Text="Microsoft 正版登录" Style="{StaticResource SectionTitle}" Margin="0,0,0,7" />
-                                            <TextBlock Text="在 Microsoft 官方网页中登录拥有 Minecraft Java 版的账号。" Style="{StaticResource MutedText}" />
+                                            <TextBlock Text="{local:Text MicrosoftJavaSignIn}" Style="{StaticResource SectionTitle}" Margin="0,0,0,7" />
+                                            <TextBlock Text="{local:Text MicrosoftJavaSignInHelp}" Style="{StaticResource MutedText}" />
                                         </StackPanel>
-                                        <Button x:Name="MicrosoftLoginButton" Grid.Column="1" Content="使用 Microsoft 登录"
+                                        <Button x:Name="MicrosoftLoginButton" Grid.Column="1" Content="{local:Text SignInWithMicrosoft}"
                                                 Style="{StaticResource PrimaryButton}" VerticalAlignment="Center" Click="MicrosoftLogin_Click" />
                                     </Grid>
                                 </Border>
@@ -329,56 +356,56 @@
                                     <StackPanel>
                                         <Grid Margin="0,0,0,9">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                            <TextBlock Text="服务器外置认证" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
-                                            <Button Grid.Column="1" Content="使用 LittleSkin 设置" Padding="12,6" MinHeight="32" Click="LittleSkin_Click" />
+                                            <TextBlock Text="{local:Text ServerAuthentication}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+                                            <Button Grid.Column="1" Content="{local:Text UseLittleSkinSettings}" Padding="12,6" MinHeight="32" Click="LittleSkin_Click" />
                                         </Grid>
-                                        <TextBlock Text="选择 LittleSkin，或填写服务器提供的 Yggdrasil 认证地址。" Style="{StaticResource MutedText}" />
-                                        <TextBlock Text="登录方式" Style="{StaticResource FieldLabel}" />
-                                        <ComboBox x:Name="AuthenticationPresetCombo" SelectionChanged="AuthenticationPreset_SelectionChanged"><ComboBoxItem Content="LittleSkin" /><ComboBoxItem Content="自定义 Authlib Injector 认证服务器" /></ComboBox>
-                                        <TextBlock Text="认证 API 根地址" Style="{StaticResource FieldLabel}" />
-                                        <TextBox x:Name="ExternalServerText" TextChanged="ExternalAddress_TextChanged" ToolTip="例如 https://skin.example/api/yggdrasil/，请以认证站提供的地址为准。" />
+                                        <TextBlock Text="{local:Text ServerAuthenticationHelp}" Style="{StaticResource MutedText}" />
+                                        <TextBlock Text="{local:Text SignInMethod}" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox x:Name="AuthenticationPresetCombo" SelectionChanged="AuthenticationPreset_SelectionChanged"><ComboBoxItem Content="LittleSkin" /><ComboBoxItem Content="{local:Text CustomYggdrasilServer}" /></ComboBox>
+                                        <TextBlock Text="{local:Text AuthenticationApiUrl}" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="ExternalServerText" TextChanged="ExternalAddress_TextChanged" ToolTip="{local:Text AuthenticationApiExample}" />
                                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="认证服务器名称" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalServerNameText" /></StackPanel>
-                                            <StackPanel Grid.Column="2"><TextBlock Text="注册链接" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalRegistrationText" /></StackPanel>
+                                            <StackPanel><TextBlock Text="{local:Text AuthenticationServerName}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalServerNameText" /></StackPanel>
+                                            <StackPanel Grid.Column="2"><TextBlock Text="{local:Text RegistrationLink}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalRegistrationText" /></StackPanel>
                                         </Grid>
-                                        <TextBlock Text="自动进入服务器（可选）" Style="{StaticResource FieldLabel}" /><TextBox x:Name="JoinServerText" ToolTip="填写游戏服务器的域名或 IP，可附端口。留空进入主菜单。" />
-                                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0"><Button Content="保存认证设置" Click="SaveAuthentication_Click" Margin="0,0,9,0" /><Button x:Name="RegisterExternalButton" Content="注册账号 ↗" Style="{StaticResource QuietButton}" Click="RegisterExternal_Click" /></StackPanel>
+                                        <TextBlock Text="{local:Text AutoJoinServerOptional}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="JoinServerText" ToolTip="{local:Text AutoJoinServerHelp}" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0"><Button Content="{local:Text SaveAuthenticationSettings}" Click="SaveAuthentication_Click" Margin="0,0,9,0" /><Button x:Name="RegisterExternalButton" Content="{local:Text RegisterAccountLink}" Style="{StaticResource QuietButton}" Click="RegisterExternal_Click" /></StackPanel>
                                         <Border Height="1" Background="#3D2C46" Margin="0,20,0,3" />
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="账号 / 邮箱" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalUsernameText" /></StackPanel>
-                                            <StackPanel Grid.Column="2"><TextBlock Text="密码" Style="{StaticResource FieldLabel}" /><PasswordBox x:Name="ExternalPasswordBox" /></StackPanel>
+                                            <StackPanel><TextBlock Text="{local:Text UsernameOrEmail}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ExternalUsernameText" /></StackPanel>
+                                            <StackPanel Grid.Column="2"><TextBlock Text="{local:Text Password}" Style="{StaticResource FieldLabel}" /><PasswordBox x:Name="ExternalPasswordBox" /></StackPanel>
                                         </Grid>
-                                        <Button x:Name="ExternalLoginButton" Content="登录认证服务器" HorizontalAlignment="Left" Margin="0,19,0,0" Click="ExternalLogin_Click" />
-                                        <TextBlock Text="密码仅发送到你填写的认证地址，不保存到本地。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
+                                        <Button x:Name="ExternalLoginButton" Content="{local:Text SignInToAuthServer}" HorizontalAlignment="Left" Margin="0,19,0,0" Click="ExternalLogin_Click" />
+                                        <TextBlock Text="{local:Text ExternalPasswordHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
-                        </ScrollViewer>
+                        </local:SmoothScrollViewer>
                         <Grid x:Name="TasksPage" Visibility="Collapsed">
                             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                             <Border Style="{StaticResource Card}" Margin="0,2,0,15">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                        <TextBlock x:Name="TaskTitle" Text="没有进行中的任务" FontSize="19" FontWeight="SemiBold"
+                                        <TextBlock x:Name="TaskTitle" Text="{local:Text NoActiveTasks}" FontSize="19" FontWeight="SemiBold"
                                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
                                         <Border Grid.Column="1" Style="{StaticResource Badge}">
                                             <TextBlock Style="{StaticResource WorkPercentage}" />
                                         </Border>
                                     </Grid>
-                                    <TextBlock x:Name="TaskDetail" Text="导入整合包或准备游戏时，可在这里查看进度。" Style="{StaticResource MutedText}"
+                                    <TextBlock x:Name="TaskDetail" Text="{local:Text DownloadProgressHelp}" Style="{StaticResource MutedText}"
                                                TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,10,0,0"
                                                ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
-                                    <ProgressBar Margin="0,17,0,12" Minimum="0" Maximum="100" AutomationProperties.Name="当前任务进度"
+                                    <ProgressBar Margin="0,17,0,12" Minimum="0" Maximum="100" AutomationProperties.Name="{local:Text CurrentTaskProgress}"
                                                  Value="{Binding WorkProgressValue, RelativeSource={RelativeSource AncestorType=local:MainWindow}, Mode=OneWay}"
                                                  IsIndeterminate="{Binding IsWorkIndeterminate, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
                                     <Grid Height="33">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                        <TextBlock x:Name="TaskStatistics" Text="等待任务" Foreground="{StaticResource MutedBrush}" FontSize="12"
+                                        <TextBlock x:Name="TaskStatistics" Text="{local:Text WaitingForTask}" Foreground="{StaticResource MutedBrush}" FontSize="12"
                                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0"
                                                    Typography.NumeralAlignment="Tabular" />
-                                        <Button x:Name="TaskCancelButton" Grid.Column="1" Content="取消任务" Visibility="Collapsed"
+                                        <Button x:Name="TaskCancelButton" Grid.Column="1" Content="{local:Text CancelTask}" Visibility="Collapsed"
                                                 Click="CancelTask_Click" Padding="12,4" MinHeight="31" VerticalAlignment="Center" />
                                     </Grid>
                                 </StackPanel>
@@ -387,8 +414,8 @@
                                 <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                                     <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                        <TextBlock Text="操作记录" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                        <Button Grid.Column="1" Content="日志目录  ↗" Style="{StaticResource QuietButton}" Padding="10,4" MinHeight="28" Click="OpenLogs_Click" />
+                                        <TextBlock Text="{local:Text TaskHistory}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Content="{local:Text LogDirectoryLink}" Style="{StaticResource QuietButton}" Padding="10,4" MinHeight="28" Click="OpenLogs_Click" />
                                     </Grid>
                                     <TextBox x:Name="TaskHistory" Grid.Row="1" IsReadOnly="True" Background="Transparent" BorderThickness="0" FontFamily="Consolas, Microsoft YaHei UI" FontSize="12" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Padding="0" />
                                 </Grid>
@@ -396,12 +423,12 @@
                         </Grid>
                         <Grid x:Name="SettingsPage" Visibility="Collapsed">
                             <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="58" /></Grid.RowDefinitions>
-                            <ScrollViewer>
+                            <local:SmoothScrollViewer>
                                 <StackPanel Margin="0,2,12,12">
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
-                                            <Grid><TextBlock Text="Java 运行环境" Style="{StaticResource SectionTitle}" /><Button x:Name="RescanJavaButton" Content="重新扫描 ↻" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="12,6" MinHeight="30" Click="RescanJava_Click" /></Grid>
-                                            <TextBlock Text="优先使用本机 64 位 Java 17" Style="{StaticResource MutedText}" FontSize="11" Margin="0,0,0,13" />
+                                            <Grid><TextBlock Text="{local:Text JavaRuntime}" Style="{StaticResource SectionTitle}" /><Button x:Name="RescanJavaButton" Content="{local:Text RescanJava}" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="12,6" MinHeight="30" Click="RescanJava_Click" /></Grid>
+                                            <TextBlock Text="{local:Text JavaRuntimePreference}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,0,0,13" />
                                             <ComboBox x:Name="JavaRuntimeCombo" SelectionChanged="JavaRuntime_SelectionChanged"
                                                       ToolTip="{Binding SelectedItem.Label, RelativeSource={RelativeSource Self}}">
                                                 <ComboBox.ItemTemplate>
@@ -410,17 +437,17 @@
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
-                                            <Grid Margin="0,11,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="JavaPathText" IsReadOnly="True" FontSize="11" /><Button x:Name="ChooseJavaButton" Grid.Column="1" Content="选择文件" Margin="10,0,0,0" Click="ChooseJava_Click" /></Grid>
-                                            <TextBlock x:Name="JavaStatusText" Text="正在检查本机 Java。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
+                                            <Grid Margin="0,11,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="JavaPathText" IsReadOnly="True" FontSize="11" /><Button x:Name="ChooseJavaButton" Grid.Column="1" Content="{local:Text ChooseFile}" Margin="10,0,0,0" Click="ChooseJava_Click" /></Grid>
+                                            <TextBlock x:Name="JavaStatusText" Text="{local:Text CheckingLocalJava}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
                                             <Grid Margin="0,0,0,15">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="内存分配" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+                                                <TextBlock Text="{local:Text MemoryAllocation}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
                                                 <Border Grid.Column="1" Style="{StaticResource Badge}" Background="#473145" BorderBrush="#6F5469">
-                                                    <TextBlock Text="推荐 6–8 GiB" Style="{StaticResource Caption}" Foreground="{StaticResource GoldBrush}" />
+                                                    <TextBlock Text="{local:Text RecommendedMemory}" Style="{StaticResource Caption}" Foreground="{StaticResource GoldBrush}" />
                                                 </Border>
                                             </Grid>
                                             <Grid>
@@ -428,26 +455,26 @@
                                                 <Border Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                                                         CornerRadius="10" Padding="2" HorizontalAlignment="Left">
                                                     <UniformGrid Columns="2">
-                                                        <RadioButton x:Name="AutomaticMemoryRadio" Content="自动配置" GroupName="MemoryAllocation"
+                                                        <RadioButton x:Name="AutomaticMemoryRadio" Content="{local:Text AutomaticAllocation}" GroupName="MemoryAllocation"
                                                                      Style="{StaticResource MemoryModeChoice}" Checked="MemoryMode_Checked" />
-                                                        <RadioButton x:Name="CustomMemoryRadio" Content="自定义" GroupName="MemoryAllocation"
+                                                        <RadioButton x:Name="CustomMemoryRadio" Content="{local:Text CustomAllocation}" GroupName="MemoryAllocation"
                                                                      Style="{StaticResource MemoryModeChoice}" Checked="MemoryMode_Checked" />
                                                     </UniformGrid>
                                                 </Border>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
-                                                    <TextBlock Text="快捷分配" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                                    <TextBlock Text="{local:Text MemoryPresets}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0" />
                                                     <Button Content="6 GiB" Tag="6" Style="{StaticResource MemoryPresetButton}" Click="MemoryPreset_Click" />
                                                     <Button Content="8 GiB" Tag="8" Style="{StaticResource MemoryPresetButton}" Click="MemoryPreset_Click" />
                                                     <Button Content="12 GiB" Tag="12" Style="{StaticResource MemoryPresetButton}" Margin="0" Click="MemoryPreset_Click" />
                                                 </StackPanel>
                                             </Grid>
-                                            <TextBlock Text="游戏内存上限" Style="{StaticResource FieldLabel}" Margin="0,14,0,2" />
+                                            <TextBlock Text="{local:Text GameMemoryLimit}" Style="{StaticResource FieldLabel}" Margin="0,14,0,2" />
                                             <Grid Margin="0,0,0,16">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="121" /></Grid.ColumnDefinitions>
                                                 <StackPanel>
                                                     <Slider x:Name="MemorySlider" Minimum="1" Maximum="32" TickFrequency="0.5" SmallChange="0.5" LargeChange="1"
                                                             IsSnapToTickEnabled="True" ValueChanged="MemorySlider_ValueChanged"
-                                                            Style="{StaticResource MemoryLimitSlider}" AutomationProperties.Name="游戏内存上限" />
+                                                            Style="{StaticResource MemoryLimitSlider}" AutomationProperties.Name="{local:Text GameMemoryLimit}" />
                                                     <Grid Margin="15,0">
                                                         <TextBlock Text="1 GiB" Style="{StaticResource Caption}" HorizontalAlignment="Left" />
                                                         <TextBlock Text="{Binding Maximum, ElementName=MemorySlider, StringFormat={}{0:0.#} GiB}"
@@ -457,7 +484,7 @@
                                                 <Grid Grid.Column="2" VerticalAlignment="Center">
                                                     <TextBox x:Name="MaximumMemoryText" TextChanged="MaximumMemory_TextChanged" FontSize="19"
                                                              Height="44" Padding="10,6,42,6" HorizontalContentAlignment="Right"
-                                                             AutomationProperties.Name="游戏内存上限（GiB）" />
+                                                             AutomationProperties.Name="{local:Text GameMemoryLimitGib}" />
                                                     <TextBlock Text="GiB" Style="{StaticResource Caption}" HorizontalAlignment="Right"
                                                                VerticalAlignment="Center" Margin="0,0,11,0" IsHitTestVisible="False" />
                                                 </Grid>
@@ -469,9 +496,9 @@
                                                         <StackPanel Margin="0,0,10,0">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Border Width="9" Height="9" CornerRadius="3" Background="{StaticResource MemorySystemBrush}" Margin="0,0,7,0" />
-                                                                <TextBlock Text="系统已用" Style="{StaticResource Caption}" />
+                                                                <TextBlock Text="{local:Text SystemMemoryUsed}" Style="{StaticResource Caption}" />
                                                             </StackPanel>
-                                                            <TextBlock x:Name="PhysicalMemoryText" Text="正在读取" FontSize="16" FontWeight="SemiBold"
+                                                            <TextBlock x:Name="PhysicalMemoryText" Text="{local:Text Reading}" FontSize="16" FontWeight="SemiBold"
                                                                        Typography.NumeralAlignment="Tabular" Margin="0,5,0,0" />
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
@@ -488,7 +515,7 @@
                                                                         </Style>
                                                                     </Border.Style>
                                                                 </Border>
-                                                                <TextBlock Text="可分配给游戏" Style="{StaticResource Caption}" />
+                                                                <TextBlock Text="{local:Text MemoryForGame}" Style="{StaticResource Caption}" />
                                                             </StackPanel>
                                                             <TextBlock x:Name="GameBudgetText" FontSize="16" FontWeight="SemiBold"
                                                                        Typography.NumeralAlignment="Tabular" Margin="0,5,0,0" />
@@ -497,7 +524,7 @@
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Border Width="9" Height="9" CornerRadius="3" Background="{StaticResource MemoryReserveBrush}"
                                                                         BorderBrush="#8B719C" BorderThickness="1" Margin="0,0,7,0" />
-                                                                <TextBlock Text="分配后余量" Style="{StaticResource Caption}" />
+                                                                <TextBlock Text="{local:Text MemoryRemaining}" Style="{StaticResource Caption}" />
                                                             </StackPanel>
                                                             <TextBlock x:Name="MemoryReserveText" FontSize="16" FontWeight="SemiBold"
                                                                        Typography.NumeralAlignment="Tabular" Margin="0,5,0,0" />
@@ -523,109 +550,109 @@
                                         <StackPanel>
                                             <Grid Margin="0,0,0,9">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="游戏窗口" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
-                                                <Button Grid.Column="1" Content="恢复默认值" Style="{StaticResource QuietButton}" MinHeight="31"
+                                                <TextBlock Text="{local:Text GameWindow}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Content="{local:Text RestoreDefaults}" Style="{StaticResource QuietButton}" MinHeight="31"
                                                         Padding="11,5" Click="ResetWindowSettings_Click" />
                                             </Grid>
-                                            <TextBlock Text="默认全屏，分辨率 1920 × 1080。" Style="{StaticResource MutedText}" Margin="0,0,0,14" />
+                                            <TextBlock Text="{local:Text DefaultDisplayMode}" Style="{StaticResource MutedText}" Margin="0,0,0,14" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
-                                                <StackPanel><TextBlock Text="宽度（像素）" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowWidthText" /></StackPanel>
-                                                <StackPanel Grid.Column="2"><TextBlock Text="高度（像素）" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowHeightText" /></StackPanel>
-                                                <CheckBox x:Name="FullscreenCheck" Grid.Column="3" Content="全屏启动" VerticalAlignment="Bottom" Margin="22,0,0,7" />
+                                                <StackPanel><TextBlock Text="{local:Text WidthPixels}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowWidthText" /></StackPanel>
+                                                <StackPanel Grid.Column="2"><TextBlock Text="{local:Text HeightPixels}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowHeightText" /></StackPanel>
+                                                <CheckBox x:Name="FullscreenCheck" Grid.Column="3" Content="{local:Text LaunchFullscreen}" VerticalAlignment="Bottom" Margin="22,0,0,7" />
                                             </Grid>
-                                            <CheckBox x:Name="MinimizeOnLaunchCheck" Content="启动游戏后最小化启动器" Margin="0,20,0,3" />
+                                            <CheckBox x:Name="MinimizeOnLaunchCheck" Content="{local:Text MinimizeAfterLaunch}" Margin="0,20,0,3" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
-                                            <TextBlock Text="启动参数" Style="{StaticResource SectionTitle}" />
+                                            <TextBlock Text="{local:Text LaunchArguments}" Style="{StaticResource SectionTitle}" />
                                             <Grid Margin="0,0,0,8">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="JVM 参数 · 推荐 Java 17 / G1" Style="{StaticResource FieldLabel}" Margin="0" VerticalAlignment="Center" />
-                                                <Button Grid.Column="1" Content="恢复推荐参数" Style="{StaticResource QuietButton}"
+                                                <TextBlock Text="{local:Text JvmArgumentsRecommendation}" Style="{StaticResource FieldLabel}" Margin="0" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Content="{local:Text RestoreJvmArguments}" Style="{StaticResource QuietButton}"
                                                         Padding="11,5" MinHeight="30" Click="ResetJvmArguments_Click" />
                                             </Grid>
                                             <TextBox x:Name="JvmArgumentsText" MinHeight="88" MaxHeight="180" AcceptsReturn="True"
-                                                     TextWrapping="Wrap" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="JVM 参数" />
-                                            <TextBlock Text="推荐配置采用自适应 G1 和 200 ms 暂停目标。可直接编辑，保存后用于下次启动。堆大小由内存设置管理。"
+                                                     TextWrapping="Wrap" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="{local:Text JvmArguments}" />
+                                            <TextBlock Text="{local:Text JvmArgumentsHelp}"
                                                        Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0" />
-                                            <TextBlock Text="游戏参数" Style="{StaticResource FieldLabel}" />
+                                            <TextBlock Text="{local:Text GameArguments}" Style="{StaticResource FieldLabel}" />
                                             <TextBox x:Name="GameArgumentsText" MinHeight="60" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" />
-                                            <TextBlock Text="账号身份与游戏目录由启动器管理。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0" />
+                                            <TextBlock Text="{local:Text GameArgumentsHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
-                                            <TextBlock Text="网络与下载" Style="{StaticResource SectionTitle}" />
-                                            <TextBlock Text="默认自动安排连接，下载中断后可继续。需要限制网速或调整连接数时，可在这里设置。" Style="{StaticResource MutedText}" Margin="0,0,0,16" />
+                                            <TextBlock Text="{local:Text NetworkAndDownloads}" Style="{StaticResource SectionTitle}" />
+                                            <TextBlock Text="{local:Text DownloadSettingsHelp}" Style="{StaticResource MutedText}" Margin="0,0,0,16" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="180" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                                <StackPanel><TextBlock Text="下载总限速（MiB/s）" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="DownloadLimitText" Text="0" /></StackPanel>
-                                                <TextBlock Grid.Column="1" Text="0 表示不限速。此上限由所有下载共用，登录不受影响。" Style="{StaticResource MutedText}" FontSize="11" VerticalAlignment="Bottom" Margin="18,0,0,8" />
+                                                <StackPanel><TextBlock Text="{local:Text TotalSpeedLimit}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="DownloadLimitText" Text="0" /></StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{local:Text DownloadLimitHelp}" Style="{StaticResource MutedText}" FontSize="11" VerticalAlignment="Bottom" Margin="18,0,0,8" />
                                             </Grid>
-                                            <Expander Header="高级连接设置" Margin="0,20,0,0" Foreground="#C8B3D3">
+                                            <Expander Header="{local:Text AdvancedConnections}" Margin="0,20,0,0" Foreground="#C8B3D3">
                                                 <StackPanel Margin="0,12,0,0">
-                                                    <CheckBox x:Name="ManualDownloadConnectionsCheck" Content="手动设置连接数" Checked="DownloadConnections_Changed" Unchecked="DownloadConnections_Changed" Margin="0,0,0,14" />
+                                                    <CheckBox x:Name="ManualDownloadConnectionsCheck" Content="{local:Text ManualConnectionLimits}" Checked="DownloadConnections_Changed" Unchecked="DownloadConnections_Changed" Margin="0,0,0,14" />
                                                     <Grid x:Name="ManualDownloadConnectionsPanel" IsEnabled="False">
                                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                                        <StackPanel><TextBlock Text="同时下载的文件数" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><ComboBox x:Name="ConcurrencyCombo" /></StackPanel>
-                                                        <StackPanel Grid.Column="2"><TextBlock Text="单站点连接数" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><ComboBox x:Name="HostConcurrencyCombo" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="{local:Text ConcurrentFiles}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><ComboBox x:Name="ConcurrencyCombo" /></StackPanel>
+                                                        <StackPanel Grid.Column="2"><TextBlock Text="{local:Text ConnectionsPerHost}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><ComboBox x:Name="HostConcurrencyCombo" /></StackPanel>
                                                     </Grid>
                                                 </StackPanel>
                                             </Expander>
-                                            <TextBlock Text="代理地址" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ProxyText" ToolTip="例如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080" />
-                                            <TextBlock Text="留空使用系统代理。此项作用于启动器的登录与下载，不改变游戏内网络。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0" />
+                                            <TextBlock Text="{local:Text ProxyAddress}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ProxyText" ToolTip="{local:Text ProxyExamples}" />
+                                            <TextBlock Text="{local:Text ProxyHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
-                                        <StackPanel><TextBlock Text="Microsoft 正版登录" Style="{StaticResource SectionTitle}" /><TextBlock Text="兼容网页授权" Foreground="#E2B3D7" FontSize="13" /><TextBlock Text="在独立窗口中通过微软官方网页授权，随后验证 Xbox、Minecraft 角色和 Java 版游戏授权。无需配置 Azure 或填写应用 ID。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,9,0,0" /><TextBlock Text="使用认证组件内置的 Minecraft 授权配置，网页中的应用名称以微软实际显示为准。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,7,0,0" /></StackPanel>
+                                        <StackPanel><TextBlock Text="{local:Text MicrosoftJavaSignIn}" Style="{StaticResource SectionTitle}" /><TextBlock Text="{local:Text CompatibilitySignIn}" Foreground="#E2B3D7" FontSize="13" /><TextBlock Text="{local:Text CompatibilitySignInHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,9,0,0" /><TextBlock Text="{local:Text CompatibilityAppNameHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,7,0,0" /></StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
-                                        <StackPanel><TextBlock Text="外置认证组件" Style="{StaticResource SectionTitle}" /><TextBlock Text="authlib-injector JAR" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="InjectorPathText" /><Button Grid.Column="1" Content="选择文件" Margin="10,0,0,0" Click="ChooseInjector_Click" /></Grid><TextBlock Text="留空时从组件官方来源下载并校验，之后复用本地缓存。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,9,0,0" /></StackPanel>
+                                        <StackPanel><TextBlock Text="{local:Text ExternalAuthComponent}" Style="{StaticResource SectionTitle}" /><TextBlock Text="authlib-injector JAR" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="InjectorPathText" /><Button Grid.Column="1" Content="{local:Text ChooseFile}" Margin="10,0,0,0" Click="ChooseInjector_Click" /></Grid><TextBlock Text="{local:Text AuthlibAutomaticHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,9,0,0" /></StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
                                             <Grid Margin="0,0,0,13">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="更新与存储" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
-                                                <Button x:Name="CheckUpdatesButton" Grid.Column="1" Content="检查更新" Click="CheckUpdates_Click" />
+                                                <TextBlock Text="{local:Text UpdatesAndStorage}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+                                                <Button x:Name="CheckUpdatesButton" Grid.Column="1" Content="{local:Text CheckForUpdates}" Click="CheckUpdates_Click" />
                                             </Grid>
                                             <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <StackPanel Margin="0,0,14,0">
-                                                    <TextBlock FontWeight="SemiBold"><Run Text="启动器 " /><Run Text="{x:Static local:App.LauncherVersion}" /></TextBlock>
-                                                    <TextBlock x:Name="LauncherUpdateStatus" Text="尚未检查更新。" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
+                                                    <TextBlock FontWeight="SemiBold"><Run Text="{local:Text LauncherVersionLabel}" /><Run Text="{x:Static local:App.LauncherVersion}" /></TextBlock>
+                                                    <TextBlock x:Name="LauncherUpdateStatus" Text="{local:Text UpdatesNotChecked}" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
                                                 </StackPanel>
-                                                <Button x:Name="ApplyLauncherUpdateButton" Grid.Column="1" Content="更新并重启" IsEnabled="False"
+                                                <Button x:Name="ApplyLauncherUpdateButton" Grid.Column="1" Content="{local:Text UpdateAndRestart}" IsEnabled="False"
                                                         VerticalAlignment="Center" Click="ApplyLauncherUpdate_Click" />
                                             </Grid>
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <StackPanel Margin="0,0,14,0">
-                                                    <TextBlock Text="整合包" FontWeight="SemiBold" />
-                                                    <TextBlock x:Name="PackUpdateStatus" Text="尚未检查更新。" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{local:Text Modpack}" FontWeight="SemiBold" />
+                                                    <TextBlock x:Name="PackUpdateStatus" Text="{local:Text UpdatesNotChecked}" Style="{StaticResource MutedText}" Margin="0,5,0,0" />
                                                 </StackPanel>
-                                                <Button x:Name="ApplyPackUpdateButton" Grid.Column="1" Content="更新整合包" IsEnabled="False"
+                                                <Button x:Name="ApplyPackUpdateButton" Grid.Column="1" Content="{local:Text UpdateModpack}" IsEnabled="False"
                                                         VerticalAlignment="Center" Click="ApplyPackUpdate_Click" />
                                             </Grid>
-                                            <CheckBox x:Name="AutomaticUpdatesCheck" Content="打开启动器时检查新版本" Margin="0,15,0,0" />
+                                            <CheckBox x:Name="AutomaticUpdatesCheck" Content="{local:Text CheckUpdatesOnStartup}" Margin="0,15,0,0" />
                                             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,16,0,14" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="下载缓存上限为 1 GiB，可随时清理。" Style="{StaticResource MutedText}"
+                                                <TextBlock Text="{local:Text DownloadCacheLimit}" Style="{StaticResource MutedText}"
                                                            VerticalAlignment="Center" Margin="0,0,14,0" />
-                                                <Button x:Name="ClearCacheButton" Grid.Column="1" Content="清理下载缓存" Click="ClearDownloadCache_Click" />
+                                                <Button x:Name="ClearCacheButton" Grid.Column="1" Content="{local:Text ClearDownloadCache}" Click="ClearDownloadCache_Click" />
                                             </Grid>
                                             <TextBlock Text="Aeracy" Style="{StaticResource Caption}" Margin="0,15,0,0" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}">
-                                        <StackPanel><TextBlock Text="存储与界面" Style="{StaticResource SectionTitle}" /><TextBlock Text="整合包安装位置" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="GameDirectoryText" IsReadOnly="True" /><TextBlock Text="整合包安装到启动器自己的 .minecraft 目录。" Style="{StaticResource MutedText}" Margin="0,8,0,9" /><CheckBox x:Name="OptionalModsCheck" Content="导入时包含整合包列出的可选客户端文件" /><CheckBox x:Name="ReducedMotionCheck" Content="减少动态效果" /></StackPanel>
+                                        <StackPanel><TextBlock Text="{local:Text StorageAndAppearance}" Style="{StaticResource SectionTitle}" /><TextBlock Text="{local:Text ModpackInstallLocation}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="GameDirectoryText" IsReadOnly="True" /><TextBlock Text="{local:Text ModpackDirectoryHelp}" Style="{StaticResource MutedText}" Margin="0,8,0,9" /><CheckBox x:Name="OptionalModsCheck" Content="{local:Text IncludeOptionalModFiles}" /><CheckBox x:Name="ReducedMotionCheck" Content="{local:Text ReduceMotion}" /></StackPanel>
                                     </Border>
                                 </StackPanel>
-                            </ScrollViewer>
-                            <Grid Grid.Row="1" Margin="0,10,0,0"><TextBlock Text="设置在保存后用于下一次任务。" Style="{StaticResource MutedText}" VerticalAlignment="Center" /><Button x:Name="SaveSettingsButton" Content="保存设置" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveSettings_Click" /></Grid>
+                            </local:SmoothScrollViewer>
+                            <Grid Grid.Row="1" Margin="0,10,0,0"><TextBlock Text="{local:Text SaveSettingsHelp}" Style="{StaticResource MutedText}" VerticalAlignment="Center" /><Button x:Name="SaveSettingsButton" Content="{local:Text SaveSettings}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SaveSettings_Click" /></Grid>
                         </Grid>
                     </Grid>
                     <Border x:Name="WorkStrip" Grid.Row="2" Visibility="Collapsed" Style="{StaticResource Card}"
@@ -638,22 +665,22 @@
                                     <TextBlock x:Name="WorkStripTitle" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
                                     <TextBlock Grid.Column="1" Style="{StaticResource WorkPercentage}" />
                                 </Grid>
-                                <ProgressBar Height="4" Margin="0,7,0,0" Maximum="100" AutomationProperties.Name="当前任务进度"
+                                <ProgressBar Height="4" Margin="0,7,0,0" Maximum="100" AutomationProperties.Name="{local:Text CurrentTaskProgress}"
                                              Value="{Binding WorkProgressValue, RelativeSource={RelativeSource AncestorType=local:MainWindow}, Mode=OneWay}"
                                              IsIndeterminate="{Binding IsWorkIndeterminate, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
                             </StackPanel>
-                            <Button x:Name="StripCancelButton" Grid.Column="1" Content="取消" Padding="12,4" MinHeight="30" VerticalAlignment="Center" Click="CancelTask_Click" />
+                            <Button x:Name="StripCancelButton" Grid.Column="1" Content="{local:Text Cancel}" Padding="12,4" MinHeight="30" VerticalAlignment="Center" Click="CancelTask_Click" />
                         </Grid>
                     </Border>
                     <Border Grid.Row="3" Style="{StaticResource Card}" Padding="17,10" Margin="0,6,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="226" /></Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center" Margin="0,0,18,0">
-                                <TextBlock x:Name="FooterCaption" Text="启动游戏" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,5" TextTrimming="CharacterEllipsis" />
-                                <TextBlock x:Name="FooterDetail" Text="导入整合包后开始游戏" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="FooterCaption" Text="{local:Text LaunchGame}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,5" TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="FooterDetail" Text="{local:Text ImportBeforePlaying}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <Button x:Name="PrepareButton" Grid.Column="1" Content="补全环境" Style="{StaticResource QuietButton}" VerticalAlignment="Center" Margin="0,0,15,0" Click="Prepare_Click" />
-                            <Button x:Name="LaunchButton" Grid.Column="2" Content="导入整合包" Style="{StaticResource LaunchActionButton}"
+                            <Button x:Name="PrepareButton" Grid.Column="1" Content="{local:Text PrepareEnvironment}" Style="{StaticResource QuietButton}" VerticalAlignment="Center" Margin="0,0,15,0" Click="Prepare_Click" />
+                            <Button x:Name="LaunchButton" Grid.Column="2" Content="{local:Text ImportModpack}" Style="{StaticResource LaunchActionButton}"
                                     VerticalAlignment="Center" Click="Launch_Click" />
                         </Grid>
                     </Border>
@@ -663,7 +690,7 @@
                 <Grid Margin="17,0">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Ellipse Width="5" Height="5" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,9,0" />
-                    <TextBlock x:Name="StatusText" Grid.Column="1" Text="就绪" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                    <TextBlock x:Name="StatusText" Grid.Column="1" Text="{local:Text Ready}" FontSize="11" Foreground="{StaticResource MutedBrush}"
                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,18,0" />
                     <TextBlock Grid.Column="2" Style="{StaticResource Caption}" FontSize="10" VerticalAlignment="Center">
                         <Run Text="ARYS  /  " /><Run Text="{x:Static local:App.LauncherVersion}" />
@@ -673,27 +700,27 @@
             <Grid x:Name="ImportOverlay" Grid.RowSpan="3" Visibility="Collapsed" Background="#D30B0811" KeyboardNavigation.TabNavigation="Cycle">
                 <Border x:Name="ImportDialog" Width="610" MaxHeight="650" VerticalAlignment="Center" HorizontalAlignment="Center"
                         Style="{StaticResource Card}" BorderBrush="#795D80" Padding="27">
-                    <ScrollViewer>
+                    <local:SmoothScrollViewer>
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                <TextBlock x:Name="ImportTitle" Text="导入整合包" FontSize="23" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Style="{StaticResource ChromeButton}" Click="CloseImport_Click" AutomationProperties.Name="关闭导入窗口">
+                                <TextBlock x:Name="ImportTitle" Text="{local:Text ImportModpack}" FontSize="23" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Style="{StaticResource ChromeButton}" Click="CloseImport_Click" AutomationProperties.Name="{local:Text CloseImportDialog}">
                                     <Path Style="{StaticResource ChromeIcon}" Data="M 2,2 L 10,10 M 10,2 L 2,10" />
                                 </Button>
                             </Grid>
                             <StackPanel x:Name="ImportSourcePanel" Margin="0,18,0,0">
-                                <TextBlock Text="从本地选择 .mrpack 或整合包 ZIP" Style="{StaticResource MutedText}" />
-                                <Grid Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="ArchivePathText" IsReadOnly="True" FontSize="11" /><Button x:Name="ChooseArchiveButton" Grid.Column="1" Content="选择文件" Margin="9,0,0,0" Click="ChooseArchive_Click" /></Grid>
+                                <TextBlock Text="{local:Text ChooseLocalPackFile}" Style="{StaticResource MutedText}" />
+                                <Grid Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="ArchivePathText" IsReadOnly="True" FontSize="11" /><Button x:Name="ChooseArchiveButton" Grid.Column="1" Content="{local:Text ChooseFile}" Margin="9,0,0,0" Click="ChooseArchive_Click" /></Grid>
                             </StackPanel>
-                            <TextBlock x:Name="ImportSummary" Text="选择文件后显示整合包信息。" Style="{StaticResource MutedText}" Margin="0,16,0,0" />
-                            <TextBlock Text="整合包名称" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportNameText" />
-                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Minecraft 版本" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportMinecraftText" /></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="Forge 版本" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportForgeText" /></StackPanel></Grid>
-                            <TextBlock Text="版本应与整合包要求一致。ZIP 未提供加载器版本时，请手动填写，例如 47.4.0。" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
+                            <TextBlock x:Name="ImportSummary" Text="{local:Text PackDetailsAfterSelection}" Style="{StaticResource MutedText}" Margin="0,16,0,0" />
+                            <TextBlock Text="{local:Text ModpackName}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportNameText" />
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{local:Text MinecraftVersion}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportMinecraftText" /></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="{local:Text ForgeVersion}" Style="{StaticResource FieldLabel}" /><TextBox x:Name="ImportForgeText" /></StackPanel></Grid>
+                            <TextBlock Text="{local:Text ImportLoaderVersionHelp}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,10,0,0" />
                             <TextBlock x:Name="ImportErrorText" Foreground="#F0A6BD" TextWrapping="Wrap" Margin="0,13,0,0" Visibility="Collapsed" />
-                            <Button x:Name="CommitImportButton" Content="开始导入" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" Margin="0,22,0,0" MinWidth="130" Click="CommitImport_Click" IsEnabled="False" />
+                            <Button x:Name="CommitImportButton" Content="{local:Text StartImport}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" Margin="0,22,0,0" MinWidth="130" Click="CommitImport_Click" IsEnabled="False" />
                         </StackPanel>
-                    </ScrollViewer>
+                    </local:SmoothScrollViewer>
                 </Border>
             </Grid>
         </Grid>

@@ -8,6 +8,7 @@ internal sealed class PendingFileChange
     public string Path { get; set; } = "";
     public ManagedFile? Original { get; set; }
     public ManagedFile? Replacement { get; set; }
+    public bool CheckModIdentity { get; set; }
 }
 
 internal sealed class UpdateJournal
@@ -51,21 +52,21 @@ internal sealed class FileUpdateTransaction
             Path.GetDirectoryName(fullPath) != Path.GetFullPath(storage.Updates) ||
             !Guid.TryParseExact(Path.GetFileName(fullPath), "N", out _))
         {
-            throw new IOException("更新工作目录无效。");
+            throw new IOException(LauncherText.Get("UpdateWorkDirectoryInvalid"));
         }
         UpdatePaths.Target(fullPath, "journal.json");
         var journalPath = Path.Combine(fullPath, "journal.json");
         if (new FileInfo(journalPath).Length > 8 * 1024 * 1024)
         {
-            throw new InvalidDataException("更新恢复记录过大。");
+            throw new InvalidDataException(LauncherText.Get("UpdateJournalTooLarge"));
         }
         var journal = JsonSerializer.Deserialize<UpdateJournal>(File.ReadAllText(journalPath), LauncherStorage.JsonOptions)
-            ?? throw new InvalidDataException("更新恢复记录为空。");
+            ?? throw new InvalidDataException(LauncherText.Get("UpdateJournalEmpty"));
         var expectedRoot = journal.Kind == UpdateKind.Launcher ? launcherRoot : storage.GameDirectory;
         if (!Path.GetFullPath(journal.TargetRoot).Equals(Path.GetFullPath(expectedRoot), StringComparison.OrdinalIgnoreCase) ||
             journal.State is not ("prepared" or "applying" or "committed") || journal.Changes.Count > 30000)
         {
-            throw new InvalidDataException("更新恢复记录与安装位置不符。");
+            throw new InvalidDataException(LauncherText.Get("UpdateJournalLocationMismatch"));
         }
         journal.Release.Validate(journal.Kind);
         foreach (var change in journal.Changes)
@@ -73,14 +74,14 @@ internal sealed class FileUpdateTransaction
             UpdatePaths.ValidateFile(new ManagedFile { Path = change.Path, Size = 0, Sha256 = new string('0', 64) }, journal.Kind);
             if (change.Original == null && change.Replacement == null)
             {
-                throw new InvalidDataException("更新恢复记录缺少文件信息。");
+                throw new InvalidDataException(LauncherText.Get("UpdateJournalMissingFiles"));
             }
             foreach (var file in new[] { change.Original, change.Replacement }.OfType<ManagedFile>())
             {
                 UpdatePaths.ValidateFile(file, journal.Kind);
                 if (!file.Path.Equals(change.Path, StringComparison.Ordinal))
                 {
-                    throw new InvalidDataException("更新恢复记录存在不同的文件路径。");
+                    throw new InvalidDataException(LauncherText.Get("UpdateJournalPathMismatch"));
                 }
             }
         }
@@ -100,11 +101,11 @@ internal sealed class FileUpdateTransaction
             var target = UpdatePaths.Target(Journal.TargetRoot, change.Path);
             if (change.Original == null ? File.Exists(target) : !await UpdatePaths.MatchesAsync(target, change.Original, cancellationToken))
             {
-                throw new IOException($"准备更新时文件发生了变化，请重新检查。{change.Path}");
+                throw new IOException(LauncherText.Get("UpdateFileChangedDuringPrepare", change.Path));
             }
             if (change.Replacement != null && !await UpdatePaths.MatchesAsync(StagedPath(change.Path), change.Replacement, cancellationToken))
             {
-                throw new IOException($"更新文件校验失败。{change.Path}");
+                throw new IOException(LauncherText.Get("UpdateFileHashMismatch", change.Path));
             }
         }
 
@@ -179,13 +180,13 @@ internal sealed class FileUpdateTransaction
             {
                 if (change.Original == null || !await UpdatePaths.MatchesAsync(backup, change.Original, CancellationToken.None))
                 {
-                    throw new IOException($"更新备份校验失败。{change.Path}");
+                    throw new IOException(LauncherText.Get("UpdateBackupHashMismatch", change.Path));
                 }
                 if (File.Exists(target))
                 {
                     if (change.Replacement == null || !await UpdatePaths.MatchesAsync(target, change.Replacement, CancellationToken.None))
                     {
-                        throw new IOException($"恢复更新时遇到已修改的文件。{change.Path}");
+                        throw new IOException(LauncherText.Get("UpdateRecoveryFileChanged", change.Path));
                     }
                     File.Delete(target);
                 }
@@ -196,7 +197,7 @@ internal sealed class FileUpdateTransaction
             {
                 if (!await UpdatePaths.MatchesAsync(target, change.Replacement, CancellationToken.None))
                 {
-                    throw new IOException($"恢复更新时遇到已修改的文件。{change.Path}");
+                    throw new IOException(LauncherText.Get("UpdateRecoveryFileChanged", change.Path));
                 }
                 File.Delete(target);
             }
@@ -214,7 +215,7 @@ internal sealed class FileUpdateTransaction
     {
         if (Journal.Kind == UpdateKind.Pack)
         {
-            var instance = storage.Installation ?? throw new InvalidDataException("整合包安装记录不存在。");
+            var instance = storage.Installation ?? throw new InvalidDataException(LauncherText.Get("InstallationRecordMissing"));
             var release = Journal.Release.Pack!;
             if (instance.MinecraftVersion != release.MinecraftVersion || instance.ForgeVersion != release.ForgeVersion)
             {
@@ -236,7 +237,7 @@ internal sealed class FileUpdateTransaction
         return kind == UpdateKind.Launcher ? "launcher-files.json" : "pack-files.json";
     }
 
-    private void Save()
+    internal void Save()
     {
         var path = Path.Combine(DirectoryPath, "journal.json");
         using (var stream = new FileStream(path + ".new", FileMode.Create, FileAccess.Write, FileShare.None))

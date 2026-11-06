@@ -39,30 +39,30 @@ public sealed class LauncherSettings
     {
         if (MaximumMemoryMb < 256 || MaximumMemoryMb > 131072)
         {
-            throw new InvalidOperationException("游戏内存上限应为 256–131072 MiB。");
+            throw new InvalidOperationException(LauncherText.Get("MemoryLimitInvalid"));
         }
         if (WindowWidth < 640 || WindowWidth > 16384 || WindowHeight < 360 || WindowHeight > 16384)
         {
-            throw new InvalidOperationException("窗口宽度应为 640–16384，高度应为 360–16384。");
+            throw new InvalidOperationException(LauncherText.Get("WindowSizeInvalid"));
         }
         if (DownloadConcurrency < 1 || DownloadConcurrency > 32 || PerHostConnections < 1 || PerHostConnections > 16)
         {
-            throw new InvalidOperationException("下载并发应为 1–32，单站点并发应为 1–16。");
+            throw new InvalidOperationException(LauncherText.Get("DownloadConcurrencyInvalid"));
         }
         if (!double.IsFinite(DownloadLimitMiBPerSecond) ||
             DownloadLimitMiBPerSecond != 0 && (DownloadLimitMiBPerSecond < 0.1 || DownloadLimitMiBPerSecond > 102400))
         {
-            throw new InvalidOperationException("下载总限速填 0 表示不限速，或填写 0.1–102400 MiB/s。");
+            throw new InvalidOperationException(LauncherText.Get("DownloadSpeedLimitInvalid"));
         }
         if (!string.IsNullOrWhiteSpace(ProxyAddress) &&
             (!Uri.TryCreate(ProxyAddress, UriKind.Absolute, out var proxy) ||
                 proxy.Scheme is not ("http" or "https" or "socks5") || !string.IsNullOrEmpty(proxy.UserInfo)))
         {
-            throw new InvalidOperationException("代理地址需使用 http、https 或 socks5，不在地址内保存密码。");
+            throw new InvalidOperationException(LauncherText.Get("ProxyAddressInvalid"));
         }
         if (!AutomaticJavaSelection && !string.IsNullOrWhiteSpace(JavaPath) && !File.Exists(JavaPath))
         {
-            throw new InvalidOperationException("指定的 Java 程序不存在。");
+            throw new InvalidOperationException(LauncherText.Get("JavaExecutableMissing"));
         }
         if (!string.IsNullOrWhiteSpace(AuthenticationServerAddress))
         {
@@ -97,14 +97,14 @@ public sealed class LauncherAccount
     {
         get
         {
-            return Kind == AccountKind.Microsoft ? "Microsoft · 正版账号" :
-                $"{(string.IsNullOrEmpty(ServerName) ? new Uri(ServerAddress).Host : ServerName)} · 外置认证";
+            return Kind == AccountKind.Microsoft ? LauncherText.Get("MicrosoftAccountDescription") :
+                LauncherText.Get("ExternalAccountDescription", (string.IsNullOrEmpty(ServerName) ? new Uri(ServerAddress).Host : ServerName));
         }
     }
 
     public override string ToString()
     {
-        return $"{PlayerName}  ·  {(Kind == AccountKind.Microsoft ? "Microsoft" : "外置认证")}";
+        return $"{PlayerName}  ·  {(Kind == AccountKind.Microsoft ? "Microsoft" : LauncherText.Get("ExternalAuthentication"))}";
     }
 }
 
@@ -114,6 +114,8 @@ public sealed class AccountTokens
     public string RefreshToken { get; set; } = "";
     public string ClientToken { get; set; } = "";
     public string Xuid { get; set; } = "";
+    public string XboxUserToken { get; set; } = "";
+    public DateTimeOffset XboxUserTokenExpiresAt { get; set; }
 }
 
 public sealed class GameInstallation
@@ -128,13 +130,14 @@ public sealed class GameInstallation
     public string PackVersion { get; set; } = "";
     public int ModCount { get; set; }
     public DateTimeOffset ImportedAt { get; set; } = DateTimeOffset.UtcNow;
+    public bool NeedsFirstLaunchCleanup { get; set; }
 
     [JsonIgnore]
     public string VersionLabel
     {
         get
         {
-            return $"Minecraft {MinecraftVersion}  /  {(string.IsNullOrEmpty(ForgeVersion) ? "原版或自带加载器" : "Forge " + ForgeVersion)}";
+            return $"Minecraft {MinecraftVersion}  /  {(string.IsNullOrEmpty(ForgeVersion) ? LauncherText.Get("VanillaOrBundledLoader") : "Forge " + ForgeVersion)}";
         }
     }
 
@@ -159,7 +162,8 @@ public sealed record PackPlan(
     IReadOnlyList<PackFile> Downloads,
     IReadOnlyList<ArchiveFile> Entries,
     long ExtractedBytes,
-    int OptionalFiles)
+    int OptionalFiles,
+    bool IsArysPack)
 {
     public long DownloadBytes
     {

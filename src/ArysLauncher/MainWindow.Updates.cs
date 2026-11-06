@@ -10,25 +10,34 @@ public partial class MainWindow
     private UpdateManifest? packRelease;
     private bool checkingUpdates;
 
-    private async Task CheckUpdatesAsync()
+    private async Task CheckUpdatesAsync(UpdateKind? requestedKind = null, bool applyPack = false)
     {
         if (checkingUpdates || IsBusy || closed)
         {
             return;
         }
         checkingUpdates = true;
+        if (requestedKind != UpdateKind.Launcher)
+        {
+            packRelease = null;
+        }
         RefreshUpdateButtons();
         try
         {
             updates = new LauncherUpdates(storage);
-            LauncherUpdateStatus.Text = "正在检查启动器版本。";
-            PackUpdateStatus.Text = "正在检查整合包版本。";
-            foreach (var kind in Enum.GetValues<UpdateKind>())
+            var kinds = requestedKind.HasValue ? new[] { requestedKind.Value } : Enum.GetValues<UpdateKind>();
+            foreach (var kind in kinds)
             {
                 var status = kind == UpdateKind.Launcher ? LauncherUpdateStatus : PackUpdateStatus;
+                status.Text = kind == UpdateKind.Launcher ? LauncherText.Get("CheckingLauncherVersion") : LauncherText.Get("ComparingPackFiles");
+                if (kind == UpdateKind.Pack)
+                {
+                    InstallationUpdateStatus.Text = status.Text;
+                }
                 try
                 {
-                    var release = await updates.CheckAsync(kind, windowLifetime.Token);
+                    var token = windowLifetime.Token;
+                    var release = await Task.Run(() => updates.CheckAsync(kind, token), token);
                     if (kind == UpdateKind.Launcher)
                     {
                         launcherRelease = release;
@@ -38,16 +47,21 @@ public partial class MainWindow
                         packRelease = release;
                     }
                     var source = updates.Channel.ManifestAddress(kind);
-                    status.Text = source == null ? "发行者尚未配置更新来源。" : release == null ?
-                        kind == UpdateKind.Pack && storage.Installation == null ? "导入整合包后可检查更新。" : "当前已是最新版本。" :
-                        $"发现 {release.Version}，可以更新。";
+                    status.Text = source == null ? LauncherText.Get("UpdateSourceUnconfigured") : release == null ?
+                        kind == UpdateKind.Pack && storage.Installation == null ? LauncherText.Get("InstallBeforeChecking") : LauncherText.Get("UpToDate") :
+                        LauncherText.Get("UpdateAvailable", release.Version);
                     status.ToolTip = release?.ReleaseNotes;
+                    if (kind == UpdateKind.Pack)
+                    {
+                        InstallationUpdateStatus.Text = status.Text;
+                        InstallationUpdateStatus.ToolTip = status.ToolTip;
+                    }
                 }
                 catch (OperationCanceledException) when (windowLifetime.IsCancellationRequested)
                 {
                     return;
                 }
-                catch (Exception exception) when (exception is IOException or System.Net.Http.HttpRequestException or
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Net.Http.HttpRequestException or
                     System.Security.Cryptography.CryptographicException or OperationCanceledException or System.Text.Json.JsonException)
                 {
                     if (kind == UpdateKind.Launcher)
@@ -58,19 +72,29 @@ public partial class MainWindow
                     {
                         packRelease = null;
                     }
-                    status.Text = "暂时无法检查更新，可稍后重试。";
+                    status.Text = LauncherText.Get("UpdateCheckFailed");
                     status.ToolTip = exception.Message;
+                    if (kind == UpdateKind.Pack)
+                    {
+                        InstallationUpdateStatus.Text = status.Text;
+                        InstallationUpdateStatus.ToolTip = exception.Message;
+                    }
                 }
             }
         }
         catch (Exception exception) when (exception is IOException or System.Text.Json.JsonException)
         {
             LauncherUpdateStatus.Text = PackUpdateStatus.Text = exception.Message;
+            InstallationUpdateStatus.Text = exception.Message;
         }
         finally
         {
             checkingUpdates = false;
             RefreshUpdateButtons();
+        }
+        if (applyPack && packRelease != null && !closed)
+        {
+            await ApplyUpdateAsync(UpdateKind.Pack, packRelease);
         }
     }
 
@@ -84,12 +108,19 @@ public partial class MainWindow
         CheckUpdatesButton.IsEnabled = !IsBusy && !checkingUpdates;
         ApplyLauncherUpdateButton.IsEnabled = available && launcherRelease != null;
         ApplyPackUpdateButton.IsEnabled = available && packRelease != null && storage.Installation != null;
+        CheckPackUpdatesButton.IsEnabled = available && storage.Installation != null;
+        CheckPackUpdatesButton.Content = checkingUpdates ? LauncherText.Get("CheckingUpdates") : LauncherText.Get("CheckForUpdates");
         ClearCacheButton.IsEnabled = !IsBusy;
     }
 
     private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
     {
         await CheckUpdatesAsync();
+    }
+
+    private async void CheckPackUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        await CheckUpdatesAsync(UpdateKind.Pack, applyPack: true);
     }
 
     private async void ApplyLauncherUpdate_Click(object sender, RoutedEventArgs e)
@@ -102,16 +133,17 @@ public partial class MainWindow
         await ApplyUpdateAsync(UpdateKind.Pack);
     }
 
-    private async Task ApplyUpdateAsync(UpdateKind kind)
+    private async Task ApplyUpdateAsync(UpdateKind kind, UpdateManifest? checkedRelease = null)
     {
         if (IsBusy || checkingUpdates || runningGame != null || updates == null)
         {
             return;
         }
         var completed = false;
-        await RunOperationAsync(kind == UpdateKind.Launcher ? "更新启动器" : "更新整合包", async (token, progress) =>
+        await RunOperationAsync(kind == UpdateKind.Launcher ? LauncherText.Get("UpdateLauncher") : LauncherText.Get("UpdateModpack"), async (token, progress) =>
         {
-            var release = await updates.CheckAsync(kind, token) ?? throw new InvalidOperationException("更新状态已变化，请重新检查。");
+            var release = checkedRelease ?? await Task.Run(() => updates.CheckAsync(kind, token), token) ??
+                throw new InvalidOperationException(LauncherText.Get("UpdateStatusChanged"));
             var transaction = await Task.Run(() => updates.PrepareAsync(release, progress, token), token);
             if (kind == UpdateKind.Launcher)
             {
@@ -128,7 +160,7 @@ public partial class MainWindow
             }
             else
             {
-                progress.Report(new WorkSnapshot("正在应用更新", "保存当前文件并应用新版本。", 0, 0, 0, 0, 0, 0, true));
+                progress.Report(new WorkSnapshot(LauncherText.Get("ApplyingUpdate"), LauncherText.Get("ReplacingPackFiles"), 0, 0, 0, 0, 0, 0, true));
                 await Task.Run(() => transaction.ApplyAsync(token), CancellationToken.None);
                 packRelease = null;
                 RefreshPresentation();
@@ -143,7 +175,7 @@ public partial class MainWindow
 
     private async void ClearDownloadCache_Click(object sender, RoutedEventArgs e)
     {
-        await RunOperationAsync("清理下载缓存", (token, _) => Task.Run(() =>
+        await RunOperationAsync(LauncherText.Get("ClearDownloadCache"), (token, _) => Task.Run(() =>
         {
             token.ThrowIfCancellationRequested();
             DownloadCache.Clear(storage);

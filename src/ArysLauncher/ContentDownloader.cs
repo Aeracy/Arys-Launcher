@@ -87,7 +87,7 @@ public sealed class ContentDownloader : IDisposable
                     }
                 }
             }
-            throw new IOException("文件下载未完成。已保留可恢复的数据，请检查网络或代理后重新导入。", lastFailure);
+            throw new IOException(LauncherText.Get("DownloadIncomplete"), lastFailure);
         }
         finally
         {
@@ -125,14 +125,14 @@ public sealed class ContentDownloader : IDisposable
         headerTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
         if (response.RequestMessage?.RequestUri?.Scheme != "https")
         {
-            throw new InvalidDataException("下载源重定向到了非 HTTPS 地址。");
+            throw new InvalidDataException(LauncherText.Get("DownloadRedirectInsecure"));
         }
         if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable)
         {
             var delay = response.Headers.RetryAfter?.Delta ??
                 (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow) ?? TimeSpan.FromSeconds(2);
             await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(delay.TotalSeconds, 1, 30)), cancellationToken);
-            throw new HttpRequestException("下载源暂时限流。", null, response.StatusCode);
+            throw new HttpRequestException(LauncherText.Get("DownloadRateLimited"), null, response.StatusCode);
         }
         response.EnsureSuccessStatusCode();
         if (response.StatusCode == HttpStatusCode.PartialContent)
@@ -141,7 +141,7 @@ public sealed class ContentDownloader : IDisposable
             if (range?.From != offset || range.Length != request.Size || range.To != request.Size - 1)
             {
                 File.Delete(destination);
-                throw new IOException("下载源返回的续传范围与文件不一致。");
+                throw new IOException(LauncherText.Get("DownloadRangeMismatch"));
             }
         }
         else
@@ -150,7 +150,7 @@ public sealed class ContentDownloader : IDisposable
         }
         if (response.Content.Headers.ContentLength is long responseLength && responseLength != request.Size - offset)
         {
-            throw new IOException("下载源返回的文件大小与整合包清单不一致。");
+            throw new IOException(LauncherText.Get("DownloadSizeMismatch"));
         }
         var buffer = ArrayPool<byte>.Shared.Rent(128 * 1024);
         try
@@ -170,7 +170,7 @@ public sealed class ContentDownloader : IDisposable
                     var count = await output.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, remaining)), cancellationToken);
                     if (count == 0)
                     {
-                        throw new EndOfStreamException("续传文件已改变。");
+                        throw new EndOfStreamException(LauncherText.Get("DownloadPartialChanged"));
                     }
                     hash.AppendData(buffer, 0, count);
                     remaining -= count;
@@ -192,7 +192,7 @@ public sealed class ContentDownloader : IDisposable
                 }
                 if (written + count > request.Size)
                 {
-                    throw new IOException("下载源返回的数据超过了清单大小。");
+                    throw new IOException(LauncherText.Get("DownloadTooLarge"));
                 }
                 hash.AppendData(buffer, 0, count);
                 await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
@@ -206,7 +206,7 @@ public sealed class ContentDownloader : IDisposable
                 output.Close();
                 File.Delete(destination);
                 progress.FileBytes(index, 0);
-                throw new IOException("下载文件未通过完整性校验，将重新获取。");
+                throw new IOException(LauncherText.Get("DownloadHashMismatch"));
             }
         }
         finally
@@ -224,7 +224,7 @@ public sealed class ContentDownloader : IDisposable
             "SHA512" => await SHA512.HashDataAsync(stream, cancellationToken),
             "SHA256" => await SHA256.HashDataAsync(stream, cancellationToken),
             "SHA1" => await SHA1.HashDataAsync(stream, cancellationToken),
-            _ => throw new InvalidDataException("不支持的文件校验算法。")
+            _ => throw new InvalidDataException(LauncherText.Get("DownloadAlgorithmUnsupported"))
         };
         return Convert.ToHexString(hash).Equals(request.Hash, StringComparison.OrdinalIgnoreCase);
     }
@@ -236,7 +236,7 @@ public sealed class ContentDownloader : IDisposable
             request.Size < 0 || request.Size > 16L * 1024 * 1024 * 1024 || request.Sources.Count == 0 ||
             request.Sources.Any(uri => uri.Scheme != "https" || !string.IsNullOrEmpty(uri.UserInfo)))
         {
-            throw new InvalidDataException("文件清单中的大小、哈希或下载地址无效。");
+            throw new InvalidDataException(LauncherText.Get("DownloadRecordInvalid"));
         }
     }
 

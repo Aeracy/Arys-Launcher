@@ -24,6 +24,55 @@ public sealed class AtmosphereView : FrameworkElement
     private StreamGeometry? glowOrbit;
     private bool reducedMotion;
     private bool subscribed;
+    private bool isBackdrop;
+    private StarfieldBackdrop? backdrop;
+    private Window? owner;
+    private TimeSpan lastFrame = TimeSpan.MinValue;
+    private readonly RotateTransform clockwiseOrbit = new();
+    private readonly RotateTransform counterOrbit = new();
+
+    public bool IsBackdrop
+    {
+        get
+        {
+            return isBackdrop;
+        }
+        set
+        {
+            if (isBackdrop == value)
+            {
+                return;
+            }
+            isBackdrop = value;
+            if (value)
+            {
+                backdrop = new StarfieldBackdrop();
+                AddVisualChild(backdrop);
+                backdrop.Resize(RenderSize);
+                backdrop.Update(seconds, 0, reducedMotion);
+            }
+            else if (backdrop != null)
+            {
+                RemoveVisualChild(backdrop);
+                backdrop = null;
+            }
+            InvalidateVisual();
+        }
+    }
+
+    protected override int VisualChildrenCount => backdrop == null ? 0 : 1;
+
+    protected override Visual GetVisualChild(int index)
+    {
+        return index == 0 && backdrop != null ? backdrop : throw new ArgumentOutOfRangeException(nameof(index));
+    }
+
+    protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+    {
+        base.OnRenderSizeChanged(sizeInfo);
+        backdrop?.Resize(RenderSize);
+        backdrop?.Update(seconds, 0, reducedMotion);
+    }
 
     public bool ReducedMotion
     {
@@ -35,6 +84,7 @@ public sealed class AtmosphereView : FrameworkElement
         {
             reducedMotion = value;
             UpdateSubscription();
+            backdrop?.Update(seconds, 0, value);
             InvalidateVisual();
         }
     }
@@ -43,20 +93,22 @@ public sealed class AtmosphereView : FrameworkElement
     {
         stars = Enumerable.Range(0, 32).Select(index =>
             ((index * 0.61803398875) % 1, (index * 0.38196601125) % 1, index * 2.399963)).ToArray();
-        Loaded += (_, _) => UpdateSubscription();
-        Unloaded += (_, _) => Unsubscribe();
+        Loaded += (_, _) => AttachWindow();
+        Unloaded += (_, _) => DetachWindow();
         IsVisibleChanged += (_, _) => UpdateSubscription();
     }
 
     private void UpdateSubscription()
     {
-        if (IsLoaded && IsVisible && !reducedMotion && !subscribed)
+        var active = IsLoaded && IsVisible && !reducedMotion && owner?.IsActive != false &&
+            owner?.WindowState != WindowState.Minimized;
+        if (active && !subscribed)
         {
             previousTime = 0;
             CompositionTarget.Rendering += Frame;
             subscribed = true;
         }
-        else if ((!IsLoaded || !IsVisible || reducedMotion) && subscribed)
+        else if (!active && subscribed)
         {
             Unsubscribe();
         }
@@ -67,22 +119,61 @@ public sealed class AtmosphereView : FrameworkElement
         CompositionTarget.Rendering -= Frame;
         subscribed = false;
         previousTime = 0;
+        lastFrame = TimeSpan.MinValue;
+    }
+
+    private void AttachWindow()
+    {
+        DetachWindow();
+        owner = Window.GetWindow(this);
+        if (owner != null)
+        {
+            owner.Activated += OwnerStateChanged;
+            owner.Deactivated += OwnerStateChanged;
+            owner.StateChanged += OwnerStateChanged;
+        }
+        UpdateSubscription();
+    }
+
+    private void DetachWindow()
+    {
+        Unsubscribe();
+        if (owner != null)
+        {
+            owner.Activated -= OwnerStateChanged;
+            owner.Deactivated -= OwnerStateChanged;
+            owner.StateChanged -= OwnerStateChanged;
+            owner = null;
+        }
+    }
+
+    private void OwnerStateChanged(object? sender, EventArgs e)
+    {
+        UpdateSubscription();
     }
 
     private void Frame(object? sender, EventArgs e)
     {
+        if (e is RenderingEventArgs frame)
+        {
+            if (lastFrame == frame.RenderingTime)
+            {
+                return;
+            }
+            lastFrame = frame.RenderingTime;
+        }
         var now = Stopwatch.GetTimestamp();
-        if (Window.GetWindow(this)?.WindowState == WindowState.Minimized)
-        {
-            previousTime = 0;
-            return;
-        }
-        if (previousTime != 0)
-        {
-            seconds += Math.Clamp(Stopwatch.GetElapsedTime(previousTime, now).TotalSeconds, 0, 0.1);
-        }
+        var elapsed = previousTime == 0 ? 0 : Math.Clamp(Stopwatch.GetElapsedTime(previousTime, now).TotalSeconds, 0, 0.1);
+        seconds += elapsed;
         previousTime = now;
-        InvalidateVisual();
+        if (backdrop != null)
+        {
+            backdrop.Update(seconds, elapsed, reducedMotion);
+        }
+        else
+        {
+            InvalidateVisual();
+        }
     }
 
     protected override void OnRender(DrawingContext drawing)
@@ -90,6 +181,12 @@ public sealed class AtmosphereView : FrameworkElement
         base.OnRender(drawing);
         if (ActualWidth < 80 || ActualHeight < 80)
         {
+            return;
+        }
+        if (IsBackdrop)
+        {
+            backdrop?.Resize(RenderSize);
+            backdrop?.Update(seconds, 0, reducedMotion);
             return;
         }
         var center = new Point(ActualWidth * 0.53, ActualHeight * 0.51);
@@ -100,6 +197,8 @@ public sealed class AtmosphereView : FrameworkElement
             outerOrbit = CreateOrbit(center, radius + 15, 8);
             innerOrbit = CreateOrbit(center, radius - 23, 12);
             glowOrbit = CreateOrbit(center, radius + 19, 8);
+            clockwiseOrbit.CenterX = counterOrbit.CenterX = center.X;
+            clockwiseOrbit.CenterY = counterOrbit.CenterY = center.Y;
         }
         var breath = 0.68 + Math.Sin(seconds * 0.42) * 0.15;
         drawing.PushOpacity(breath);
@@ -107,11 +206,13 @@ public sealed class AtmosphereView : FrameworkElement
         drawing.Pop();
         drawing.DrawEllipse(null, RingPen, center, radius, radius);
         drawing.DrawEllipse(null, InnerPen, center, radius - 8, radius - 8);
-        drawing.PushTransform(new RotateTransform(seconds * 2, center.X, center.Y));
+        clockwiseOrbit.Angle = seconds * 2;
+        drawing.PushTransform(clockwiseOrbit);
         drawing.DrawGeometry(null, FinePen, outerOrbit);
         drawing.DrawGeometry(null, GlowPen, glowOrbit);
         drawing.Pop();
-        drawing.PushTransform(new RotateTransform(-seconds * 3, center.X, center.Y));
+        counterOrbit.Angle = -seconds * 3;
+        drawing.PushTransform(counterOrbit);
         drawing.DrawGeometry(null, InnerPen, innerOrbit);
         drawing.Pop();
         for (var index = 0; index < 12; index++)

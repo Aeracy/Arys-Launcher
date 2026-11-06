@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AccountDecryptionFailed" xml:space="preserve"><value>This Windows user could not decrypt the session. Sign in again to save a new session.</value></data>
+  <data name="AccountRemoved" xml:space="preserve"><value>This account was removed from the launcher.</value></data>
+  <data name="Accounts" xml:space="preserve"><value>Accounts</value></data>
+  <data name="AccountsPageDescription" xml:space="preserve"><value>Choose an account for the game.</value></data>
+  <data name="AddAccountLink" xml:space="preserve"><value>Add account  ↗</value></data>
+  <data name="AdvancedConnections" xml:space="preserve"><value>Advanced connection settings</value></data>
+  <data name="ApplyingClientOverrides" xml:space="preserve"><value>Applying the modpack's client overrides</value></data>
+  <data name="ApplyingPackConfig" xml:space="preserve"><value>Applying configuration</value></data>
+  <data name="ApplyingUpdate" xml:space="preserve"><value>Applying update</value></data>
+  <data name="ArchiveEntryIncomplete" xml:space="preserve"><value>A file in the archive is incomplete.</value></data>
+  <data name="ArchiveExpandedEntryTooLarge" xml:space="preserve"><value>The extracted data exceeds the size declared in the archive.</value></data>
+  <data name="AuthenticationApiExample" xml:space="preserve"><value>Use the URL provided by the service, such as https://skin.example/api/yggdrasil/.</value></data>
+  <data name="AuthenticationApiUrl" xml:space="preserve"><value>Authentication API URL</value></data>
+  <data name="AuthenticationServerName" xml:space="preserve"><value>Authentication server name</value></data>
+  <data name="AuthenticationSettingsSaved" xml:space="preserve"><value>Authentication settings saved.</value></data>
+  <data name="AuthHttpFailure" xml:space="preserve"><value>{0} failed (HTTP {1}). {2}</value></data>
+  <data name="AuthlibAddressUnexpected" xml:space="preserve"><value>The authlib-injector service returned an unexpected download URL.</value></data>
+  <data name="AuthlibAutomaticHelp" xml:space="preserve"><value>Leave blank to download and verify authlib-injector from its official source. Future launches reuse the cached file.</value></data>
+  <data name="AuthlibCacheInvalid" xml:space="preserve"><value>The cached external authentication component is invalid. Select an authlib-injector JAR in Settings.</value></data>
+  <data name="AuthlibJarMissing" xml:space="preserve"><value>The selected authlib-injector JAR is missing.</value></data>
+  <data name="AuthlibSizeMissing" xml:space="preserve"><value>The download source did not provide a file size. Select an authlib-injector JAR in Settings.</value></data>
+  <data name="AuthResponseFieldMissing" xml:space="preserve"><value>The authentication response is missing {0}.</value></data>
+  <data name="AuthResponseUnrecognized" xml:space="preserve"><value>The authentication server sent an unrecognized response (HTTP {0}).</value></data>
+  <data name="AutoJoinAddressInvalid" xml:space="preserve"><value>Enter a host or IP address, with an optional port such as play.example.com:25565.</value></data>
+  <data name="AutoJoinServerHelp" xml:space="preserve"><value>Enter the game server host or IP, with an optional port. Leave blank to open the main menu.</value></data>
+  <data name="AutoJoinServerOptional" xml:space="preserve"><value>Auto-join server (optional)</value></data>
+  <data name="Automatic" xml:space="preserve"><value>Automatic</value></data>
+  <data name="AutomaticAllocation" xml:space="preserve"><value>Automatic</value></data>
+  <data name="AvatarAddressInvalid" xml:space="preserve"><value>The avatar address is invalid.</value></data>
+  <data name="AvatarDimensionsTooLarge" xml:space="preserve"><value>The avatar image exceeds the size limit.</value></data>
+  <data name="AvatarRedirectLimit" xml:space="preserve"><value>The avatar download followed too many redirects.</value></data>
+  <data name="AvatarRequiresHttps" xml:space="preserve"><value>Avatar downloads require HTTPS.</value></data>
+  <data name="AvatarResponseTooLarge" xml:space="preserve"><value>The avatar service response exceeds the size limit.</value></data>
+  <data name="BrowseFilesLink" xml:space="preserve"><value>Browse files  →</value></data>
+  <data name="BundledPackDescription" xml:space="preserve"><value>The official modpack is included. Setup downloads the required files.</value></data>
+  <data name="CacheHitCount" xml:space="preserve"><value>Cached {0}</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled.</value></data>
+  <data name="CancellingTask" xml:space="preserve"><value>Cancelling task.</value></data>
+  <data name="CancelTask" xml:space="preserve"><value>Cancel task</value></data>
+  <data name="CharacterSelectionCancelled" xml:space="preserve"><value>Character selection cancelled.</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="CheckingGameResources" xml:space="preserve"><value>Reusing verified files and filling in missing resources.</value></data>
+  <data name="CheckingLauncherVersion" xml:space="preserve"><value>Checking the launcher version.</value></data>
+  <data name="CheckingLocalJava" xml:space="preserve"><value>Checking local Java.</value></data>
+  <data name="CheckingMinecraftFiles" xml:space="preserve"><value>Checking game files and downloading missing resources.</value></data>
+  <data name="CheckingUpdateFiles" xml:space="preserve"><value>Checking update files</value></data>
+  <data name="CheckingUpdates" xml:space="preserve"><value>Checking…</value></data>
+  <data name="CheckUpdatesOnStartup" xml:space="preserve"><value>Check for updates on startup</value></data>
+  <data name="ChooseAccountCharacter" xml:space="preserve"><value>Choose a Minecraft character from this account</value></data>
+  <data name="ChooseAuthlibInjector" xml:space="preserve"><value>Choose authlib-injector</value></data>
+  <data name="ChooseCharacter" xml:space="preserve"><value>Choose a character</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>Choose file</value></data>
+  <data name="ChooseJavaExecutable" xml:space="preserve"><value>Choose a Java executable</value></data>
+  <data name="ChooseLocalPackFile" xml:space="preserve"><value>Choose a local .mrpack or modpack ZIP</value></data>
+  <data name="ChooseModpackFile" xml:space="preserve"><value>Choose a modpack file</value></data>
+  <data name="ChoosePackDescription" xml:space="preserve"><value>Drop a modpack here or choose a file.</value></data>
+  <data name="ChoosePackFileHelp" xml:space="preserve"><value>Choose a modpack file to see its details. The launcher installs it in its .minecraft folder.</value></data>
+  <data name="ClearDownloadCache" xml:space="preserve"><value>Clear download cache</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="CloseImportDialog" xml:space="preserve"><value>Close import window</value></data>
+  <data name="CompareReleaseAndLocalFiles" xml:space="preserve"><value>Compare the release with local files</value></data>
+  <data name="ComparingPackFiles" xml:space="preserve"><value>Comparing the release manifest with local files.</value></data>
+  <data name="ComparingUpdateFiles" xml:space="preserve"><value>Comparing local files with the release manifest.</value></data>
+  <data name="CompatibilityAppNameHelp" xml:space="preserve"><value>Microsoft displays the name of the configured Minecraft app on the consent page.</value></data>
+  <data name="CompatibilitySignIn" xml:space="preserve"><value>Web sign-in</value></data>
+  <data name="CompatibilitySignInHelp" xml:space="preserve"><value>Sign in on Microsoft's website in a separate window. The launcher verifies your Xbox account, Minecraft profile, and Java Edition license using the built-in authorization settings.</value></data>
+  <data name="Complete" xml:space="preserve"><value>Complete</value></data>
+  <data name="Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="CompletingImport" xml:space="preserve"><value>Files are ready. Finishing the import</value></data>
+  <data name="ConcurrentFiles" xml:space="preserve"><value>Parallel downloads</value></data>
+  <data name="ConnectingToMicrosoft" xml:space="preserve"><value>Connecting to Microsoft</value></data>
+  <data name="ConnectionsPerHost" xml:space="preserve"><value>Connections per host</value></data>
+  <data name="CurrentAccount" xml:space="preserve"><value>Current account</value></data>
+  <data name="CurrentAccountAvatar" xml:space="preserve"><value>Current account avatar</value></data>
+  <data name="CurrentTaskProgress" xml:space="preserve"><value>Current task progress</value></data>
+  <data name="CurseForgeManifestUnsupported" xml:space="preserve"><value>This CurseForge archive requires CurseForge API access. Export an .mrpack or a ZIP containing the actual mod files.</value></data>
+  <data name="CustomAllocation" xml:space="preserve"><value>Custom</value></data>
+  <data name="CustomYggdrasilServer" xml:space="preserve"><value>Custom authlib-injector server</value></data>
+  <data name="DefaultDisplayMode" xml:space="preserve"><value>Defaults to fullscreen at 1920 × 1080.</value></data>
+  <data name="Done" xml:space="preserve"><value>Done.</value></data>
+  <data name="DownloadAlgorithmUnsupported" xml:space="preserve"><value>The file verification algorithm is unsupported.</value></data>
+  <data name="DownloadCacheLimit" xml:space="preserve"><value>The download cache is capped at 1 GiB. You can clear it at any time.</value></data>
+  <data name="DownloadConcurrencyInvalid" xml:space="preserve"><value>Choose 1 to 32 parallel downloads and 1 to 16 per host.</value></data>
+  <data name="DownloadHashMismatch" xml:space="preserve"><value>The download failed verification and will be fetched again.</value></data>
+  <data name="DownloadIncomplete" xml:space="preserve"><value>The download was interrupted. Check your connection or proxy, then retry the import to resume.</value></data>
+  <data name="DownloadingAuthlib" xml:space="preserve"><value>Downloading authlib-injector</value></data>
+  <data name="DownloadingUpdate" xml:space="preserve"><value>Downloading update</value></data>
+  <data name="DownloadLimitHelp" xml:space="preserve"><value>Use 0 for unlimited. All downloads share this limit. Sign-in is unaffected.</value></data>
+  <data name="DownloadPartialChanged" xml:space="preserve"><value>The partial download has changed.</value></data>
+  <data name="DownloadProgressHelp" xml:space="preserve"><value>Import and game setup progress appear here.</value></data>
+  <data name="DownloadRangeMismatch" xml:space="preserve"><value>The server returned an invalid range for this download.</value></data>
+  <data name="DownloadRateLimited" xml:space="preserve"><value>The download server is limiting requests. Try again shortly.</value></data>
+  <data name="DownloadRecordInvalid" xml:space="preserve"><value>The manifest has an invalid file size, hash, or download URL.</value></data>
+  <data name="DownloadRedirectInsecure" xml:space="preserve"><value>The download redirected to a non-HTTPS address.</value></data>
+  <data name="Downloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="DownloadSettingsHelp" xml:space="preserve"><value>The launcher manages connections and resumes interrupted downloads. You can set a speed limit or adjust the connection count here.</value></data>
+  <data name="DownloadSizeMismatch" xml:space="preserve"><value>The download size differs from the modpack manifest.</value></data>
+  <data name="DownloadsPageDescription" xml:space="preserve"><value>See download progress and task history.</value></data>
+  <data name="DownloadSpeedLimitInvalid" xml:space="preserve"><value>Enter 0 for unlimited download speed or a limit from 0.1 to 102400 MiB/s.</value></data>
+  <data name="DownloadTooLarge" xml:space="preserve"><value>The download exceeded the size listed in the manifest.</value></data>
+  <data name="ExternalAccountDescription" xml:space="preserve"><value>{0} · External authentication</value></data>
+  <data name="ExternalAuthComponent" xml:space="preserve"><value>External authentication component</value></data>
+  <data name="ExternalAuthentication" xml:space="preserve"><value>External authentication</value></data>
+  <data name="ExternalAuthenticationSignIn" xml:space="preserve"><value>Sign in with external authentication</value></data>
+  <data name="ExternalCharacterMismatch" xml:space="preserve"><value>The selected character belongs to a different account.</value></data>
+  <data name="ExternalCharacterMissing" xml:space="preserve"><value>Signed in, but the account has no Minecraft character. Create one on the authentication site.</value></data>
+  <data name="ExternalClientRejected" xml:space="preserve"><value>The authentication server rejected this client. Check the site's access settings.</value></data>
+  <data name="ExternalCredentialsInvalid" xml:space="preserve"><value>The username, password, or session is invalid.</value></data>
+  <data name="ExternalCredentialsRequired" xml:space="preserve"><value>Enter the authentication server username and password.</value></data>
+  <data name="ExternalPasswordHelp" xml:space="preserve"><value>The launcher sends the password to the authentication URL you enter. It does not store it.</value></data>
+  <data name="ExternalSessionCharacterMismatch" xml:space="preserve"><value>The server returned a different character from the one selected.</value></data>
+  <data name="ExternalSessionCheckFailed" xml:space="preserve"><value>The authentication server could not verify the account (HTTP {0}).</value></data>
+  <data name="ExternalSessionChecking" xml:space="preserve"><value>Checking external session</value></data>
+  <data name="ExternalSessionRefresh" xml:space="preserve"><value>Refresh the external session by signing in again</value></data>
+  <data name="ExternalSignIn" xml:space="preserve"><value>External sign-in</value></data>
+  <data name="ExternalTroubleshoot" xml:space="preserve"><value>Check your connection, account status, and authentication server address.</value></data>
+  <data name="ExternalUuidInvalid" xml:space="preserve"><value>The authentication server returned an invalid character UUID.</value></data>
+  <data name="ExtractingAndDownloading" xml:space="preserve"><value>Extracting files and downloading modpack dependencies</value></data>
+  <data name="FileProgress" xml:space="preserve"><value>{0} / {1} files</value></data>
+  <data name="FinishingInstallation" xml:space="preserve"><value>Finishing installation</value></data>
+  <data name="FinishingTaskForExit" xml:space="preserve"><value>Stopping the task and saving resumable download data.</value></data>
+  <data name="FirstLaunchLinkedCache" xml:space="preserve"><value>First-launch cleanup found a linked cache path. Check the cache directory.</value></data>
+  <data name="FolderNotCreated" xml:space="preserve"><value>The folder will be available after you install a modpack.</value></data>
+  <data name="ForgeVersion" xml:space="preserve"><value>Forge version</value></data>
+  <data name="ForgeVersionRequired" xml:space="preserve"><value>This modpack contains mods and needs a loader. Enter its Forge version in the modpack settings.</value></data>
+  <data name="GameAndSettings" xml:space="preserve"><value>Game and settings</value></data>
+  <data name="GameArguments" xml:space="preserve"><value>Game arguments</value></data>
+  <data name="GameArgumentsHelp" xml:space="preserve"><value>The launcher manages the account and game directory.</value></data>
+  <data name="GameDependencyAddressMissing" xml:space="preserve"><value>A game dependency has no file path or download URL.</value></data>
+  <data name="GameDependencyDownloadFailed" xml:space="preserve"><value>A game dependency could not be downloaded. Check your connection or proxy and try again.</value></data>
+  <data name="GameDependencyHashMismatch" xml:space="preserve"><value>The game dependency failed SHA-1 verification.</value></data>
+  <data name="GameDependencyRequiresHttps" xml:space="preserve"><value>Game dependency downloads require HTTPS.</value></data>
+  <data name="GameDependencySizeMismatch" xml:space="preserve"><value>The game dependency download has the wrong size.</value></data>
+  <data name="GameDirectoryIsDriveRoot" xml:space="preserve"><value>Choose a game folder inside the drive.</value></data>
+  <data name="GameDirectoryMissing" xml:space="preserve"><value>The modpack directory is missing. Check the install location.</value></data>
+  <data name="GameDirectoryNotEmpty" xml:space="preserve"><value>The game directory already contains files. Choose an empty folder for a fresh install.</value></data>
+  <data name="GameExited" xml:space="preserve"><value>Game exited.</value></data>
+  <data name="GameExitedWithError" xml:space="preserve"><value>Game exited with code {0}. Open the log folder from Downloads for details.</value></data>
+  <data name="GameExitLog" xml:space="preserve"><value>Game exited with code {0}. Log file at {1}</value></data>
+  <data name="GameInstallerUnavailable" xml:space="preserve"><value>The game file installer is unavailable.</value></data>
+  <data name="GameLogCaptureEnded" xml:space="preserve"><value>Game log capture ended. </value></data>
+  <data name="GameMemoryLimit" xml:space="preserve"><value>Game memory limit</value></data>
+  <data name="GameMemoryLimitGib" xml:space="preserve"><value>Game memory limit (GiB)</value></data>
+  <data name="GameProcessStarted" xml:space="preserve"><value>Game started. Log file at {0}</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>Game running</value></data>
+  <data name="GameStartFailed" xml:space="preserve"><value>The game process could not start.</value></data>
+  <data name="GameWindow" xml:space="preserve"><value>Game window</value></data>
+  <data name="HeightPixels" xml:space="preserve"><value>Height (pixels)</value></data>
+  <data name="Home" xml:space="preserve"><value>Home</value></data>
+  <data name="HomeMotto" xml:space="preserve"><value>Get ready. Head out when you are.</value></data>
+  <data name="HomePageDescription" xml:space="preserve"><value>Modpack and launch status</value></data>
+  <data name="HomePageTitle" xml:space="preserve"><value>Ready to play</value></data>
+  <data name="ImportBeforePlaying" xml:space="preserve"><value>Import a modpack to play</value></data>
+  <data name="ImportComplete" xml:space="preserve"><value>Import complete</value></data>
+  <data name="ImportDiskSpaceLow" xml:space="preserve"><value>There is not enough disk space. This import needs about {0:0.0} GiB free.</value></data>
+  <data name="ImportingPack" xml:space="preserve"><value>Importing modpack</value></data>
+  <data name="ImportLoaderVersionHelp" xml:space="preserve"><value>Use the versions required by the modpack. If the ZIP does not specify a loader version, enter one, such as 47.4.0.</value></data>
+  <data name="ImportModpack" xml:space="preserve"><value>Import modpack</value></data>
+  <data name="IncludeOptionalModFiles" xml:space="preserve"><value>Include optional client files when importing a modpack</value></data>
+  <data name="Incomplete" xml:space="preserve"><value>Incomplete</value></data>
+  <data name="InstallAndResources" xml:space="preserve"><value>Installation and resources</value></data>
+  <data name="InstallationRecordMissing" xml:space="preserve"><value>The modpack installation record is missing.</value></data>
+  <data name="InstallationResourcesHelp" xml:space="preserve"><value>The launcher prepares the Minecraft and Forge versions required by the modpack and reuses verified files. Worlds, screenshots, and game settings stay in the folder above.</value></data>
+  <data name="InstallBeforeChecking" xml:space="preserve"><value>Install a modpack to check for updates.</value></data>
+  <data name="InstallBeforePlaying" xml:space="preserve"><value>Install the modpack to play</value></data>
+  <data name="Installed" xml:space="preserve"><value>Installed</value></data>
+  <data name="InstallingForge" xml:space="preserve"><value>Installing Forge</value></data>
+  <data name="InstallingMinecraft" xml:space="preserve"><value>Installing Minecraft</value></data>
+  <data name="InstallLocation" xml:space="preserve"><value>Install location</value></data>
+  <data name="InstallModpack" xml:space="preserve"><value>Install modpack</value></data>
+  <data name="InstallModpackLink" xml:space="preserve"><value>Install modpack  →</value></data>
+  <data name="IntegerRequired" xml:space="preserve"><value> must be an integer.</value></data>
+  <data name="Java17Fallback" xml:space="preserve"><value>Java 17 was not found. Using</value></data>
+  <data name="Java17Selection" xml:space="preserve"><value>Java 17 selected · {0} · {1}. Local runtimes found: {2}.</value></data>
+  <data name="Java32Bit" xml:space="preserve"><value>32-bit</value></data>
+  <data name="Java32BitMemoryLimit" xml:space="preserve"><value>The selected 32-bit Java cannot use this memory limit. Choose a 64-bit Java runtime in Settings. Java 17 is recommended.</value></data>
+  <data name="Java32BitSuggestion" xml:space="preserve"><value> This Java runtime is 32-bit. Install 64-bit Java 17 to use a larger heap.</value></data>
+  <data name="Java64Bit" xml:space="preserve"><value>64-bit</value></data>
+  <data name="JavaAutomatic" xml:space="preserve"><value>Automatic</value></data>
+  <data name="JavaAutomaticChoice" xml:space="preserve"><value>Automatic · Prefer Java 17</value></data>
+  <data name="JavaComponentFilter" xml:space="preserve"><value>Java component (*.jar)|*.jar</value></data>
+  <data name="JavaCurrentlySelected" xml:space="preserve"><value>Using</value></data>
+  <data name="JavaExecutableFilter" xml:space="preserve"><value>Java executables (javaw.exe;java.exe)|javaw.exe;java.exe</value></data>
+  <data name="JavaExecutableMissing" xml:space="preserve"><value>The selected Java executable does not exist.</value></data>
+  <data name="JavaFallbackHint" xml:space="preserve"><value>{0} Java {1}. Switch to Java 17 if you encounter compatibility problems.</value></data>
+  <data name="JavaLocalRuntime" xml:space="preserve"><value>Local Java</value></data>
+  <data name="JavaRuntime" xml:space="preserve"><value>Java runtime</value></data>
+  <data name="JavaRuntimeMissing" xml:space="preserve"><value>No usable Java runtime was found. Choose one in Settings. Minecraft 1.20.1 works best with 64-bit Java 17.</value></data>
+  <data name="JavaRuntimePreference" xml:space="preserve"><value>Prefers local 64-bit Java 17</value></data>
+  <data name="JavaScanIncomplete" xml:space="preserve"><value>Java scan incomplete. You can select a Java executable.</value></data>
+  <data name="JavaSelectionRequired" xml:space="preserve"><value>Choose a local Java runtime or turn on automatic selection.</value></data>
+  <data name="JavaSelectionUnavailable" xml:space="preserve"><value>The selected Java runtime is unavailable. Rescan or select a Java executable in Settings.</value></data>
+  <data name="JavaWillDownload" xml:space="preserve"><value>No local Java was found. Setup can download Java 17, or you can select an executable.</value></data>
+  <data name="JvmArguments" xml:space="preserve"><value>JVM arguments</value></data>
+  <data name="JvmArgumentsHelp" xml:space="preserve"><value>The recommended profile uses adaptive G1 with a 200 ms pause target. Save your edits for the next launch. The memory settings control the heap.</value></data>
+  <data name="JvmArgumentsRecommendation" xml:space="preserve"><value>JVM arguments · Java 17 / G1</value></data>
+  <data name="JvmCollectorsConflict" xml:space="preserve"><value>Choose one garbage collector in the JVM arguments.</value></data>
+  <data name="JvmInitialMemoryManaged" xml:space="preserve"><value>The launcher manages the initial heap. Set the maximum heap under Memory allocation.</value></data>
+  <data name="LaunchArguments" xml:space="preserve"><value>Launch arguments</value></data>
+  <data name="LauncherAlreadyRunning" xml:space="preserve"><value>The launcher is already running. Switch to its open window.</value></data>
+  <data name="LauncherDataEmpty" xml:space="preserve"><value>The launcher data file is empty. {0}</value></data>
+  <data name="LauncherDirectoryLink" xml:space="preserve"><value>Launcher folder  ↗</value></data>
+  <data name="LauncherErrorTitle" xml:space="preserve"><value>Launcher error</value></data>
+  <data name="LauncherPathUnavailable" xml:space="preserve"><value>The launcher executable path could not be read.</value></data>
+  <data name="LauncherReady" xml:space="preserve"><value>Launcher ready.</value></data>
+  <data name="LauncherRecoveryRequired" xml:space="preserve"><value>Launcher update recovery required</value></data>
+  <data name="LauncherUpdateIncomplete" xml:space="preserve"><value>Launcher update incomplete</value></data>
+  <data name="LauncherUpdateRequiresExe" xml:space="preserve"><value>Use the packaged ArysLauncher.exe to update the launcher.</value></data>
+  <data name="LauncherUpdaterStartFailed" xml:space="preserve"><value>The updater could not start.</value></data>
+  <data name="LauncherVersionLabel" xml:space="preserve"><value>Launcher </value></data>
+  <data name="LaunchFullscreen" xml:space="preserve"><value>Launch in fullscreen</value></data>
+  <data name="LaunchGame" xml:space="preserve"><value>Launch game</value></data>
+  <data name="LegacyMicrosoftAccount" xml:space="preserve"><value>This account uses an older sign-in method. Sign in with Microsoft again on the Accounts page.</value></data>
+  <data name="LoadingMicrosoftConsent" xml:space="preserve"><value>Loading Microsoft authorization</value></data>
+  <data name="LoadingMicrosoftPage" xml:space="preserve"><value>Loading the Microsoft page</value></data>
+  <data name="LoadingMicrosoftSignIn" xml:space="preserve"><value>Loading Microsoft sign-in</value></data>
+  <data name="LogDirectoryLink" xml:space="preserve"><value>Log folder  ↗</value></data>
+  <data name="ManageAccountsLink" xml:space="preserve"><value>Manage accounts  ↗</value></data>
+  <data name="ManualConnectionLimits" xml:space="preserve"><value>Set connection limits manually</value></data>
+  <data name="MaximizeOrRestore" xml:space="preserve"><value>Maximize or restore</value></data>
+  <data name="MemoryAboveAvailable" xml:space="preserve"><value>Available RAM is below the game limit. Lower the limit or close other apps.</value></data>
+  <data name="MemoryAbovePhysical" xml:space="preserve"><value>The game memory limit exceeds installed RAM. Lower the limit.</value></data>
+  <data name="MemoryAllocation" xml:space="preserve"><value>Memory allocation</value></data>
+  <data name="MemoryForGame" xml:space="preserve"><value>Available to game</value></data>
+  <data name="MemoryLimit" xml:space="preserve"><value>Memory limit</value></data>
+  <data name="MemoryLimitGibInvalid" xml:space="preserve"><value>Enter a game memory limit from 1 to 128 GiB.</value></data>
+  <data name="MemoryLimitInvalid" xml:space="preserve"><value>Enter a game memory limit from 256 to 131072 MiB.</value></data>
+  <data name="MemoryPresets" xml:space="preserve"><value>Memory presets</value></data>
+  <data name="MemoryRemaining" xml:space="preserve"><value>Remaining</value></data>
+  <data name="MemoryUsageHelp" xml:space="preserve"><value>The game uses memory as needed up to this limit.</value></data>
+  <data name="MicrosoftAccountAuthorization" xml:space="preserve"><value>Microsoft account authorization</value></data>
+  <data name="MicrosoftAccountDescription" xml:space="preserve"><value>Microsoft · Java Edition account</value></data>
+  <data name="MicrosoftAuthorizationEnded" xml:space="preserve"><value>Authorization ended</value></data>
+  <data name="MicrosoftAuthorizationInWindow" xml:space="preserve"><value>Complete authorization in this window.</value></data>
+  <data name="MicrosoftCompatibilitySignInRequired" xml:space="preserve"><value>This account needs a new authorization. Sign in with Microsoft again on the Accounts page.</value></data>
+  <data name="MicrosoftConsentIncomplete" xml:space="preserve"><value>Microsoft did not complete authorization. Sign in again and allow Minecraft access.</value></data>
+  <data name="MicrosoftConsentPageHelp" xml:space="preserve"><value>Sign in on Microsoft's website. Microsoft displays the app name on the consent page.</value></data>
+  <data name="MicrosoftHttpFailure" xml:space="preserve"><value>Microsoft authorization failed (HTTP {0}). Sign in again. If it still fails, check your account, connection, or proxy.</value></data>
+  <data name="MicrosoftJavaSignIn" xml:space="preserve"><value>Microsoft sign-in</value></data>
+  <data name="MicrosoftJavaSignInHelp" xml:space="preserve"><value>Sign in on Microsoft's website with an account that owns Minecraft Java Edition.</value></data>
+  <data name="MicrosoftPageInterrupted" xml:space="preserve"><value>The sign-in page closed unexpectedly. Reopen Microsoft sign-in.</value></data>
+  <data name="MicrosoftPageLoadFailed" xml:space="preserve"><value>The sign-in page could not load ({0}). Check your connection or proxy and retry.</value></data>
+  <data name="MicrosoftPageProvider" xml:space="preserve"><value>Page provided by Microsoft</value></data>
+  <data name="MicrosoftPageRequiresHttps" xml:space="preserve"><value>This window only opens HTTPS authorization pages</value></data>
+  <data name="MicrosoftPageTimedOut" xml:space="preserve"><value>The Microsoft sign-in page did not load within 45 seconds. Click Retry. Details are in data/logs/microsoft-login.log.</value></data>
+  <data name="MicrosoftRefreshingSession" xml:space="preserve"><value>Refreshing Microsoft session</value></data>
+  <data name="MicrosoftRenewedProfileMismatch" xml:space="preserve"><value>The refreshed profile differs from the saved account. Sign in again on the Accounts page.</value></data>
+  <data name="MicrosoftRequestUnexpected" xml:space="preserve"><value>The sign-in component made an unexpected request. Reopen the Microsoft sign-in window.</value></data>
+  <data name="MicrosoftRequiresHttps" xml:space="preserve"><value>The Microsoft sign-in window requires HTTPS.</value></data>
+  <data name="MicrosoftResponseIncomplete" xml:space="preserve"><value>The authentication service returned incomplete information. Try again later.</value></data>
+  <data name="MicrosoftSessionInvalid" xml:space="preserve"><value>The authentication service did not return a valid session. Sign in again.</value></data>
+  <data name="MicrosoftSignedIn" xml:space="preserve"><value>Signed in with Microsoft</value></data>
+  <data name="MicrosoftSignInIncomplete" xml:space="preserve"><value>Microsoft sign-in incomplete</value></data>
+  <data name="MicrosoftSignInOnWeb" xml:space="preserve"><value>Sign in and authorize access on Microsoft's website.</value></data>
+  <data name="MicrosoftSignInPageHelp" xml:space="preserve"><value>Complete sign-in and authorization on Microsoft's website</value></data>
+  <data name="MicrosoftSignInStateInvalid" xml:space="preserve"><value>The Microsoft sign-in session failed verification. Sign in again.</value></data>
+  <data name="MicrosoftSignInTimedOut" xml:space="preserve"><value>Sign-in timed out. Open Microsoft sign-in again.</value></data>
+  <data name="MicrosoftSignInWindowTitle" xml:space="preserve"><value>Microsoft sign-in · Arys Launcher</value></data>
+  <data name="MicrosoftVerifyingMinecraft" xml:space="preserve"><value>Verifying the Minecraft profile and Java Edition license</value></data>
+  <data name="MicrosoftVerifyingXbox" xml:space="preserve"><value>Verifying Xbox Live and XSTS authorization</value></data>
+  <data name="MicrosoftWindowClosed" xml:space="preserve"><value>The Microsoft sign-in window was closed.</value></data>
+  <data name="MinecraftAuthorizationRejected" xml:space="preserve"><value>Minecraft rejected the sign-in request. Try again later. Its service may restrict this sign-in method.</value></data>
+  <data name="MinecraftJavaLicenseUnverified" xml:space="preserve"><value>The Minecraft profile or Java Edition license could not be verified. Check that the account owns Java Edition and has a profile.</value></data>
+  <data name="MinecraftJavaProfileMissing" xml:space="preserve"><value>Create a Java Edition profile on the Minecraft website, then sign in again.</value></data>
+  <data name="MinecraftSessionExpired" xml:space="preserve"><value>The Minecraft session has expired. Sign in with Microsoft again.</value></data>
+  <data name="MinecraftSessionIncomplete" xml:space="preserve"><value>Minecraft returned incomplete profile or session information. Sign in again.</value></data>
+  <data name="MinecraftVersion" xml:space="preserve"><value>Minecraft version</value></data>
+  <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
+  <data name="MinimizeAfterLaunch" xml:space="preserve"><value>Minimize launcher after starting the game</value></data>
+  <data name="ModCountAndPackName" xml:space="preserve"><value>{0} mods  ·  {1}</value></data>
+  <data name="ModDescriptorTooLarge" xml:space="preserve"><value>The mod descriptor exceeds the size limit.</value></data>
+  <data name="Modpack" xml:space="preserve"><value>Modpack</value></data>
+  <data name="ModpackDirectoryHelp" xml:space="preserve"><value>The modpack is installed in the launcher's .minecraft folder.</value></data>
+  <data name="ModpackInstallLocation" xml:space="preserve"><value>Modpack location</value></data>
+  <data name="ModpackName" xml:space="preserve"><value>Modpack name</value></data>
+  <data name="ModpackPageDescription" xml:space="preserve"><value>View the install location and game files.</value></data>
+  <data name="ModpackSettings" xml:space="preserve"><value>Modpack settings</value></data>
+  <data name="ModrinthFormatUnsupported" xml:space="preserve"><value>This Modrinth archive format or game type is unsupported.</value></data>
+  <data name="MultipleGameDirectories" xml:space="preserve"><value>This ZIP contains multiple game directories. Export a single game instance.</value></data>
+  <data name="MultipleLaunchVersions" xml:space="preserve"><value>The ZIP contains multiple game versions. Export one game instance.</value></data>
+  <data name="NetworkAndDownloads" xml:space="preserve"><value>Network and downloads</value></data>
+  <data name="NoActiveTasks" xml:space="preserve"><value>No active tasks</value></data>
+  <data name="NoRecognizedPackFiles" xml:space="preserve"><value>The ZIP has no recognized game files. Import an .mrpack or a ZIP with folders such as mods and config.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Unknown</value></data>
+  <data name="OfficialModpack" xml:space="preserve"><value>Official modpack</value></data>
+  <data name="OfficialPackBanner" xml:space="preserve"><value>The Maiden's&#xA;Eternal Dungeon</value></data>
+  <data name="OfficialPackName" xml:space="preserve"><value>The Maiden's Eternal Dungeon</value></data>
+  <data name="OfflineBrowserExtractionFailed" xml:space="preserve"><value>The offline sign-in component could not be extracted.</value></data>
+  <data name="OfflineBrowserExtractionIncomplete" xml:space="preserve"><value>The offline sign-in component did not finish extracting.</value></data>
+  <data name="OfflineBrowserMissing" xml:space="preserve"><value>The offline sign-in component is missing. Repair the launcher with the full installer.</value></data>
+  <data name="OpenGameDirectoryLink" xml:space="preserve"><value>Open game folder  ↗</value></data>
+  <data name="OpenGameFolderLink" xml:space="preserve"><value>Open game folder ↗</value></data>
+  <data name="OpeningMicrosoftPage" xml:space="preserve"><value>Opening Microsoft sign-in</value></data>
+  <data name="OpeningMicrosoftSignIn" xml:space="preserve"><value>Opening Microsoft sign-in</value></data>
+  <data name="OperationCancelled" xml:space="preserve"><value>The operation was cancelled.</value></data>
+  <data name="OptionalPackFileCount" xml:space="preserve"><value>  ·  {0} optional</value></data>
+  <data name="PackAlreadyImported" xml:space="preserve"><value>This modpack is already installed. You can view it on the Modpack page.</value></data>
+  <data name="PackChangedDuringImport" xml:space="preserve"><value>The modpack archive changed during import.</value></data>
+  <data name="PackClientDependencyUnknown" xml:space="preserve"><value>The modpack has an unknown client dependency type.</value></data>
+  <data name="PackDetailsAfterSelection" xml:space="preserve"><value>Choose a file to see the modpack details.</value></data>
+  <data name="PackDownloadEntryInvalid" xml:space="preserve"><value>The hash or download URL for {0} is invalid. Use Modrinth, GitHub, GitLab, or the CurseForge CDN.</value></data>
+  <data name="PackDownloadSizeInvalid" xml:space="preserve"><value>A download size is outside the allowed range.</value></data>
+  <data name="PackDownloadSummary" xml:space="preserve"><value>Extract {0}  ·  Download {1}</value></data>
+  <data name="PackDuplicateArchivePath" xml:space="preserve"><value>The modpack contains a duplicate or case-conflicting path. {0}</value></data>
+  <data name="PackDuplicateDestination" xml:space="preserve"><value>The manifest contains a duplicate destination. {0}</value></data>
+  <data name="PackEntryTooLarge" xml:space="preserve"><value>A file in the archive exceeds 16 GiB.</value></data>
+  <data name="PackExpandedSizeTooLarge" xml:space="preserve"><value>The expanded modpack exceeds 128 GiB. Split the archive and retry.</value></data>
+  <data name="PackFileFilter" xml:space="preserve"><value>Minecraft modpack (*.mrpack;*.zip)|*.mrpack;*.zip</value></data>
+  <data name="PackFilePathMissing" xml:space="preserve"><value>A file path is missing.</value></data>
+  <data name="PackFileRequired" xml:space="preserve"><value>Choose an .mrpack or modpack ZIP file.</value></data>
+  <data name="PackFormatAndFileCount" xml:space="preserve"><value>{0}  ·  {1} files&#xA;</value></data>
+  <data name="PackLimitsExceeded" xml:space="preserve"><value>The modpack exceeds the file count or size limit.</value></data>
+  <data name="PackLinksUnsupported" xml:space="preserve"><value>The modpack archive contains symbolic links.</value></data>
+  <data name="PackLoaderUnsupported" xml:space="preserve"><value>This launcher uses Forge. The selected modpack requires another loader.</value></data>
+  <data name="PackMetadataTooLarge" xml:space="preserve"><value>The modpack manifest exceeds 16 MiB.</value></data>
+  <data name="PackNameRequired" xml:space="preserve"><value>Enter a modpack name.</value></data>
+  <data name="PackNotInstalled" xml:space="preserve"><value>No modpack installed</value></data>
+  <data name="PackPathOutsideGameDirectory" xml:space="preserve"><value>A modpack path points outside the game directory.</value></data>
+  <data name="PackPathUnsafe" xml:space="preserve"><value>The modpack contains an unsafe path. {0}</value></data>
+  <data name="PackPathUnsupported" xml:space="preserve"><value>Windows does not support this modpack path. {0}</value></data>
+  <data name="PackReadFailed" xml:space="preserve"><value>Could not read the file. Choose it again.</value></data>
+  <data name="PackRulesEmpty" xml:space="preserve"><value>The modpack content rules are empty.</value></data>
+  <data name="PackRulesMissing" xml:space="preserve"><value>The modpack content rules are missing.</value></data>
+  <data name="PackSettingsBusy" xml:space="preserve"><value>Wait for the current task and game to finish before changing the modpack settings.</value></data>
+  <data name="PackSettingsSaved" xml:space="preserve"><value>Modpack settings saved.</value></data>
+  <data name="PackTooManyEntries" xml:space="preserve"><value>The modpack contains more than 100,000 entries. Split the archive and retry.</value></data>
+  <data name="PackUpdateSourceUnlinked" xml:space="preserve"><value>This modpack is not linked to the Arys update source.</value></data>
+  <data name="PackVersionsHelp" xml:space="preserve"><value>Use the versions required by the modpack. Changing them prepares the new environment on the next launch.</value></data>
+  <data name="PackVersionsInvalid" xml:space="preserve"><value>Enter valid Minecraft and Forge versions.</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Play" xml:space="preserve"><value>Play</value></data>
+  <data name="PleaseWait" xml:space="preserve"><value>Please wait.</value></data>
+  <data name="PrepareEnvironment" xml:space="preserve"><value>Prepare game</value></data>
+  <data name="PrepareGameFiles" xml:space="preserve"><value>Prepare game files</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparing</value></data>
+  <data name="PreparingExternalAuth" xml:space="preserve"><value>Preparing external authentication</value></data>
+  <data name="PreparingForge" xml:space="preserve"><value>Downloading Forge dependencies and preparing the loader.</value></data>
+  <data name="PreparingGameProcess" xml:space="preserve"><value>Preparing the game process</value></data>
+  <data name="PreparingImport" xml:space="preserve"><value>Preparing import</value></data>
+  <data name="PreparingSignInWindow" xml:space="preserve"><value>Preparing sign-in</value></data>
+  <data name="ProtectedGameArguments" xml:space="preserve"><value>Extra game arguments cannot override the account, game version, or game directory.</value></data>
+  <data name="ProxyAddress" xml:space="preserve"><value>Proxy URL</value></data>
+  <data name="ProxyAddressInvalid" xml:space="preserve"><value>Use an http, https, or socks5 proxy URL without an embedded password.</value></data>
+  <data name="ProxyExamples" xml:space="preserve"><value>For example, http://127.0.0.1:7890 or socks5://127.0.0.1:1080</value></data>
+  <data name="ProxyHelp" xml:space="preserve"><value>Leave blank to use the system proxy. This setting applies to launcher sign-in and downloads.</value></data>
+  <data name="Reading" xml:space="preserve"><value>Reading</value></data>
+  <data name="ReadingPack" xml:space="preserve"><value>Reading modpack</value></data>
+  <data name="ReadingPackDetails" xml:space="preserve"><value>Reading modpack details.</value></data>
+  <data name="ReadModpack" xml:space="preserve"><value>Read modpack</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="RecommendedMemory" xml:space="preserve"><value>6–8 GiB recommended</value></data>
+  <data name="ReduceMotion" xml:space="preserve"><value>Reduce motion</value></data>
+  <data name="RegisterAccountLink" xml:space="preserve"><value>Register ↗</value></data>
+  <data name="RegistrationAddressRequired" xml:space="preserve"><value>Enter the authentication site's registration link first.</value></data>
+  <data name="RegistrationLink" xml:space="preserve"><value>Registration link</value></data>
+  <data name="RegistrationUrlInvalid" xml:space="preserve"><value>Enter a full HTTPS address for the registration page.</value></data>
+  <data name="RemoveAccount" xml:space="preserve"><value>Remove account</value></data>
+  <data name="RemoveThisAccount" xml:space="preserve"><value>Remove this account</value></data>
+  <data name="ReplacingPackFiles" xml:space="preserve"><value>Backing up and replacing modpack files.</value></data>
+  <data name="RescanJava" xml:space="preserve"><value>Rescan ↻</value></data>
+  <data name="RestoreDefaults" xml:space="preserve"><value>Restore defaults</value></data>
+  <data name="RestoreJvmArguments" xml:space="preserve"><value>Restore recommended</value></data>
+  <data name="RetryMicrosoftPage" xml:space="preserve"><value>Reopen sign-in page</value></data>
+  <data name="RuntimeSettings" xml:space="preserve"><value>Runtime settings</value></data>
+  <data name="RuntimeSettingsLink" xml:space="preserve"><value>Runtime settings  →</value></data>
+  <data name="SaveAuthenticationSettings" xml:space="preserve"><value>Save authentication settings</value></data>
+  <data name="SaveConfiguration" xml:space="preserve"><value>Save configuration</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>Save settings</value></data>
+  <data name="SaveSettingsHelp" xml:space="preserve"><value>Saved settings apply to the next task.</value></data>
+  <data name="ScanningLocalJava" xml:space="preserve"><value>Scanning for Java…</value></data>
+  <data name="SeparateReleaseRepositoryRequired" xml:space="preserve"><value>Configure a separate public repository for launcher releases.</value></data>
+  <data name="ServerAuthentication" xml:space="preserve"><value>Server authentication</value></data>
+  <data name="ServerAuthenticationHelp" xml:space="preserve"><value>Choose LittleSkin or enter the server's Yggdrasil authentication URL.</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>Your session has expired. Sign in again.</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsPageDescription" xml:space="preserve"><value>Adjust the launcher for your computer and connection.</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Settings saved for the next task.</value></data>
+  <data name="SignedOut" xml:space="preserve"><value>Signed out</value></data>
+  <data name="SignIn" xml:space="preserve"><value>Sign in</value></data>
+  <data name="SignInAfterImport" xml:space="preserve"><value>Modpack installed. Sign in to play.</value></data>
+  <data name="SignInBrowserTimedOut" xml:space="preserve"><value>The sign-in browser did not start within 30 seconds. Click Retry. Details are in data/logs/microsoft-login.log.</value></data>
+  <data name="SignInComponentMissing" xml:space="preserve"><value>Sign-in component missing</value></data>
+  <data name="SignInComponentRepair" xml:space="preserve"><value>Reinstall the full launcher or re-extract it with the bundled WebView2 files, then try again.</value></data>
+  <data name="SigningIn" xml:space="preserve"><value>Signing in</value></data>
+  <data name="SignInMethod" xml:space="preserve"><value>Sign-in method</value></data>
+  <data name="SignInToAuthServer" xml:space="preserve"><value>Sign in to server</value></data>
+  <data name="SignInToPlay" xml:space="preserve"><value>Sign in to play</value></data>
+  <data name="SignInWithMicrosoft" xml:space="preserve"><value>Sign in with Microsoft</value></data>
+  <data name="SkinAvatar" xml:space="preserve"><value>Character skin avatar</value></data>
+  <data name="SkinDescriptionTooLarge" xml:space="preserve"><value>The skin description exceeds the size limit.</value></data>
+  <data name="SkinDimensionsInvalid" xml:space="preserve"><value>The skin image has invalid dimensions.</value></data>
+  <data name="SkinProfileMismatch" xml:space="preserve"><value>The skin profile belongs to a different character.</value></data>
+  <data name="SpeedLimitNumberRequired" xml:space="preserve"><value>Enter the speed limit in MiB/s. Use 0 for unlimited.</value></data>
+  <data name="StagingDirectoryOutOfBounds" xml:space="preserve"><value>The temporary directory is outside the launcher workspace.</value></data>
+  <data name="StartImport" xml:space="preserve"><value>Import</value></data>
+  <data name="StartingEmbeddedBrowser" xml:space="preserve"><value>Starting the embedded browser.</value></data>
+  <data name="StartingGame" xml:space="preserve"><value>Starting game</value></data>
+  <data name="StartInstallation" xml:space="preserve"><value>Install</value></data>
+  <data name="StorageAndAppearance" xml:space="preserve"><value>Storage and appearance</value></data>
+  <data name="SupportedPackFormats" xml:space="preserve"><value>Supports .mrpack and modpack ZIP files</value></data>
+  <data name="SystemMemoryUnavailable" xml:space="preserve"><value>System memory information is unavailable</value></data>
+  <data name="SystemMemoryUsed" xml:space="preserve"><value>System used</value></data>
+  <data name="TaskCancelled" xml:space="preserve"><value>Task cancelled</value></data>
+  <data name="TaskCancelledMessage" xml:space="preserve"><value>Task cancelled.</value></data>
+  <data name="TaskCompleted" xml:space="preserve"><value>Task complete.</value></data>
+  <data name="TaskHistory" xml:space="preserve"><value>Task history</value></data>
+  <data name="TaskResponseMissingFields" xml:space="preserve"><value>The modpack or service response is missing required fields. Check the file format or authentication settings.</value></data>
+  <data name="TotalSpeedLimit" xml:space="preserve"><value>Download limit (MiB/s)</value></data>
+  <data name="UpdateAddressRequiresHttps" xml:space="preserve"><value>Update URLs require HTTPS.</value></data>
+  <data name="UpdateAndRestart" xml:space="preserve"><value>Update and restart</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Update {0} is available.</value></data>
+  <data name="UpdateBackupHashMismatch" xml:space="preserve"><value>Update backup verification failed for {0}.</value></data>
+  <data name="UpdateChannelEmpty" xml:space="preserve"><value>The update source configuration is empty.</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Could not check for updates. Try again later.</value></data>
+  <data name="UpdateCompleteReopen" xml:space="preserve"><value>The update is complete. Open the launcher again.</value></data>
+  <data name="UpdateDiskSpaceLow" xml:space="preserve"><value>There is not enough space at the install location to complete the update.</value></data>
+  <data name="UpdateDownloadAddressMissing" xml:space="preserve"><value>An update file has no download URL.</value></data>
+  <data name="UpdateDuplicateFilePath" xml:space="preserve"><value>The update manifest contains duplicate file paths.</value></data>
+  <data name="UpdateDuplicateMod" xml:space="preserve"><value>The update manifest contains duplicate mods. {0}, {1}</value></data>
+  <data name="UpdateExecutableMissing" xml:space="preserve"><value>The launcher update is missing its executable.</value></data>
+  <data name="UpdateFileChangedDuringPrepare" xml:space="preserve"><value>A file changed while the update was being prepared. Check again. {0}</value></data>
+  <data name="UpdateFileHashMismatch" xml:space="preserve"><value>Update file verification failed for {0}.</value></data>
+  <data name="UpdateFileOutsideScope" xml:space="preserve"><value>This path is outside the files managed by the updater. {0}</value></data>
+  <data name="UpdateFilesNeeded" xml:space="preserve"><value>Files to download · {0}</value></data>
+  <data name="UpdateJournalEmpty" xml:space="preserve"><value>The update recovery record is empty.</value></data>
+  <data name="UpdateJournalLocationMismatch" xml:space="preserve"><value>The update recovery record points to a different install location.</value></data>
+  <data name="UpdateJournalMissingFiles" xml:space="preserve"><value>The update recovery record is missing file information.</value></data>
+  <data name="UpdateJournalPathMismatch" xml:space="preserve"><value>The update recovery record has inconsistent file paths.</value></data>
+  <data name="UpdateJournalTooLarge" xml:space="preserve"><value>The update recovery record exceeds the size limit.</value></data>
+  <data name="UpdateLauncher" xml:space="preserve"><value>Update launcher</value></data>
+  <data name="UpdateLinkedDirectory" xml:space="preserve"><value>The update directory cannot pass through a symbolic link.</value></data>
+  <data name="UpdateLinkedFile" xml:space="preserve"><value>An update file path cannot pass through a symbolic link.</value></data>
+  <data name="UpdateManifestEmpty" xml:space="preserve"><value>The update manifest is empty.</value></data>
+  <data name="UpdateManifestIncompatible" xml:space="preserve"><value>This update manifest is incompatible. Check the launcher version and release configuration.</value></data>
+  <data name="UpdateModIdentityMismatch" xml:space="preserve"><value>The existing and replacement JARs contain different mods. Check {0}.</value></data>
+  <data name="UpdateModpack" xml:space="preserve"><value>Update modpack</value></data>
+  <data name="UpdatePackVersionInvalid" xml:space="preserve"><value>The modpack update is missing valid version information.</value></data>
+  <data name="UpdateProductMismatch" xml:space="preserve"><value>The update source is for a different modpack.</value></data>
+  <data name="UpdatePublicKeyMissing" xml:space="preserve"><value>The update source has no release public key.</value></data>
+  <data name="UpdaterArgumentsInvalid" xml:space="preserve"><value>The updater arguments are invalid.</value></data>
+  <data name="UpdateRecoveryFileChanged" xml:space="preserve"><value>Update recovery found a modified file. {0}</value></data>
+  <data name="UpdateResponseOutOfRange" xml:space="preserve"><value>The update service response exceeds the allowed range.</value></data>
+  <data name="UpdateResponseTooLarge" xml:space="preserve"><value>The update service response exceeds the size limit.</value></data>
+  <data name="UpdateRetiredFileModified" xml:space="preserve"><value>A file scheduled for removal has been modified. Resolve it before updating. {0}</value></data>
+  <data name="UpdaterLocationMismatch" xml:space="preserve"><value>The updater location differs from the recovery record.</value></data>
+  <data name="UpdaterProcessMismatch" xml:space="preserve"><value>The launcher process differs from the one scheduled for update.</value></data>
+  <data name="UpdatesAndStorage" xml:space="preserve"><value>Updates and storage</value></data>
+  <data name="UpdateSharedJarConflict" xml:space="preserve"><value>The old JAR also contains other mods. Review the replacement before updating. {0}</value></data>
+  <data name="UpdateSignatureInvalid" xml:space="preserve"><value>The update manifest signature is invalid. Try again later.</value></data>
+  <data name="UpdatesNotChecked" xml:space="preserve"><value>Updates have not been checked yet.</value></data>
+  <data name="UpdateSourceUnconfigured" xml:space="preserve"><value>The publisher has yet to configure the update source.</value></data>
+  <data name="UpdateStatusChanged" xml:space="preserve"><value>The update status changed. Check again.</value></data>
+  <data name="UpdateTotalSizeTooLarge" xml:space="preserve"><value>The update exceeds the total file size limit.</value></data>
+  <data name="UpdateUnrecognizedLocalFile" xml:space="preserve"><value>This file differs from the published versions. Back it up and resolve the conflict first. {0}</value></data>
+  <data name="UpdateWorkDirectoryInvalid" xml:space="preserve"><value>The update working directory is invalid.</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>Up to date.</value></data>
+  <data name="UseCharacter" xml:space="preserve"><value>Use this character</value></data>
+  <data name="UseLittleSkinSettings" xml:space="preserve"><value>Use LittleSkin settings</value></data>
+  <data name="UsernameOrEmail" xml:space="preserve"><value>Username or email</value></data>
+  <data name="VanillaOrBundledLoader" xml:space="preserve"><value>Vanilla or bundled loader</value></data>
+  <data name="VerifyingAuthlib" xml:space="preserve"><value>Verifying authlib-injector</value></data>
+  <data name="VerifyingGameAccount" xml:space="preserve"><value>Verifying game account</value></data>
+  <data name="VerifyingGameResources" xml:space="preserve"><value>Verifying game resources</value></data>
+  <data name="VersionAndModCount" xml:space="preserve"><value>{0}  ·  {1} mods</value></data>
+  <data name="ViewModpackLink" xml:space="preserve"><value>View modpack  →</value></data>
+  <data name="WaitingForMicrosoftPage" xml:space="preserve"><value>The browser is ready. Waiting for the sign-in page.</value></data>
+  <data name="WaitingForTask" xml:space="preserve"><value>Waiting for a task</value></data>
+  <data name="WidthPixels" xml:space="preserve"><value>Width (pixels)</value></data>
+  <data name="WindowDefaultsRestored" xml:space="preserve"><value>Default window settings restored. Save to apply them.</value></data>
+  <data name="WindowHeight" xml:space="preserve"><value>Window height</value></data>
+  <data name="WindowSizeInvalid" xml:space="preserve"><value>Enter a width from 640 to 16384 and a height from 360 to 16384.</value></data>
+  <data name="WindowWidth" xml:space="preserve"><value>Window width</value></data>
+  <data name="Working" xml:space="preserve"><value>Working</value></data>
+  <data name="XboxAgeVerificationRequired" xml:space="preserve"><value>Confirm your age on the Xbox website, then sign in again.</value></data>
+  <data name="XboxAvatar" xml:space="preserve"><value>Xbox profile avatar</value></data>
+  <data name="XboxAvatarAccountMismatch" xml:space="preserve"><value>The Xbox profile belongs to a different account.</value></data>
+  <data name="XboxFamilyPermissionRequired" xml:space="preserve"><value>A parent or guardian needs to allow Xbox Live in Microsoft Family settings.</value></data>
+  <data name="XboxHttpFailure" xml:space="preserve"><value>Xbox authorization failed (HTTP {0}, error {1}). Check your Xbox account.</value></data>
+  <data name="XboxProfileMissing" xml:space="preserve"><value>Create an Xbox profile on the Xbox website, then sign in again.</value></data>
+  <data name="XboxRegionUnsupported" xml:space="preserve"><value>Xbox Live is unavailable in this account's region.</value></data>
+  <data name="XboxUserIdMissing" xml:space="preserve"><value>The Xbox profile has no user ID.</value></data>
+  <data name="YggdrasilAddressInvalid" xml:space="preserve"><value>Enter the full HTTPS Yggdrasil API address, such as https://skin.example/api/yggdrasil/. HTTP is available for local testing.</value></data>
+</root>

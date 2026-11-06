@@ -2,6 +2,7 @@ using System.Buffers;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -14,7 +15,7 @@ public sealed class PackImporter
     {
         "mods", "config", "defaultconfigs", "resourcepacks", "shaderpacks", "datapacks", "resources", "resource",
         "kubejs", "scripts", "libraries", "versions", "assets", "saves", "natives", "patchouli_books", "openloader",
-        "global_packs", "paxi", "fancymenu", "CustomSkinLoader", "journeymap", "xaero", "local"
+        "global_packs", "paxi", "fancymenu", "CustomSkinLoader", "journeymap", "xaero", "local", "moonlight-global-datapacks"
     };
     private static readonly HashSet<string> GameFiles = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -37,7 +38,7 @@ public sealed class PackImporter
         using var archive = ZipFile.OpenRead(archivePath);
         if (archive.Entries.Count > 100000)
         {
-            throw new InvalidDataException("整合包包含超过 100000 个条目，请先拆分归档。");
+            throw new InvalidDataException(LauncherText.Get("PackTooManyEntries"));
         }
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var entries = new List<ZipArchiveEntry>();
@@ -49,11 +50,11 @@ public sealed class PackImporter
             LauncherStorage.SafeTarget(Path.GetTempPath(), normalized.TrimEnd('/'));
             if (((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000 || (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0)
             {
-                throw new InvalidDataException("整合包不能包含符号链接。");
+                throw new InvalidDataException(LauncherText.Get("PackLinksUnsupported"));
             }
             if (!names.Add(normalized.TrimEnd('/')))
             {
-                throw new InvalidDataException($"整合包含有重复或仅大小写不同的路径：{entry.FullName}");
+                throw new InvalidDataException(LauncherText.Get("PackDuplicateArchivePath", entry.FullName));
             }
             if (normalized.EndsWith('/'))
             {
@@ -61,12 +62,12 @@ public sealed class PackImporter
             }
             if (entry.Length > 16L * 1024 * 1024 * 1024)
             {
-                throw new InvalidDataException("单个归档文件超过 16 GiB。");
+                throw new InvalidDataException(LauncherText.Get("PackEntryTooLarge"));
             }
             expanded = checked(expanded + entry.Length);
             if (expanded > MaximumExpandedBytes)
             {
-                throw new InvalidDataException("整合包解压后超过 128 GiB，请先拆分归档。");
+                throw new InvalidDataException(LauncherText.Get("PackExpandedSizeTooLarge"));
             }
             entries.Add(entry);
         }
@@ -83,19 +84,19 @@ public sealed class PackImporter
     {
         if (string.IsNullOrWhiteSpace(instanceName))
         {
-            throw new InvalidOperationException("请填写整合包名称。");
+            throw new InvalidOperationException(LauncherText.Get("PackNameRequired"));
         }
         if (!Regex.IsMatch(minecraftVersion, "^[A-Za-z0-9_.-]{1,100}$") ||
             !string.IsNullOrEmpty(forgeVersion) && !Regex.IsMatch(forgeVersion, "^[0-9]+(\\.[0-9]+){1,5}$"))
         {
-            throw new InvalidOperationException("请填写有效的 Minecraft 与 Forge 版本号。");
+            throw new InvalidOperationException(LauncherText.Get("PackVersionsInvalid"));
         }
         var final = Path.GetFullPath(storage.GameDirectory);
-        var instanceRoot = Path.GetDirectoryName(final) ?? throw new InvalidOperationException("游戏目录不能是磁盘根目录。");
+        var instanceRoot = Path.GetDirectoryName(final) ?? throw new InvalidOperationException(LauncherText.Get("GameDirectoryIsDriveRoot"));
         Directory.CreateDirectory(instanceRoot);
         if (Directory.Exists(final) && Directory.EnumerateFileSystemEntries(final).Any())
         {
-            throw new InvalidOperationException("游戏目录已有文件，本次导入不会覆盖现有整合包。请在首次安装时选择空目录。");
+            throw new InvalidOperationException(LauncherText.Get("GameDirectoryNotEmpty"));
         }
         var id = Guid.NewGuid().ToString("N");
         var stagingRoot = Path.Combine(instanceRoot, ".staging");
@@ -107,7 +108,7 @@ public sealed class PackImporter
             var drive = new DriveInfo(driveRoot);
             if (drive.IsReady && drive.AvailableFreeSpace < requiredSpace)
             {
-                throw new IOException($"安装磁盘空间不足。本次导入预计需要预留 {requiredSpace / (1024.0 * 1024 * 1024):0.0} GiB。");
+                throw new IOException(LauncherText.Get("ImportDiskSpaceLow", requiredSpace / (1024.0 * 1024 * 1024)));
             }
         }
         var reporter = new WorkProgress(progress, plan.Entries.Count + plan.Downloads.Count, plan.ExtractedBytes + plan.DownloadBytes);
@@ -117,7 +118,7 @@ public sealed class PackImporter
         Directory.CreateDirectory(staging);
         try
         {
-            reporter.Stage("正在导入", "正在提取文件并获取整合包依赖");
+            reporter.Stage(LauncherText.Get("ImportingPack"), LauncherText.Get("ExtractingAndDownloading"));
             var downloadPaths = plan.Downloads.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var independentEntries = plan.Entries.Select((entry, index) => (entry, index))
                 .Where(item => !downloadPaths.Contains(item.entry.TargetPath)).ToArray();
@@ -127,7 +128,7 @@ public sealed class PackImporter
             {
                 try
                 {
-                    await ExtractEntriesAsync(plan.ArchivePath, selectedEntries, staging, reporter, cancellation.Token);
+                    await ExtractEntriesAsync(plan.ArchivePath, selectedEntries, staging, plan.IsArysPack, reporter, cancellation.Token);
                 }
                 catch
                 {
@@ -166,7 +167,7 @@ public sealed class PackImporter
             await Task.WhenAll(ExtractAsync(independentEntries), DownloadAsync());
             if (overrideEntries.Length > 0)
             {
-                reporter.Stage("正在应用配置", "按整合包规则应用客户端覆盖文件");
+                reporter.Stage(LauncherText.Get("ApplyingPackConfig"), LauncherText.Get("ApplyingClientOverrides"));
                 await ExtractAsync(overrideEntries);
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -180,17 +181,18 @@ public sealed class PackImporter
                 PackVersion = plan.PackVersion,
                 SourceFormat = plan.Format,
                 DirectoryPath = final,
+                NeedsFirstLaunchCleanup = plan.IsArysPack,
                 ModCount = Directory.Exists(Path.Combine(staging, "mods")) ? Directory.EnumerateFiles(Path.Combine(staging, "mods"), "*.jar").Count() : 0
             };
             await File.WriteAllTextAsync(Path.Combine(staging, "arys-installation.json"),
                 JsonSerializer.Serialize(instance, LauncherStorage.JsonOptions), cancellationToken);
-            reporter.Stage("正在完成安装", "文件已就绪，正在完成导入");
+            reporter.Stage(LauncherText.Get("FinishingInstallation"), LauncherText.Get("CompletingImport"));
             if (Directory.Exists(final))
             {
                 Directory.Delete(final, false);
             }
             Directory.Move(staging, final);
-            reporter.Stage("导入完成", instance.Name);
+            reporter.Stage(LauncherText.Get("ImportComplete"), instance.Name);
             return instance;
         }
         catch
@@ -206,18 +208,26 @@ public sealed class PackImporter
         var root = document.RootElement;
         if (root.GetProperty("formatVersion").GetInt32() != 1 || root.GetProperty("game").GetString() != "minecraft")
         {
-            throw new InvalidDataException("此 Modrinth 整合包格式或游戏类型暂不支持。");
+            throw new InvalidDataException(LauncherText.Get("ModrinthFormatUnsupported"));
         }
         var dependencies = root.GetProperty("dependencies");
         if (new[] { "fabric-loader", "quilt-loader", "neoforge" }.Any(key => dependencies.TryGetProperty(key, out _)))
         {
-            throw new InvalidDataException("本启动器使用 Forge，此整合包要求其他 Mod 加载器。");
+            throw new InvalidDataException(LauncherText.Get("PackLoaderUnsupported"));
         }
         var prefix = MetadataPrefix(index, "modrinth.index.json");
+        var layers = new[] { prefix + "overrides/", prefix + "client-overrides/" };
+        var indexFiles = root.GetProperty("files");
+        var isArysPack = indexFiles.EnumerateArray().Any(file => PackContentPolicy.IsArysMod(file.GetProperty("path").GetString() ?? "")) ||
+            entries.Any(entry =>
+            {
+                var path = entry.FullName.Replace('\\', '/');
+                return layers.Any(layer => path.StartsWith(layer, StringComparison.Ordinal) && PackContentPolicy.IsArysMod(path[layer.Length..]));
+            });
         var files = new List<PackFile>();
         var optionalCount = 0;
         var targets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var file in root.GetProperty("files").EnumerateArray())
+        foreach (var file in indexFiles.EnumerateArray())
         {
             if (file.TryGetProperty("env", out var environment) && environment.TryGetProperty("client", out var client))
             {
@@ -236,15 +246,19 @@ public sealed class PackImporter
                 }
                 else if (requirement != "required")
                 {
-                    throw new InvalidDataException("整合包包含未知的客户端依赖类型。");
+                    throw new InvalidDataException(LauncherText.Get("PackClientDependencyUnknown"));
                 }
             }
-            var path = file.GetProperty("path").GetString() ?? throw new InvalidDataException("文件路径为空。");
+            var path = file.GetProperty("path").GetString() ?? throw new InvalidDataException(LauncherText.Get("PackFilePathMissing"));
             LauncherStorage.SafeTarget(Path.GetTempPath(), path);
             path = path.Replace('\\', '/');
+            if (isArysPack && (!PackContentPolicy.IsImportable(path) || path.Equals("options.txt", StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
             if (!targets.Add(path))
             {
-                throw new InvalidDataException($"文件清单存在重复目标：{path}");
+                throw new InvalidDataException(LauncherText.Get("PackDuplicateDestination", path));
             }
             var hashes = file.GetProperty("hashes");
             var sha512 = hashes.GetProperty("sha512").GetString() ?? "";
@@ -254,34 +268,37 @@ public sealed class PackImporter
                 sha1.Any(character => !Uri.IsHexDigit(character)) || urls.Length == 0 ||
                 urls.Any(uri => uri.Scheme != "https" || !DownloadHosts.Contains(uri.Host) || !string.IsNullOrEmpty(uri.UserInfo)))
             {
-                throw new InvalidDataException($"文件 {path} 的哈希或下载地址无效。当前支持 Modrinth、GitHub、GitLab 与 CurseForge CDN。");
+                throw new InvalidDataException(LauncherText.Get("PackDownloadEntryInvalid", path));
             }
             var size = file.GetProperty("fileSize").GetInt64();
             if (size < 0 || size > 16L * 1024 * 1024 * 1024)
             {
-                throw new InvalidDataException("下载文件的大小超出允许范围。");
+                throw new InvalidDataException(LauncherText.Get("PackDownloadSizeInvalid"));
             }
             files.Add(new PackFile(path, size, sha512.ToLowerInvariant(), sha1.ToLowerInvariant(), urls));
         }
         var overrides = new Dictionary<string, ArchiveFile>(StringComparer.OrdinalIgnoreCase);
-        foreach (var layer in new[] { "overrides/", "client-overrides/" })
+        foreach (var layerPrefix in layers)
         {
-            var layerPrefix = prefix + layer;
             foreach (var entry in entries.Where(entry => entry.FullName.Replace('\\', '/').StartsWith(layerPrefix, StringComparison.Ordinal)))
             {
                 var target = entry.FullName.Replace('\\', '/')[layerPrefix.Length..];
+                if (isArysPack && !PackContentPolicy.IsImportable(target))
+                {
+                    continue;
+                }
                 overrides[target] = new ArchiveFile(entry.FullName, target, entry.Length);
             }
         }
         var extracted = overrides.Values.Sum(entry => entry.Size);
         if (checked(extracted + files.Sum(file => file.Size)) > MaximumExpandedBytes || files.Count + overrides.Count > 100000)
         {
-            throw new InvalidDataException("整合包文件数量或总体积超出允许范围。");
+            throw new InvalidDataException(LauncherText.Get("PackLimitsExceeded"));
         }
         return new PackPlan(archivePath, root.GetProperty("name").GetString() ?? Path.GetFileNameWithoutExtension(archivePath),
             dependencies.GetProperty("minecraft").GetString() ?? "1.20.1",
             dependencies.TryGetProperty("forge", out var forge) ? forge.GetString() ?? "" : "", "",
-            root.GetProperty("versionId").GetString() ?? "", "Modrinth", files, overrides.Values.ToArray(), extracted, optionalCount);
+            root.GetProperty("versionId").GetString() ?? "", "Modrinth", files, overrides.Values.ToArray(), extracted, optionalCount, isArysPack);
     }
 
     private static PackPlan InspectBundledZip(string archivePath, IReadOnlyList<ZipArchiveEntry> entries)
@@ -299,7 +316,7 @@ public sealed class PackImporter
             {
                 if (document.RootElement.TryGetProperty("files", out var files) && files.GetArrayLength() > 0)
                 {
-                    throw new InvalidDataException("这是仅列出 CurseForge 项目编号的整合包，需要 CurseForge API 下载授权。请导出 .mrpack，或导出包含实际 mods 文件的 ZIP。");
+                    throw new InvalidDataException(LauncherText.Get("CurseForgeManifestUnsupported"));
                 }
                 minecraft = minecraftElement.GetProperty("version").GetString() ?? minecraft;
                 if (minecraftElement.TryGetProperty("modLoaders", out var loaders))
@@ -311,7 +328,7 @@ public sealed class PackImporter
                     }
                     else if (!string.IsNullOrEmpty(loader))
                     {
-                        throw new InvalidDataException("本启动器使用 Forge，此整合包要求其他 Mod 加载器。");
+                        throw new InvalidDataException(LauncherText.Get("PackLoaderUnsupported"));
                     }
                 }
                 name = document.RootElement.TryGetProperty("name", out var packName) ? packName.GetString() ?? name : name;
@@ -326,7 +343,7 @@ public sealed class PackImporter
                 .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             if (gameRoots.Length > 1)
             {
-                throw new InvalidDataException("ZIP 中含有多个游戏目录，请导出本整合包的单一游戏目录。");
+                throw new InvalidDataException(LauncherText.Get("MultipleGameDirectories"));
             }
             if (gameRoots.Length == 1)
             {
@@ -356,9 +373,14 @@ public sealed class PackImporter
                 payload.Add(new ArchiveFile(entry.FullName, target, entry.Length));
             }
         }
+        var isArysPack = payload.Any(file => PackContentPolicy.IsArysMod(file.TargetPath));
+        if (isArysPack)
+        {
+            payload.RemoveAll(file => !PackContentPolicy.IsImportable(file.TargetPath));
+        }
         if (payload.Count == 0)
         {
-            throw new InvalidDataException("ZIP 中没有可识别的游戏文件。请导入 .mrpack，或包含 mods、config 等目录的整合包 ZIP。");
+            throw new InvalidDataException(LauncherText.Get("NoRecognizedPackFiles"));
         }
         var versionFiles = payload.Where(file => Regex.IsMatch(file.TargetPath, "^versions/[^/]+/[^/]+\\.json$", RegexOptions.IgnoreCase)).ToArray();
         var versions = new List<(string Id, string Parent, JsonElement Root)>();
@@ -374,7 +396,7 @@ public sealed class PackImporter
         var leafVersions = versions.Where(version => versions.All(other => other.Parent != version.Id)).ToArray();
         if (leafVersions.Length > 1)
         {
-            throw new InvalidDataException("ZIP 中含有多个可启动版本，请先导出单个游戏实例。");
+            throw new InvalidDataException(LauncherText.Get("MultipleLaunchVersions"));
         }
         if (leafVersions.Length == 1)
         {
@@ -397,11 +419,11 @@ public sealed class PackImporter
             }
         }
         return new PackPlan(archivePath, name, minecraft, forge, launchVersion, "", "ZIP", Array.Empty<PackFile>(),
-            payload, payload.Sum(file => file.Size), 0);
+            payload, payload.Sum(file => file.Size), 0, isArysPack);
     }
 
     private static async Task ExtractEntriesAsync(string archivePath, IReadOnlyList<(ArchiveFile entry, int index)> entries,
-        string targetRoot, WorkProgress progress, CancellationToken cancellationToken)
+        string targetRoot, bool isArysPack, WorkProgress progress, CancellationToken cancellationToken)
     {
         if (entries.Count == 0)
         {
@@ -414,14 +436,30 @@ public sealed class PackImporter
             foreach (var (file, index) in entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var entry = archive.GetEntry(file.EntryName) ?? throw new InvalidDataException("整合包在导入期间发生了变化。");
+                var entry = archive.GetEntry(file.EntryName) ?? throw new InvalidDataException(LauncherText.Get("PackChangedDuringImport"));
                 if (entry.Length != file.Size)
                 {
-                    throw new InvalidDataException("整合包在导入期间发生了变化。");
+                    throw new InvalidDataException(LauncherText.Get("PackChangedDuringImport"));
                 }
                 var target = LauncherStorage.SafeTarget(targetRoot, file.TargetPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 await using var input = entry.Open();
+                if (isArysPack && file.TargetPath.Equals("options.txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (file.Size <= 64 * 1024)
+                    {
+                        var length = (int)file.Size;
+                        await input.ReadExactlyAsync(buffer.AsMemory(0, length), cancellationToken);
+                        var defaults = Encoding.UTF8.GetString(buffer, 0, length).Split('\n')
+                            .Select(line => line.Trim())
+                            .Where(line => line.StartsWith("resourcePacks:", StringComparison.Ordinal) ||
+                                line.StartsWith("incompatibleResourcePacks:", StringComparison.Ordinal) ||
+                                line.StartsWith("version:", StringComparison.Ordinal) && int.TryParse(line.AsSpan(8), out _));
+                        await File.WriteAllLinesAsync(target, defaults, cancellationToken);
+                    }
+                    progress.FileDone(index);
+                    continue;
+                }
                 await using var output = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None,
                     128 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
                 long written = 0;
@@ -434,7 +472,7 @@ public sealed class PackImporter
                     }
                     if (written + count > file.Size)
                     {
-                        throw new InvalidDataException("解压数据超出了归档声明的大小。");
+                        throw new InvalidDataException(LauncherText.Get("ArchiveExpandedEntryTooLarge"));
                     }
                     await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
                     written += count;
@@ -442,7 +480,7 @@ public sealed class PackImporter
                 }
                 if (written != file.Size)
                 {
-                    throw new InvalidDataException("归档文件数据不完整。");
+                    throw new InvalidDataException(LauncherText.Get("ArchiveEntryIncomplete"));
                 }
                 progress.FileDone(index);
             }
@@ -468,7 +506,7 @@ public sealed class PackImporter
     {
         if (entry.Length > 16 * 1024 * 1024)
         {
-            throw new InvalidDataException("整合包清单超过 16 MiB。");
+            throw new InvalidDataException(LauncherText.Get("PackMetadataTooLarge"));
         }
         using var input = entry.Open();
         return JsonDocument.Parse(input);

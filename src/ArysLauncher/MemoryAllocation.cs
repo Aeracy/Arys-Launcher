@@ -43,13 +43,13 @@ internal readonly record struct MemoryBudget(PhysicalMemory Memory, int MaximumM
         {
             if (MaximumGiB > Memory.TotalGiB)
             {
-                return "游戏内存上限超过本机物理内存，可调低上限。";
+                return LauncherText.Get("MemoryAbovePhysical");
             }
             if (HasShortfall)
             {
-                return "当前可用内存低于游戏上限。可调低上限或关闭其他程序。";
+                return LauncherText.Get("MemoryAboveAvailable");
             }
-            return "游戏按需使用内存，最多达到设定的上限。";
+            return LauncherText.Get("MemoryUsageHelp");
         }
     }
 }

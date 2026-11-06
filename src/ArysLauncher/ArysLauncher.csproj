@@ -9,7 +9,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>ArysLauncher</AssemblyName>
     <RootNamespace>ArysLauncher</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.5</Version>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <Description>The Maiden's Eternal Dungeon launcher</Description>
     <Authors>Aeracy</Authors>
     <Company>Aeracy</Company>
@@ -26,6 +27,8 @@
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="2.0.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <Resource Include="Assets\hero.png" />
+    <Resource Include="Assets\app.png" />
+    <EmbeddedResource Include="pack-content-policy.json" LogicalName="ArysLauncher.pack-content-policy.json" />
     <Content Include="..\..\release-channel.json" Link="release-channel.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 </Project>

@@ -31,7 +31,7 @@ public sealed class UpdateChannel
         if (!Regex.IsMatch(LauncherRepository, "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$") ||
             LauncherRepository.Equals("Aeracy/arysmod", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException("请为启动器配置独立的公开发布仓库。");
+            throw new InvalidDataException(LauncherText.Get("SeparateReleaseRepositoryRequired"));
         }
         return new Uri($"https://github.com/{LauncherRepository}/releases/latest/download/launcher-update.json");
     }
@@ -55,14 +55,14 @@ public sealed class UpdateManifest
             minimum > System.Version.Parse(App.LauncherVersion) || Files.Count is 0 or > 10000 ||
             RetiredFiles.Count > 30000 || ReleaseNotes.Length > 16000)
         {
-            throw new InvalidDataException("更新清单不兼容，请检查启动器版本与发布配置。");
+            throw new InvalidDataException(LauncherText.Get("UpdateManifestIncompatible"));
         }
         if (Kind == UpdateKind.Pack && (Pack == null || string.IsNullOrWhiteSpace(Pack.Id) ||
             Pack.Id.Length > 100 || string.IsNullOrWhiteSpace(Pack.Name) ||
             !Regex.IsMatch(Pack.MinecraftVersion, "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$") ||
             !Regex.IsMatch(Pack.ForgeVersion, "^[0-9]+(\\.[0-9]+){1,5}$")))
         {
-            throw new InvalidDataException("整合包更新缺少有效的版本信息。");
+            throw new InvalidDataException(LauncherText.Get("UpdatePackVersionInvalid"));
         }
         var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         long total = 0;
@@ -71,11 +71,11 @@ public sealed class UpdateManifest
             UpdatePaths.ValidateFile(file, Kind);
             if (!paths.Add(file.Path))
             {
-                throw new InvalidDataException("更新清单含有重复文件路径。");
+                throw new InvalidDataException(LauncherText.Get("UpdateDuplicateFilePath"));
             }
             if (file.Downloads.Count is 0 or > 8)
             {
-                throw new InvalidDataException("更新文件缺少下载地址。");
+                throw new InvalidDataException(LauncherText.Get("UpdateDownloadAddressMissing"));
             }
             foreach (var address in file.Downloads)
             {
@@ -85,7 +85,7 @@ public sealed class UpdateManifest
         }
         if (total > 128L * 1024 * 1024 * 1024)
         {
-            throw new InvalidDataException("更新文件总量超过允许范围。");
+            throw new InvalidDataException(LauncherText.Get("UpdateTotalSizeTooLarge"));
         }
         foreach (var file in RetiredFiles)
         {
@@ -93,7 +93,7 @@ public sealed class UpdateManifest
         }
         if (Kind == UpdateKind.Launcher && !paths.Contains("ArysLauncher.exe"))
         {
-            throw new InvalidDataException("启动器更新缺少主程序。");
+            throw new InvalidDataException(LauncherText.Get("UpdateExecutableMissing"));
         }
     }
 }
@@ -131,7 +131,7 @@ internal static class UpdatePaths
     private static readonly HashSet<string> PackDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
         "mods", "config", "defaultconfigs", "resourcepacks", "shaderpacks", "datapacks", "resources", "resource",
-        "kubejs", "scripts", "patchouli_books", "openloader", "global_packs", "paxi", "fancymenu"
+        "kubejs", "scripts", "patchouli_books", "openloader", "global_packs", "paxi", "fancymenu", "moonlight-global-datapacks"
     };
 
     public static Uri HttpsAddress(string address)
@@ -139,7 +139,7 @@ internal static class UpdatePaths
         if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps ||
             !string.IsNullOrEmpty(uri.UserInfo) || !string.IsNullOrEmpty(uri.Fragment))
         {
-            throw new InvalidDataException("更新地址必须使用 HTTPS。");
+            throw new InvalidDataException(LauncherText.Get("UpdateAddressRequiresHttps"));
         }
         return uri;
     }
@@ -150,12 +150,12 @@ internal static class UpdatePaths
         var segments = file.Path.Split('/');
         var launcherFile = file.Path is "ArysLauncher.exe" or "release-channel.json" or "README.md" ||
             segments.Length > 1 && segments[0] == "Licenses";
-        var packFile = segments.Length > 1 && PackDirectories.Contains(segments[0]);
+        var packFile = segments.Length > 1 && PackDirectories.Contains(segments[0]) && PackContentPolicy.IsDistributable(file.Path);
         if (file.Path.Contains('\\') || file.Size < 0 || file.Size > 16L * 1024 * 1024 * 1024 ||
             file.Sha256.Length != 64 || !file.Sha256.All(Uri.IsHexDigit) ||
             !(kind == UpdateKind.Launcher ? launcherFile : packFile))
         {
-            throw new InvalidDataException($"更新文件不在允许的范围内。{file.Path}");
+            throw new InvalidDataException(LauncherText.Get("UpdateFileOutsideScope", file.Path));
         }
     }
 
@@ -167,7 +167,7 @@ internal static class UpdatePaths
         {
             if (current.Exists && (current.Attributes & FileAttributes.ReparsePoint) != 0)
             {
-                throw new IOException("更新目录不能经过符号链接。");
+                throw new IOException(LauncherText.Get("UpdateLinkedDirectory"));
             }
             current = current.Parent;
         }
@@ -179,7 +179,7 @@ internal static class UpdatePaths
             if ((File.Exists(candidate) || Directory.Exists(candidate)) &&
                 (File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
             {
-                throw new IOException("更新文件路径不能经过符号链接。");
+                throw new IOException(LauncherText.Get("UpdateLinkedFile"));
             }
         }
         return destination;

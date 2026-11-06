@@ -1,6 +1,7 @@
 param(
     [switch]$Publish,
-    [switch]$Package
+    [switch]$Package,
+    [string]$BundledPack
 )
 
 $ErrorActionPreference = 'Stop'
@@ -72,5 +73,5 @@ if (Test-Path -LiteralPath $outputPath) {
 Get-ChildItem -LiteralPath $staging -Force | Copy-Item -Destination $outputPath -Recurse
 Write-Output (Join-Path $outputPath 'ArysLauncher.exe')
 if ($Package) {
-    & (Join-Path $launcherRoot 'Package.ps1')
+    & (Join-Path $launcherRoot 'Package.ps1') -BundledPack $BundledPack
 }

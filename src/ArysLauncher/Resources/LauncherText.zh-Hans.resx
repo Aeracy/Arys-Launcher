@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AccountDecryptionFailed" xml:space="preserve"><value>无法解密此账号的会话，请重新登录。账号会话仅供当前 Windows 用户使用。</value></data>
+  <data name="AccountRemoved" xml:space="preserve"><value>此账号已从启动器移除。</value></data>
+  <data name="Accounts" xml:space="preserve"><value>账号</value></data>
+  <data name="AccountsPageDescription" xml:space="preserve"><value>选择用于启动游戏的账号。</value></data>
+  <data name="AddAccountLink" xml:space="preserve"><value>添加账号  ↗</value></data>
+  <data name="AdvancedConnections" xml:space="preserve"><value>高级连接设置</value></data>
+  <data name="ApplyingClientOverrides" xml:space="preserve"><value>按整合包规则应用客户端覆盖文件</value></data>
+  <data name="ApplyingPackConfig" xml:space="preserve"><value>正在应用配置</value></data>
+  <data name="ApplyingUpdate" xml:space="preserve"><value>正在应用更新</value></data>
+  <data name="ArchiveEntryIncomplete" xml:space="preserve"><value>归档文件数据不完整。</value></data>
+  <data name="ArchiveExpandedEntryTooLarge" xml:space="preserve"><value>解压数据超出了归档声明的大小。</value></data>
+  <data name="AuthenticationApiExample" xml:space="preserve"><value>例如 https://skin.example/api/yggdrasil/，请以认证站提供的地址为准。</value></data>
+  <data name="AuthenticationApiUrl" xml:space="preserve"><value>认证 API 根地址</value></data>
+  <data name="AuthenticationServerName" xml:space="preserve"><value>认证服务器名称</value></data>
+  <data name="AuthenticationSettingsSaved" xml:space="preserve"><value>认证服务器设置已保存。</value></data>
+  <data name="AuthHttpFailure" xml:space="preserve"><value>{0}失败（HTTP {1}）。{2}</value></data>
+  <data name="AuthlibAddressUnexpected" xml:space="preserve"><value>外置认证组件返回了非预期的下载地址。</value></data>
+  <data name="AuthlibAutomaticHelp" xml:space="preserve"><value>留空时从组件官方来源下载并校验，之后复用本地缓存。</value></data>
+  <data name="AuthlibCacheInvalid" xml:space="preserve"><value>外置认证组件缓存无效，请在设置中指定 authlib-injector 文件。</value></data>
+  <data name="AuthlibJarMissing" xml:space="preserve"><value>指定的 authlib-injector JAR 不存在。</value></data>
+  <data name="AuthlibSizeMissing" xml:space="preserve"><value>外置认证组件的下载源未提供文件大小，请在设置中指定组件文件。</value></data>
+  <data name="AuthResponseFieldMissing" xml:space="preserve"><value>认证响应缺少字段：{0}</value></data>
+  <data name="AuthResponseUnrecognized" xml:space="preserve"><value>认证服务返回了无法识别的响应（HTTP {0}）。</value></data>
+  <data name="AutoJoinAddressInvalid" xml:space="preserve"><value>自动进入服务器请填写域名或 IP，可附端口，例如 play.example.com:25565。</value></data>
+  <data name="AutoJoinServerHelp" xml:space="preserve"><value>填写游戏服务器的域名或 IP，可附端口。留空进入主菜单。</value></data>
+  <data name="AutoJoinServerOptional" xml:space="preserve"><value>自动进入服务器（可选）</value></data>
+  <data name="Automatic" xml:space="preserve"><value>自动选择</value></data>
+  <data name="AutomaticAllocation" xml:space="preserve"><value>自动配置</value></data>
+  <data name="AvatarAddressInvalid" xml:space="preserve"><value>头像地址无效。</value></data>
+  <data name="AvatarDimensionsTooLarge" xml:space="preserve"><value>头像图像尺寸超过允许范围。</value></data>
+  <data name="AvatarRedirectLimit" xml:space="preserve"><value>头像下载的跳转次数过多。</value></data>
+  <data name="AvatarRequiresHttps" xml:space="preserve"><value>头像下载需要 HTTPS。</value></data>
+  <data name="AvatarResponseTooLarge" xml:space="preserve"><value>头像服务响应超过允许大小。</value></data>
+  <data name="BrowseFilesLink" xml:space="preserve"><value>浏览文件  →</value></data>
+  <data name="BundledPackDescription" xml:space="preserve"><value>随附官方整合包，安装时下载游戏所需文件。</value></data>
+  <data name="CacheHitCount" xml:space="preserve"><value>缓存命中 {0}</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>已取消。</value></data>
+  <data name="CancellingTask" xml:space="preserve"><value>正在取消任务。</value></data>
+  <data name="CancelTask" xml:space="preserve"><value>取消任务</value></data>
+  <data name="CharacterSelectionCancelled" xml:space="preserve"><value>已取消角色选择。</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>检查更新</value></data>
+  <data name="CheckingGameResources" xml:space="preserve"><value>复用已校验的文件，补全整合包所需资源。</value></data>
+  <data name="CheckingLauncherVersion" xml:space="preserve"><value>正在检查启动器版本。</value></data>
+  <data name="CheckingLocalJava" xml:space="preserve"><value>正在检查本机 Java。</value></data>
+  <data name="CheckingMinecraftFiles" xml:space="preserve"><value>检查游戏文件，补全缺失的资源。</value></data>
+  <data name="CheckingUpdateFiles" xml:space="preserve"><value>正在检查更新文件</value></data>
+  <data name="CheckingUpdates" xml:space="preserve"><value>正在检查…</value></data>
+  <data name="CheckUpdatesOnStartup" xml:space="preserve"><value>打开启动器时检查新版本</value></data>
+  <data name="ChooseAccountCharacter" xml:space="preserve"><value>选择此账号下的游戏角色</value></data>
+  <data name="ChooseAuthlibInjector" xml:space="preserve"><value>选择 authlib-injector</value></data>
+  <data name="ChooseCharacter" xml:space="preserve"><value>选择游戏角色</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>选择文件</value></data>
+  <data name="ChooseJavaExecutable" xml:space="preserve"><value>选择 Java 程序</value></data>
+  <data name="ChooseLocalPackFile" xml:space="preserve"><value>从本地选择 .mrpack 或整合包 ZIP</value></data>
+  <data name="ChooseModpackFile" xml:space="preserve"><value>选择整合包文件</value></data>
+  <data name="ChoosePackDescription" xml:space="preserve"><value>将整合包文件拖到窗口，或从本地选择。</value></data>
+  <data name="ChoosePackFileHelp" xml:space="preserve"><value>选择文件后显示整合包信息。文件会安装到启动器下的 .minecraft 目录。</value></data>
+  <data name="ClearDownloadCache" xml:space="preserve"><value>清理下载缓存</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="CloseImportDialog" xml:space="preserve"><value>关闭导入窗口</value></data>
+  <data name="CompareReleaseAndLocalFiles" xml:space="preserve"><value>检查发行版本与本地文件</value></data>
+  <data name="ComparingPackFiles" xml:space="preserve"><value>正在比较发行清单与本地文件。</value></data>
+  <data name="ComparingUpdateFiles" xml:space="preserve"><value>比较本地文件和发行清单。</value></data>
+  <data name="CompatibilityAppNameHelp" xml:space="preserve"><value>使用认证组件内置的 Minecraft 授权配置，网页中的应用名称以微软实际显示为准。</value></data>
+  <data name="CompatibilitySignIn" xml:space="preserve"><value>兼容网页授权</value></data>
+  <data name="CompatibilitySignInHelp" xml:space="preserve"><value>在独立窗口中通过微软官方网页授权，随后验证 Xbox、Minecraft 角色和 Java 版游戏授权。无需配置 Azure 或填写应用 ID。</value></data>
+  <data name="Complete" xml:space="preserve"><value>完成</value></data>
+  <data name="Completed" xml:space="preserve"><value>已完成</value></data>
+  <data name="CompletingImport" xml:space="preserve"><value>文件已就绪，正在完成导入</value></data>
+  <data name="ConcurrentFiles" xml:space="preserve"><value>同时下载的文件数</value></data>
+  <data name="ConnectingToMicrosoft" xml:space="preserve"><value>正在连接 Microsoft</value></data>
+  <data name="ConnectionsPerHost" xml:space="preserve"><value>单站点连接数</value></data>
+  <data name="CurrentAccount" xml:space="preserve"><value>当前账号</value></data>
+  <data name="CurrentAccountAvatar" xml:space="preserve"><value>当前账号头像</value></data>
+  <data name="CurrentTaskProgress" xml:space="preserve"><value>当前任务进度</value></data>
+  <data name="CurseForgeManifestUnsupported" xml:space="preserve"><value>这是仅列出 CurseForge 项目编号的整合包，需要 CurseForge API 下载授权。请导出 .mrpack，或导出包含实际 mods 文件的 ZIP。</value></data>
+  <data name="CustomAllocation" xml:space="preserve"><value>自定义</value></data>
+  <data name="CustomYggdrasilServer" xml:space="preserve"><value>自定义 Authlib Injector 认证服务器</value></data>
+  <data name="DefaultDisplayMode" xml:space="preserve"><value>默认全屏，分辨率 1920 × 1080。</value></data>
+  <data name="Done" xml:space="preserve"><value>完成。</value></data>
+  <data name="DownloadAlgorithmUnsupported" xml:space="preserve"><value>不支持的文件校验算法。</value></data>
+  <data name="DownloadCacheLimit" xml:space="preserve"><value>下载缓存上限为 1 GiB，可随时清理。</value></data>
+  <data name="DownloadConcurrencyInvalid" xml:space="preserve"><value>下载并发应为 1–32，单站点并发应为 1–16。</value></data>
+  <data name="DownloadHashMismatch" xml:space="preserve"><value>下载文件未通过完整性校验，将重新获取。</value></data>
+  <data name="DownloadIncomplete" xml:space="preserve"><value>文件下载未完成。已保留可恢复的数据，请检查网络或代理后重新导入。</value></data>
+  <data name="DownloadingAuthlib" xml:space="preserve"><value>正在获取 authlib-injector 组件</value></data>
+  <data name="DownloadingUpdate" xml:space="preserve"><value>正在下载更新</value></data>
+  <data name="DownloadLimitHelp" xml:space="preserve"><value>0 表示不限速。此上限由所有下载共用，登录不受影响。</value></data>
+  <data name="DownloadPartialChanged" xml:space="preserve"><value>续传文件已改变。</value></data>
+  <data name="DownloadProgressHelp" xml:space="preserve"><value>导入整合包或准备游戏时，可在这里查看进度。</value></data>
+  <data name="DownloadRangeMismatch" xml:space="preserve"><value>下载源返回的续传范围与文件不一致。</value></data>
+  <data name="DownloadRateLimited" xml:space="preserve"><value>下载源暂时限流。</value></data>
+  <data name="DownloadRecordInvalid" xml:space="preserve"><value>文件清单中的大小、哈希或下载地址无效。</value></data>
+  <data name="DownloadRedirectInsecure" xml:space="preserve"><value>下载源重定向到了非 HTTPS 地址。</value></data>
+  <data name="Downloads" xml:space="preserve"><value>下载任务</value></data>
+  <data name="DownloadSettingsHelp" xml:space="preserve"><value>默认自动安排连接，下载中断后可继续。需要限制网速或调整连接数时，可在这里设置。</value></data>
+  <data name="DownloadSizeMismatch" xml:space="preserve"><value>下载源返回的文件大小与整合包清单不一致。</value></data>
+  <data name="DownloadsPageDescription" xml:space="preserve"><value>查看当前进度与操作记录。</value></data>
+  <data name="DownloadSpeedLimitInvalid" xml:space="preserve"><value>下载总限速填 0 表示不限速，或填写 0.1–102400 MiB/s。</value></data>
+  <data name="DownloadTooLarge" xml:space="preserve"><value>下载源返回的数据超过了清单大小。</value></data>
+  <data name="ExternalAccountDescription" xml:space="preserve"><value>{0} · 外置认证</value></data>
+  <data name="ExternalAuthComponent" xml:space="preserve"><value>外置认证组件</value></data>
+  <data name="ExternalAuthentication" xml:space="preserve"><value>外置认证</value></data>
+  <data name="ExternalAuthenticationSignIn" xml:space="preserve"><value>外置认证登录</value></data>
+  <data name="ExternalCharacterMismatch" xml:space="preserve"><value>选择的角色不属于此账号。</value></data>
+  <data name="ExternalCharacterMissing" xml:space="preserve"><value>认证成功，但该账号没有 Minecraft 角色。请先在认证站创建角色。</value></data>
+  <data name="ExternalClientRejected" xml:space="preserve"><value>认证服务器拒绝了当前客户端，请检查该认证站的接入设置。</value></data>
+  <data name="ExternalCredentialsInvalid" xml:space="preserve"><value>账号、密码或会话无效。</value></data>
+  <data name="ExternalCredentialsRequired" xml:space="preserve"><value>请填写认证服务器的账号和密码。</value></data>
+  <data name="ExternalPasswordHelp" xml:space="preserve"><value>密码仅发送到你填写的认证地址，不保存到本地。</value></data>
+  <data name="ExternalSessionCharacterMismatch" xml:space="preserve"><value>认证服务器返回的角色与所选角色不一致。</value></data>
+  <data name="ExternalSessionCheckFailed" xml:space="preserve"><value>认证服务器暂时无法校验账号（HTTP {0}）。</value></data>
+  <data name="ExternalSessionChecking" xml:space="preserve"><value>正在校验外置认证会话</value></data>
+  <data name="ExternalSessionRefresh" xml:space="preserve"><value>刷新外置认证会话，请重新登录后重试</value></data>
+  <data name="ExternalSignIn" xml:space="preserve"><value>外置账号登录</value></data>
+  <data name="ExternalTroubleshoot" xml:space="preserve"><value>请检查网络、账号状态及认证服务器地址。</value></data>
+  <data name="ExternalUuidInvalid" xml:space="preserve"><value>认证服务器返回了无效的角色 UUID。</value></data>
+  <data name="ExtractingAndDownloading" xml:space="preserve"><value>正在提取文件并获取整合包依赖</value></data>
+  <data name="FileProgress" xml:space="preserve"><value>{0} / {1} 文件</value></data>
+  <data name="FinishingInstallation" xml:space="preserve"><value>正在完成安装</value></data>
+  <data name="FinishingTaskForExit" xml:space="preserve"><value>正在结束任务并保存可恢复的下载数据。</value></data>
+  <data name="FirstLaunchLinkedCache" xml:space="preserve"><value>首次启动清理遇到符号链接，请先检查缓存目录。</value></data>
+  <data name="FolderNotCreated" xml:space="preserve"><value>目录尚未创建，导入整合包后即可打开。</value></data>
+  <data name="ForgeVersion" xml:space="preserve"><value>Forge 版本</value></data>
+  <data name="ForgeVersionRequired" xml:space="preserve"><value>整合包包含 Mod，但尚未指定加载器。请在整合包配置中填写要求的 Forge 版本。</value></data>
+  <data name="GameAndSettings" xml:space="preserve"><value>游戏与设置</value></data>
+  <data name="GameArguments" xml:space="preserve"><value>游戏参数</value></data>
+  <data name="GameArgumentsHelp" xml:space="preserve"><value>账号身份与游戏目录由启动器管理。</value></data>
+  <data name="GameDependencyAddressMissing" xml:space="preserve"><value>游戏依赖缺少文件位置或下载地址。</value></data>
+  <data name="GameDependencyDownloadFailed" xml:space="preserve"><value>游戏依赖下载失败，请检查网络或代理后重试。</value></data>
+  <data name="GameDependencyHashMismatch" xml:space="preserve"><value>游戏依赖未通过 SHA-1 校验。</value></data>
+  <data name="GameDependencyRequiresHttps" xml:space="preserve"><value>游戏依赖必须使用 HTTPS 下载地址。</value></data>
+  <data name="GameDependencySizeMismatch" xml:space="preserve"><value>游戏依赖下载大小不匹配。</value></data>
+  <data name="GameDirectoryIsDriveRoot" xml:space="preserve"><value>游戏目录不能是磁盘根目录。</value></data>
+  <data name="GameDirectoryMissing" xml:space="preserve"><value>整合包的游戏目录不存在，请检查安装位置。</value></data>
+  <data name="GameDirectoryNotEmpty" xml:space="preserve"><value>游戏目录已有文件，本次导入不会覆盖现有整合包。请在首次安装时选择空目录。</value></data>
+  <data name="GameExited" xml:space="preserve"><value>游戏已退出。</value></data>
+  <data name="GameExitedWithError" xml:space="preserve"><value>游戏退出码为 {0}，可从下载任务页打开日志目录。</value></data>
+  <data name="GameExitLog" xml:space="preserve"><value>游戏已退出，退出码 {0}。日志：{1}</value></data>
+  <data name="GameInstallerUnavailable" xml:space="preserve"><value>游戏文件安装入口未就绪。</value></data>
+  <data name="GameLogCaptureEnded" xml:space="preserve"><value>游戏日志采集已结束：</value></data>
+  <data name="GameMemoryLimit" xml:space="preserve"><value>游戏内存上限</value></data>
+  <data name="GameMemoryLimitGib" xml:space="preserve"><value>游戏内存上限（GiB）</value></data>
+  <data name="GameProcessStarted" xml:space="preserve"><value>游戏进程已启动。日志：{0}</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>游戏运行中</value></data>
+  <data name="GameStartFailed" xml:space="preserve"><value>游戏进程未能启动。</value></data>
+  <data name="GameWindow" xml:space="preserve"><value>游戏窗口</value></data>
+  <data name="HeightPixels" xml:space="preserve"><value>高度（像素）</value></data>
+  <data name="Home" xml:space="preserve"><value>首页</value></data>
+  <data name="HomeMotto" xml:space="preserve"><value>准备好游戏，随时出发。</value></data>
+  <data name="HomePageDescription" xml:space="preserve"><value>整合包与启动状态</value></data>
+  <data name="HomePageTitle" xml:space="preserve"><value>准备游戏</value></data>
+  <data name="ImportBeforePlaying" xml:space="preserve"><value>导入整合包后开始游戏</value></data>
+  <data name="ImportComplete" xml:space="preserve"><value>导入完成</value></data>
+  <data name="ImportDiskSpaceLow" xml:space="preserve"><value>安装磁盘空间不足。本次导入预计需要预留 {0:0.0} GiB。</value></data>
+  <data name="ImportingPack" xml:space="preserve"><value>正在导入</value></data>
+  <data name="ImportLoaderVersionHelp" xml:space="preserve"><value>版本应与整合包要求一致。ZIP 未提供加载器版本时，请手动填写，例如 47.4.0。</value></data>
+  <data name="ImportModpack" xml:space="preserve"><value>导入整合包</value></data>
+  <data name="IncludeOptionalModFiles" xml:space="preserve"><value>导入时包含整合包列出的可选客户端文件</value></data>
+  <data name="Incomplete" xml:space="preserve"><value>未完成</value></data>
+  <data name="InstallAndResources" xml:space="preserve"><value>安装与资源</value></data>
+  <data name="InstallationRecordMissing" xml:space="preserve"><value>整合包安装记录不存在。</value></data>
+  <data name="InstallationResourcesHelp" xml:space="preserve"><value>启动器会按包内要求准备 Minecraft 和 Forge，复用已校验的资源。存档、截图和游戏设置都保存在上方目录。</value></data>
+  <data name="InstallBeforeChecking" xml:space="preserve"><value>导入整合包后可检查更新。</value></data>
+  <data name="InstallBeforePlaying" xml:space="preserve"><value>安装整合包后开始游戏</value></data>
+  <data name="Installed" xml:space="preserve"><value>已安装</value></data>
+  <data name="InstallingForge" xml:space="preserve"><value>正在安装 Forge</value></data>
+  <data name="InstallingMinecraft" xml:space="preserve"><value>正在安装 Minecraft</value></data>
+  <data name="InstallLocation" xml:space="preserve"><value>安装位置</value></data>
+  <data name="InstallModpack" xml:space="preserve"><value>安装整合包</value></data>
+  <data name="InstallModpackLink" xml:space="preserve"><value>安装整合包  →</value></data>
+  <data name="IntegerRequired" xml:space="preserve"><value>应为整数。</value></data>
+  <data name="Java17Fallback" xml:space="preserve"><value>未找到 Java 17，已选用</value></data>
+  <data name="Java17Selection" xml:space="preserve"><value>已选用 Java 17 · {0} · {1}。共发现 {2} 个本机 Java。</value></data>
+  <data name="Java32Bit" xml:space="preserve"><value>32 位</value></data>
+  <data name="Java32BitMemoryLimit" xml:space="preserve"><value>当前选中的 Java 为 32 位，无法使用设定的较大内存。请在设置中改选 64 位 Java，推荐 Java 17。</value></data>
+  <data name="Java32BitSuggestion" xml:space="preserve"><value> 当前为 32 位 Java，请安装 64 位 Java 17 以使用较大内存。</value></data>
+  <data name="Java64Bit" xml:space="preserve"><value>64 位</value></data>
+  <data name="JavaAutomatic" xml:space="preserve"><value>自动获取</value></data>
+  <data name="JavaAutomaticChoice" xml:space="preserve"><value>自动选择 · 优先 Java 17</value></data>
+  <data name="JavaComponentFilter" xml:space="preserve"><value>Java 组件 (*.jar)|*.jar</value></data>
+  <data name="JavaCurrentlySelected" xml:space="preserve"><value>当前选用</value></data>
+  <data name="JavaExecutableFilter" xml:space="preserve"><value>Java 程序 (javaw.exe;java.exe)|javaw.exe;java.exe</value></data>
+  <data name="JavaExecutableMissing" xml:space="preserve"><value>指定的 Java 程序不存在。</value></data>
+  <data name="JavaFallbackHint" xml:space="preserve"><value>{0} Java {1}。本整合包推荐 Java 17，遇到兼容问题时请切换。</value></data>
+  <data name="JavaLocalRuntime" xml:space="preserve"><value>本机 Java</value></data>
+  <data name="JavaRuntime" xml:space="preserve"><value>Java 运行环境</value></data>
+  <data name="JavaRuntimeMissing" xml:space="preserve"><value>没有找到可用的 Java。请在设置中选择与整合包兼容的 Java，Minecraft 1.20.1 建议使用 64 位 Java 17。</value></data>
+  <data name="JavaRuntimePreference" xml:space="preserve"><value>优先使用本机 64 位 Java 17</value></data>
+  <data name="JavaScanIncomplete" xml:space="preserve"><value>Java 扫描未完成，可以手动选择 Java 程序。</value></data>
+  <data name="JavaSelectionRequired" xml:space="preserve"><value>请先选择本机 Java，或启用自动选择。</value></data>
+  <data name="JavaSelectionUnavailable" xml:space="preserve"><value>所选 Java 不可用，请在设置中重新扫描或选择 Java 程序。</value></data>
+  <data name="JavaWillDownload" xml:space="preserve"><value>未发现本机 Java，补全环境时会获取游戏所需的 Java 17，也可手动选择。</value></data>
+  <data name="JvmArguments" xml:space="preserve"><value>JVM 参数</value></data>
+  <data name="JvmArgumentsHelp" xml:space="preserve"><value>推荐配置采用自适应 G1 和 200 ms 暂停目标。可直接编辑，保存后用于下次启动。堆大小由内存设置管理。</value></data>
+  <data name="JvmArgumentsRecommendation" xml:space="preserve"><value>JVM 参数 · 推荐 Java 17 / G1</value></data>
+  <data name="JvmCollectorsConflict" xml:space="preserve"><value>JVM 参数中只能启用一种垃圾回收器。</value></data>
+  <data name="JvmInitialMemoryManaged" xml:space="preserve"><value>初始内存由启动器管理。请在「内存分配」调整游戏内存上限。</value></data>
+  <data name="LaunchArguments" xml:space="preserve"><value>启动参数</value></data>
+  <data name="LauncherAlreadyRunning" xml:space="preserve"><value>启动器已在运行，请切回已打开的窗口。</value></data>
+  <data name="LauncherDataEmpty" xml:space="preserve"><value>启动器数据为空：{0}</value></data>
+  <data name="LauncherDirectoryLink" xml:space="preserve"><value>启动器目录  ↗</value></data>
+  <data name="LauncherErrorTitle" xml:space="preserve"><value>启动器遇到问题</value></data>
+  <data name="LauncherPathUnavailable" xml:space="preserve"><value>无法读取启动器程序位置。</value></data>
+  <data name="LauncherReady" xml:space="preserve"><value>启动器已就绪。</value></data>
+  <data name="LauncherRecoveryRequired" xml:space="preserve"><value>启动器需要处理未完成的更新</value></data>
+  <data name="LauncherUpdateIncomplete" xml:space="preserve"><value>启动器更新未完成</value></data>
+  <data name="LauncherUpdateRequiresExe" xml:space="preserve"><value>请使用打包后的 ArysLauncher.exe 更新启动器。</value></data>
+  <data name="LauncherUpdaterStartFailed" xml:space="preserve"><value>无法启动更新程序。</value></data>
+  <data name="LauncherVersionLabel" xml:space="preserve"><value>启动器 </value></data>
+  <data name="LaunchFullscreen" xml:space="preserve"><value>全屏启动</value></data>
+  <data name="LaunchGame" xml:space="preserve"><value>启动游戏</value></data>
+  <data name="LegacyMicrosoftAccount" xml:space="preserve"><value>此账号保存自旧版登录方式，请在账号页重新进行 Microsoft 登录。</value></data>
+  <data name="LoadingMicrosoftConsent" xml:space="preserve"><value>正在加载 Microsoft 授权网页</value></data>
+  <data name="LoadingMicrosoftPage" xml:space="preserve"><value>正在加载 Microsoft 网页</value></data>
+  <data name="LoadingMicrosoftSignIn" xml:space="preserve"><value>正在加载微软登录页</value></data>
+  <data name="LogDirectoryLink" xml:space="preserve"><value>日志目录  ↗</value></data>
+  <data name="ManageAccountsLink" xml:space="preserve"><value>管理账号  ↗</value></data>
+  <data name="ManualConnectionLimits" xml:space="preserve"><value>手动设置连接数</value></data>
+  <data name="MaximizeOrRestore" xml:space="preserve"><value>最大化或还原</value></data>
+  <data name="MemoryAboveAvailable" xml:space="preserve"><value>当前可用内存低于游戏上限。可调低上限或关闭其他程序。</value></data>
+  <data name="MemoryAbovePhysical" xml:space="preserve"><value>游戏内存上限超过本机物理内存，可调低上限。</value></data>
+  <data name="MemoryAllocation" xml:space="preserve"><value>内存分配</value></data>
+  <data name="MemoryForGame" xml:space="preserve"><value>可分配给游戏</value></data>
+  <data name="MemoryLimit" xml:space="preserve"><value>内存上限</value></data>
+  <data name="MemoryLimitGibInvalid" xml:space="preserve"><value>游戏内存上限应为 1–128 GiB。</value></data>
+  <data name="MemoryLimitInvalid" xml:space="preserve"><value>游戏内存上限应为 256–131072 MiB。</value></data>
+  <data name="MemoryPresets" xml:space="preserve"><value>快捷分配</value></data>
+  <data name="MemoryRemaining" xml:space="preserve"><value>分配后余量</value></data>
+  <data name="MemoryUsageHelp" xml:space="preserve"><value>游戏按需使用内存，最多达到设定的上限。</value></data>
+  <data name="MicrosoftAccountAuthorization" xml:space="preserve"><value>Microsoft 账号授权</value></data>
+  <data name="MicrosoftAccountDescription" xml:space="preserve"><value>Microsoft · 正版账号</value></data>
+  <data name="MicrosoftAuthorizationEnded" xml:space="preserve"><value>本次授权已结束</value></data>
+  <data name="MicrosoftAuthorizationInWindow" xml:space="preserve"><value>授权将在此窗口完成。</value></data>
+  <data name="MicrosoftCompatibilitySignInRequired" xml:space="preserve"><value>此账号需要使用新的兼容登录方式授权。请在账号页重新进行 Microsoft 登录。</value></data>
+  <data name="MicrosoftConsentIncomplete" xml:space="preserve"><value>Microsoft 未完成本次授权，请重新登录并允许 Minecraft 访问。</value></data>
+  <data name="MicrosoftConsentPageHelp" xml:space="preserve"><value>请在微软官方网页中登录。授权页面中的应用名称以微软实际显示为准。</value></data>
+  <data name="MicrosoftHttpFailure" xml:space="preserve"><value>Microsoft 授权未完成（HTTP {0}）。请重新登录；若仍失败，请检查账号状态、网络或代理。</value></data>
+  <data name="MicrosoftJavaSignIn" xml:space="preserve"><value>Microsoft 正版登录</value></data>
+  <data name="MicrosoftJavaSignInHelp" xml:space="preserve"><value>在 Microsoft 官方网页中登录拥有 Minecraft Java 版的账号。</value></data>
+  <data name="MicrosoftPageInterrupted" xml:space="preserve"><value>登录网页已中断，请重新打开 Microsoft 登录。</value></data>
+  <data name="MicrosoftPageLoadFailed" xml:space="preserve"><value>登录网页未能加载：{0}。请检查网络或代理后重试。</value></data>
+  <data name="MicrosoftPageProvider" xml:space="preserve"><value>网页内容由 Microsoft 提供</value></data>
+  <data name="MicrosoftPageRequiresHttps" xml:space="preserve"><value>此登录窗口仅允许 HTTPS 授权网页</value></data>
+  <data name="MicrosoftPageTimedOut" xml:space="preserve"><value>微软登录页在 45 秒内未能显示。请点击重试；加载阶段已记录到 data/logs/microsoft-login.log。</value></data>
+  <data name="MicrosoftRefreshingSession" xml:space="preserve"><value>正在刷新 Microsoft 会话</value></data>
+  <data name="MicrosoftRenewedProfileMismatch" xml:space="preserve"><value>续期后的角色与原账号不一致，请在账号页重新登录。</value></data>
+  <data name="MicrosoftRequestUnexpected" xml:space="preserve"><value>兼容认证组件生成了非预期的登录请求，请重新打开登录窗口。</value></data>
+  <data name="MicrosoftRequiresHttps" xml:space="preserve"><value>Microsoft 登录窗口仅允许 HTTPS 网页。</value></data>
+  <data name="MicrosoftResponseIncomplete" xml:space="preserve"><value>认证服务返回的信息不完整，请稍后重试。</value></data>
+  <data name="MicrosoftSessionInvalid" xml:space="preserve"><value>认证服务未返回可保存的有效会话，请重新登录。</value></data>
+  <data name="MicrosoftSignedIn" xml:space="preserve"><value>Microsoft 账号已登录</value></data>
+  <data name="MicrosoftSignInIncomplete" xml:space="preserve"><value>Microsoft 登录未完成</value></data>
+  <data name="MicrosoftSignInOnWeb" xml:space="preserve"><value>请在微软官方网页中登录并授权</value></data>
+  <data name="MicrosoftSignInPageHelp" xml:space="preserve"><value>请在微软官方网页中完成登录与授权</value></data>
+  <data name="MicrosoftSignInStateInvalid" xml:space="preserve"><value>Microsoft 登录状态校验失败，请重新登录。</value></data>
+  <data name="MicrosoftSignInTimedOut" xml:space="preserve"><value>登录等待已超时，可以重新打开 Microsoft 登录。</value></data>
+  <data name="MicrosoftSignInWindowTitle" xml:space="preserve"><value>Microsoft 登录 · Arys Launcher</value></data>
+  <data name="MicrosoftVerifyingMinecraft" xml:space="preserve"><value>正在验证 Minecraft 角色与 Java 版授权</value></data>
+  <data name="MicrosoftVerifyingXbox" xml:space="preserve"><value>正在验证 Xbox Live 与 XSTS 授权</value></data>
+  <data name="MicrosoftWindowClosed" xml:space="preserve"><value>已关闭 Microsoft 登录窗口。</value></data>
+  <data name="MinecraftAuthorizationRejected" xml:space="preserve"><value>Minecraft 服务拒绝了本次认证，请稍后重试；兼容授权方式可能受服务端策略限制。</value></data>
+  <data name="MinecraftJavaLicenseUnverified" xml:space="preserve"><value>Minecraft 角色或 Java 版授权验证未完成。请确认账号拥有 Java 版并已建立角色，然后重新登录。</value></data>
+  <data name="MinecraftJavaProfileMissing" xml:space="preserve"><value>未找到 Java 版角色，请先在 Minecraft 官网建立游戏角色。</value></data>
+  <data name="MinecraftSessionExpired" xml:space="preserve"><value>Minecraft 会话已失效，请重新进行 Microsoft 登录。</value></data>
+  <data name="MinecraftSessionIncomplete" xml:space="preserve"><value>Minecraft 返回的角色或会话信息不完整，请重新登录。</value></data>
+  <data name="MinecraftVersion" xml:space="preserve"><value>Minecraft 版本</value></data>
+  <data name="Minimize" xml:space="preserve"><value>最小化</value></data>
+  <data name="MinimizeAfterLaunch" xml:space="preserve"><value>启动游戏后最小化启动器</value></data>
+  <data name="ModCountAndPackName" xml:space="preserve"><value>{0} 个 Mod  ·  {1}</value></data>
+  <data name="ModDescriptorTooLarge" xml:space="preserve"><value>Mod 描述文件超过允许大小。</value></data>
+  <data name="Modpack" xml:space="preserve"><value>整合包</value></data>
+  <data name="ModpackDirectoryHelp" xml:space="preserve"><value>整合包安装到启动器自己的 .minecraft 目录。</value></data>
+  <data name="ModpackInstallLocation" xml:space="preserve"><value>整合包安装位置</value></data>
+  <data name="ModpackName" xml:space="preserve"><value>整合包名称</value></data>
+  <data name="ModpackPageDescription" xml:space="preserve"><value>查看安装位置和游戏资源。</value></data>
+  <data name="ModpackSettings" xml:space="preserve"><value>整合包配置</value></data>
+  <data name="ModrinthFormatUnsupported" xml:space="preserve"><value>此 Modrinth 整合包格式或游戏类型暂不支持。</value></data>
+  <data name="MultipleGameDirectories" xml:space="preserve"><value>ZIP 中含有多个游戏目录，请导出本整合包的单一游戏目录。</value></data>
+  <data name="MultipleLaunchVersions" xml:space="preserve"><value>ZIP 中含有多个可启动版本，请先导出单个游戏实例。</value></data>
+  <data name="NetworkAndDownloads" xml:space="preserve"><value>网络与下载</value></data>
+  <data name="NoActiveTasks" xml:space="preserve"><value>没有进行中的任务</value></data>
+  <data name="NoRecognizedPackFiles" xml:space="preserve"><value>ZIP 中没有可识别的游戏文件。请导入 .mrpack，或包含 mods、config 等目录的整合包 ZIP。</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>未提供</value></data>
+  <data name="OfficialModpack" xml:space="preserve"><value>专属整合包</value></data>
+  <data name="OfficialPackBanner" xml:space="preserve"><value>少女の&#xA;永恒地牢</value></data>
+  <data name="OfficialPackName" xml:space="preserve"><value>少女の永恒地牢</value></data>
+  <data name="OfflineBrowserExtractionFailed" xml:space="preserve"><value>无法解压离线登录组件。</value></data>
+  <data name="OfflineBrowserExtractionIncomplete" xml:space="preserve"><value>离线登录组件解压未完成。</value></data>
+  <data name="OfflineBrowserMissing" xml:space="preserve"><value>未找到离线登录组件。请使用完整安装包修复启动器。</value></data>
+  <data name="OpenGameDirectoryLink" xml:space="preserve"><value>打开游戏目录  ↗</value></data>
+  <data name="OpenGameFolderLink" xml:space="preserve"><value>打开游戏目录 ↗</value></data>
+  <data name="OpeningMicrosoftPage" xml:space="preserve"><value>正在打开 Microsoft 登录页</value></data>
+  <data name="OpeningMicrosoftSignIn" xml:space="preserve"><value>正在打开 Microsoft 登录</value></data>
+  <data name="OperationCancelled" xml:space="preserve"><value>当前操作已取消。</value></data>
+  <data name="OptionalPackFileCount" xml:space="preserve"><value>  ·  可选文件 {0} 个</value></data>
+  <data name="PackAlreadyImported" xml:space="preserve"><value>本整合包已导入。现有游戏目录会保留。</value></data>
+  <data name="PackChangedDuringImport" xml:space="preserve"><value>整合包在导入期间发生了变化。</value></data>
+  <data name="PackClientDependencyUnknown" xml:space="preserve"><value>整合包包含未知的客户端依赖类型。</value></data>
+  <data name="PackDetailsAfterSelection" xml:space="preserve"><value>选择文件后显示整合包信息。</value></data>
+  <data name="PackDownloadEntryInvalid" xml:space="preserve"><value>文件 {0} 的哈希或下载地址无效。当前支持 Modrinth、GitHub、GitLab 与 CurseForge CDN。</value></data>
+  <data name="PackDownloadSizeInvalid" xml:space="preserve"><value>下载文件的大小超出允许范围。</value></data>
+  <data name="PackDownloadSummary" xml:space="preserve"><value>本地提取 {0}  ·  依赖文件 {1}</value></data>
+  <data name="PackDuplicateArchivePath" xml:space="preserve"><value>整合包含有重复或仅大小写不同的路径：{0}</value></data>
+  <data name="PackDuplicateDestination" xml:space="preserve"><value>文件清单存在重复目标：{0}</value></data>
+  <data name="PackEntryTooLarge" xml:space="preserve"><value>单个归档文件超过 16 GiB。</value></data>
+  <data name="PackExpandedSizeTooLarge" xml:space="preserve"><value>整合包解压后超过 128 GiB，请先拆分归档。</value></data>
+  <data name="PackFileFilter" xml:space="preserve"><value>Minecraft 整合包 (*.mrpack;*.zip)|*.mrpack;*.zip</value></data>
+  <data name="PackFilePathMissing" xml:space="preserve"><value>文件路径为空。</value></data>
+  <data name="PackFileRequired" xml:space="preserve"><value>请选择 .mrpack 或整合包 ZIP 文件。</value></data>
+  <data name="PackFormatAndFileCount" xml:space="preserve"><value>{0}  ·  {1} 个文件&#xA;</value></data>
+  <data name="PackLimitsExceeded" xml:space="preserve"><value>整合包文件数量或总体积超出允许范围。</value></data>
+  <data name="PackLinksUnsupported" xml:space="preserve"><value>整合包不能包含符号链接。</value></data>
+  <data name="PackLoaderUnsupported" xml:space="preserve"><value>本启动器使用 Forge，此整合包要求其他 Mod 加载器。</value></data>
+  <data name="PackMetadataTooLarge" xml:space="preserve"><value>整合包清单超过 16 MiB。</value></data>
+  <data name="PackNameRequired" xml:space="preserve"><value>请填写整合包名称。</value></data>
+  <data name="PackNotInstalled" xml:space="preserve"><value>尚未导入整合包</value></data>
+  <data name="PackPathOutsideGameDirectory" xml:space="preserve"><value>整合包路径超出了游戏目录。</value></data>
+  <data name="PackPathUnsafe" xml:space="preserve"><value>整合包含有不安全的路径：{0}</value></data>
+  <data name="PackPathUnsupported" xml:space="preserve"><value>Windows 不支持此整合包路径：{0}</value></data>
+  <data name="PackReadFailed" xml:space="preserve"><value>文件未能读取，请重新选择。</value></data>
+  <data name="PackRulesEmpty" xml:space="preserve"><value>整合包内容规则为空。</value></data>
+  <data name="PackRulesMissing" xml:space="preserve"><value>整合包内容规则缺失。</value></data>
+  <data name="PackSettingsBusy" xml:space="preserve"><value>请在当前任务和游戏结束后修改整合包配置。</value></data>
+  <data name="PackSettingsSaved" xml:space="preserve"><value>整合包配置已保存。</value></data>
+  <data name="PackTooManyEntries" xml:space="preserve"><value>整合包包含超过 100000 个条目，请先拆分归档。</value></data>
+  <data name="PackUpdateSourceUnlinked" xml:space="preserve"><value>当前整合包尚未关联 Arys 更新来源。</value></data>
+  <data name="PackVersionsHelp" xml:space="preserve"><value>请保持版本与本整合包要求一致。更改版本后，下一次启动会重新准备对应环境。</value></data>
+  <data name="PackVersionsInvalid" xml:space="preserve"><value>请填写有效的 Minecraft 与 Forge 版本号。</value></data>
+  <data name="Password" xml:space="preserve"><value>密码</value></data>
+  <data name="Play" xml:space="preserve"><value>开始游戏</value></data>
+  <data name="PleaseWait" xml:space="preserve"><value>请稍候。</value></data>
+  <data name="PrepareEnvironment" xml:space="preserve"><value>补全环境</value></data>
+  <data name="PrepareGameFiles" xml:space="preserve"><value>补全游戏环境</value></data>
+  <data name="Preparing" xml:space="preserve"><value>正在准备</value></data>
+  <data name="PreparingExternalAuth" xml:space="preserve"><value>正在准备外置认证</value></data>
+  <data name="PreparingForge" xml:space="preserve"><value>获取 Forge 依赖并准备加载器。</value></data>
+  <data name="PreparingGameProcess" xml:space="preserve"><value>正在准备游戏进程</value></data>
+  <data name="PreparingImport" xml:space="preserve"><value>准备导入</value></data>
+  <data name="PreparingSignInWindow" xml:space="preserve"><value>正在准备登录窗口</value></data>
+  <data name="ProtectedGameArguments" xml:space="preserve"><value>附加游戏参数不能覆盖账号身份、版本或游戏目录。</value></data>
+  <data name="ProxyAddress" xml:space="preserve"><value>代理地址</value></data>
+  <data name="ProxyAddressInvalid" xml:space="preserve"><value>代理地址需使用 http、https 或 socks5，不在地址内保存密码。</value></data>
+  <data name="ProxyExamples" xml:space="preserve"><value>例如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080</value></data>
+  <data name="ProxyHelp" xml:space="preserve"><value>留空使用系统代理。此项作用于启动器的登录与下载，不改变游戏内网络。</value></data>
+  <data name="Reading" xml:space="preserve"><value>正在读取</value></data>
+  <data name="ReadingPack" xml:space="preserve"><value>正在读取整合包</value></data>
+  <data name="ReadingPackDetails" xml:space="preserve"><value>正在读取整合包信息。</value></data>
+  <data name="ReadModpack" xml:space="preserve"><value>读取整合包</value></data>
+  <data name="Ready" xml:space="preserve"><value>就绪</value></data>
+  <data name="RecommendedMemory" xml:space="preserve"><value>推荐 6–8 GiB</value></data>
+  <data name="ReduceMotion" xml:space="preserve"><value>减少动态效果</value></data>
+  <data name="RegisterAccountLink" xml:space="preserve"><value>注册账号 ↗</value></data>
+  <data name="RegistrationAddressRequired" xml:space="preserve"><value>请先填写认证站提供的注册链接。</value></data>
+  <data name="RegistrationLink" xml:space="preserve"><value>注册链接</value></data>
+  <data name="RegistrationUrlInvalid" xml:space="preserve"><value>注册链接需要填写完整的 HTTPS 网页地址。</value></data>
+  <data name="RemoveAccount" xml:space="preserve"><value>移除账号</value></data>
+  <data name="RemoveThisAccount" xml:space="preserve"><value>移除此账号</value></data>
+  <data name="ReplacingPackFiles" xml:space="preserve"><value>备份旧文件并替换整合包内容。</value></data>
+  <data name="RescanJava" xml:space="preserve"><value>重新扫描 ↻</value></data>
+  <data name="RestoreDefaults" xml:space="preserve"><value>恢复默认值</value></data>
+  <data name="RestoreJvmArguments" xml:space="preserve"><value>恢复推荐参数</value></data>
+  <data name="RetryMicrosoftPage" xml:space="preserve"><value>重新打开登录页</value></data>
+  <data name="RuntimeSettings" xml:space="preserve"><value>运行配置</value></data>
+  <data name="RuntimeSettingsLink" xml:space="preserve"><value>调整运行设置  →</value></data>
+  <data name="SaveAuthenticationSettings" xml:space="preserve"><value>保存认证设置</value></data>
+  <data name="SaveConfiguration" xml:space="preserve"><value>保存配置</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>保存设置</value></data>
+  <data name="SaveSettingsHelp" xml:space="preserve"><value>设置在保存后用于下一次任务。</value></data>
+  <data name="ScanningLocalJava" xml:space="preserve"><value>正在扫描本机 Java…</value></data>
+  <data name="SeparateReleaseRepositoryRequired" xml:space="preserve"><value>请为启动器配置独立的公开发布仓库。</value></data>
+  <data name="ServerAuthentication" xml:space="preserve"><value>服务器外置认证</value></data>
+  <data name="ServerAuthenticationHelp" xml:space="preserve"><value>选择 LittleSkin，或填写服务器提供的 Yggdrasil 认证地址。</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>会话已失效，请重新登录。</value></data>
+  <data name="Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsPageDescription" xml:space="preserve"><value>按你的电脑与网络调整运行方式。</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>设置已保存，将用于下一次任务。</value></data>
+  <data name="SignedOut" xml:space="preserve"><value>尚未登录</value></data>
+  <data name="SignIn" xml:space="preserve"><value>登录账号</value></data>
+  <data name="SignInAfterImport" xml:space="preserve"><value>整合包已导入，请先登录账号</value></data>
+  <data name="SignInBrowserTimedOut" xml:space="preserve"><value>登录组件未能在 30 秒内启动。请点击重试；启动阶段已记录到 data/logs/microsoft-login.log。</value></data>
+  <data name="SignInComponentMissing" xml:space="preserve"><value>登录组件缺失</value></data>
+  <data name="SignInComponentRepair" xml:space="preserve"><value>请重新解压完整启动器，保留随附的 WebView2Runtime 文件夹，然后重试。</value></data>
+  <data name="SigningIn" xml:space="preserve"><value>正在登录</value></data>
+  <data name="SignInMethod" xml:space="preserve"><value>登录方式</value></data>
+  <data name="SignInToAuthServer" xml:space="preserve"><value>登录认证服务器</value></data>
+  <data name="SignInToPlay" xml:space="preserve"><value>登录后启动游戏</value></data>
+  <data name="SignInWithMicrosoft" xml:space="preserve"><value>使用 Microsoft 登录</value></data>
+  <data name="SkinAvatar" xml:space="preserve"><value>角色皮肤头像</value></data>
+  <data name="SkinDescriptionTooLarge" xml:space="preserve"><value>皮肤描述超过允许大小。</value></data>
+  <data name="SkinDimensionsInvalid" xml:space="preserve"><value>皮肤图像尺寸无效。</value></data>
+  <data name="SkinProfileMismatch" xml:space="preserve"><value>皮肤档案与所选角色不一致。</value></data>
+  <data name="SpeedLimitNumberRequired" xml:space="preserve"><value>下载总限速请填写 MiB/s 数值，0 表示不限速。</value></data>
+  <data name="StagingDirectoryOutOfBounds" xml:space="preserve"><value>临时目录超出启动器管理范围。</value></data>
+  <data name="StartImport" xml:space="preserve"><value>开始导入</value></data>
+  <data name="StartingEmbeddedBrowser" xml:space="preserve"><value>正在初始化内嵌浏览器，请稍候。</value></data>
+  <data name="StartingGame" xml:space="preserve"><value>正在启动</value></data>
+  <data name="StartInstallation" xml:space="preserve"><value>开始安装</value></data>
+  <data name="StorageAndAppearance" xml:space="preserve"><value>存储与界面</value></data>
+  <data name="SupportedPackFormats" xml:space="preserve"><value>支持 .mrpack 和整合包 ZIP</value></data>
+  <data name="SystemMemoryUnavailable" xml:space="preserve"><value>暂时无法读取系统内存</value></data>
+  <data name="SystemMemoryUsed" xml:space="preserve"><value>系统已用</value></data>
+  <data name="TaskCancelled" xml:space="preserve"><value>任务已取消</value></data>
+  <data name="TaskCancelledMessage" xml:space="preserve"><value>任务已取消。</value></data>
+  <data name="TaskCompleted" xml:space="preserve"><value>任务已完成。</value></data>
+  <data name="TaskHistory" xml:space="preserve"><value>操作记录</value></data>
+  <data name="TaskResponseMissingFields" xml:space="preserve"><value>整合包或服务响应缺少必要字段，请检查文件格式与认证配置。</value></data>
+  <data name="TotalSpeedLimit" xml:space="preserve"><value>下载总限速（MiB/s）</value></data>
+  <data name="UpdateAddressRequiresHttps" xml:space="preserve"><value>更新地址必须使用 HTTPS。</value></data>
+  <data name="UpdateAndRestart" xml:space="preserve"><value>更新并重启</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>发现 {0}，可以更新。</value></data>
+  <data name="UpdateBackupHashMismatch" xml:space="preserve"><value>更新备份校验失败。{0}</value></data>
+  <data name="UpdateChannelEmpty" xml:space="preserve"><value>更新来源配置为空。</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>暂时无法检查更新，可稍后重试。</value></data>
+  <data name="UpdateCompleteReopen" xml:space="preserve"><value>更新已完成，请手动打开启动器。</value></data>
+  <data name="UpdateDiskSpaceLow" xml:space="preserve"><value>安装位置的可用空间不足以完成更新。</value></data>
+  <data name="UpdateDownloadAddressMissing" xml:space="preserve"><value>更新文件缺少下载地址。</value></data>
+  <data name="UpdateDuplicateFilePath" xml:space="preserve"><value>更新清单含有重复文件路径。</value></data>
+  <data name="UpdateDuplicateMod" xml:space="preserve"><value>更新清单包含重复的 Mod。{0}、{1}</value></data>
+  <data name="UpdateExecutableMissing" xml:space="preserve"><value>启动器更新缺少主程序。</value></data>
+  <data name="UpdateFileChangedDuringPrepare" xml:space="preserve"><value>准备更新时文件发生了变化，请重新检查。{0}</value></data>
+  <data name="UpdateFileHashMismatch" xml:space="preserve"><value>更新文件校验失败。{0}</value></data>
+  <data name="UpdateFileOutsideScope" xml:space="preserve"><value>更新文件不在允许的范围内。{0}</value></data>
+  <data name="UpdateFilesNeeded" xml:space="preserve"><value>需要获取 {0} 个文件。</value></data>
+  <data name="UpdateJournalEmpty" xml:space="preserve"><value>更新恢复记录为空。</value></data>
+  <data name="UpdateJournalLocationMismatch" xml:space="preserve"><value>更新恢复记录与安装位置不符。</value></data>
+  <data name="UpdateJournalMissingFiles" xml:space="preserve"><value>更新恢复记录缺少文件信息。</value></data>
+  <data name="UpdateJournalPathMismatch" xml:space="preserve"><value>更新恢复记录存在不同的文件路径。</value></data>
+  <data name="UpdateJournalTooLarge" xml:space="preserve"><value>更新恢复记录过大。</value></data>
+  <data name="UpdateLauncher" xml:space="preserve"><value>更新启动器</value></data>
+  <data name="UpdateLinkedDirectory" xml:space="preserve"><value>更新目录不能经过符号链接。</value></data>
+  <data name="UpdateLinkedFile" xml:space="preserve"><value>更新文件路径不能经过符号链接。</value></data>
+  <data name="UpdateManifestEmpty" xml:space="preserve"><value>更新清单为空。</value></data>
+  <data name="UpdateManifestIncompatible" xml:space="preserve"><value>更新清单不兼容，请检查启动器版本与发布配置。</value></data>
+  <data name="UpdateModIdentityMismatch" xml:space="preserve"><value>待替换的 JAR 与更新文件包含不同的 Mod，请先检查。{0}</value></data>
+  <data name="UpdateModpack" xml:space="preserve"><value>更新整合包</value></data>
+  <data name="UpdatePackVersionInvalid" xml:space="preserve"><value>整合包更新缺少有效的版本信息。</value></data>
+  <data name="UpdateProductMismatch" xml:space="preserve"><value>更新来源与已安装的整合包不同。</value></data>
+  <data name="UpdatePublicKeyMissing" xml:space="preserve"><value>更新来源尚未配置发行公钥。</value></data>
+  <data name="UpdaterArgumentsInvalid" xml:space="preserve"><value>更新程序参数无效。</value></data>
+  <data name="UpdateRecoveryFileChanged" xml:space="preserve"><value>恢复更新时遇到已修改的文件。{0}</value></data>
+  <data name="UpdateResponseOutOfRange" xml:space="preserve"><value>更新服务响应超出允许范围。</value></data>
+  <data name="UpdateResponseTooLarge" xml:space="preserve"><value>更新服务响应过大。</value></data>
+  <data name="UpdateRetiredFileModified" xml:space="preserve"><value>待移除的发行文件已被修改，请先处理该文件。{0}</value></data>
+  <data name="UpdaterLocationMismatch" xml:space="preserve"><value>更新程序位置与工作记录不符。</value></data>
+  <data name="UpdaterProcessMismatch" xml:space="preserve"><value>待更新的启动器进程不匹配。</value></data>
+  <data name="UpdatesAndStorage" xml:space="preserve"><value>更新与存储</value></data>
+  <data name="UpdateSharedJarConflict" xml:space="preserve"><value>旧 JAR 还包含其他 Mod，请先检查替换范围。{0}</value></data>
+  <data name="UpdateSignatureInvalid" xml:space="preserve"><value>更新清单签名无效，请稍后重新检查。</value></data>
+  <data name="UpdatesNotChecked" xml:space="preserve"><value>尚未检查更新。</value></data>
+  <data name="UpdateSourceUnconfigured" xml:space="preserve"><value>发行者尚未配置更新来源。</value></data>
+  <data name="UpdateStatusChanged" xml:space="preserve"><value>更新状态已变化，请重新检查。</value></data>
+  <data name="UpdateTotalSizeTooLarge" xml:space="preserve"><value>更新文件总量超过允许范围。</value></data>
+  <data name="UpdateUnrecognizedLocalFile" xml:space="preserve"><value>文件与已有发行版本不同，请先备份并处理该文件。{0}</value></data>
+  <data name="UpdateWorkDirectoryInvalid" xml:space="preserve"><value>更新工作目录无效。</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>当前已是最新版本。</value></data>
+  <data name="UseCharacter" xml:space="preserve"><value>使用此角色</value></data>
+  <data name="UseLittleSkinSettings" xml:space="preserve"><value>使用 LittleSkin 设置</value></data>
+  <data name="UsernameOrEmail" xml:space="preserve"><value>账号 / 邮箱</value></data>
+  <data name="VanillaOrBundledLoader" xml:space="preserve"><value>原版或自带加载器</value></data>
+  <data name="VerifyingAuthlib" xml:space="preserve"><value>正在校验 authlib-injector 组件</value></data>
+  <data name="VerifyingGameAccount" xml:space="preserve"><value>正在验证游戏账号</value></data>
+  <data name="VerifyingGameResources" xml:space="preserve"><value>正在校验游戏资源</value></data>
+  <data name="VersionAndModCount" xml:space="preserve"><value>{0}  ·  {1} 个 Mod</value></data>
+  <data name="ViewModpackLink" xml:space="preserve"><value>查看整合包  →</value></data>
+  <data name="WaitingForMicrosoftPage" xml:space="preserve"><value>内嵌浏览器已就绪，正在等待登录页面显示。</value></data>
+  <data name="WaitingForTask" xml:space="preserve"><value>等待任务</value></data>
+  <data name="WidthPixels" xml:space="preserve"><value>宽度（像素）</value></data>
+  <data name="WindowDefaultsRestored" xml:space="preserve"><value>已恢复窗口默认值，保存后生效。</value></data>
+  <data name="WindowHeight" xml:space="preserve"><value>窗口高度</value></data>
+  <data name="WindowSizeInvalid" xml:space="preserve"><value>窗口宽度应为 640–16384，高度应为 360–16384。</value></data>
+  <data name="WindowWidth" xml:space="preserve"><value>窗口宽度</value></data>
+  <data name="Working" xml:space="preserve"><value>处理中</value></data>
+  <data name="XboxAgeVerificationRequired" xml:space="preserve"><value>此账号需要先在 Xbox 官网完成年龄确认。</value></data>
+  <data name="XboxAvatar" xml:space="preserve"><value>Xbox 档案头像</value></data>
+  <data name="XboxAvatarAccountMismatch" xml:space="preserve"><value>Xbox 档案授权与所选账号不一致。</value></data>
+  <data name="XboxFamilyPermissionRequired" xml:space="preserve"><value>此账号需要监护人在 Microsoft 家庭中授权使用 Xbox Live。</value></data>
+  <data name="XboxHttpFailure" xml:space="preserve"><value>Xbox 授权未完成（HTTP {0}，错误码 {1}）。请检查 Xbox 账号状态。</value></data>
+  <data name="XboxProfileMissing" xml:space="preserve"><value>此账号尚未建立 Xbox 档案，请先到 Xbox 官网完成注册。</value></data>
+  <data name="XboxRegionUnsupported" xml:space="preserve"><value>此账号所在地区暂不支持 Xbox Live。</value></data>
+  <data name="XboxUserIdMissing" xml:space="preserve"><value>Xbox 档案缺少用户标识。</value></data>
+  <data name="YggdrasilAddressInvalid" xml:space="preserve"><value>请填写完整的 HTTPS Yggdrasil API 根地址，例如 https://skin.example/api/yggdrasil/。本机调试地址可使用 HTTP。</value></data>
+</root>

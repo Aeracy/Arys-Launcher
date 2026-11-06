@@ -36,7 +36,7 @@ public sealed class AccountService : IDisposable
         var server = NormalizeServer(serverAddress);
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
         {
-            throw new InvalidOperationException("请填写认证服务器的账号和密码。");
+            throw new InvalidOperationException(LauncherText.Get("ExternalCredentialsRequired"));
         }
         var clientToken = Guid.NewGuid().ToString("N");
         using var response = await client.PostAsJsonAsync(new Uri(server, "authserver/authenticate"), new
@@ -48,7 +48,7 @@ public sealed class AccountService : IDisposable
             requestUser = true
         }, cancellationToken);
         using var document = await ReadJsonAsync(response, cancellationToken);
-        EnsureSuccess(response, document.RootElement, "外置账号登录");
+        EnsureSuccess(response, document.RootElement, LauncherText.Get("ExternalSignIn"));
         var accessToken = RequiredString(document.RootElement, "accessToken");
         clientToken = OptionalString(document.RootElement, "clientToken", clientToken);
         var profiles = new List<GameProfile>();
@@ -70,12 +70,12 @@ public sealed class AccountService : IDisposable
         }
         if (profiles.Count == 0)
         {
-            throw new InvalidOperationException("认证成功，但该账号没有 Minecraft 角色。请先在认证站创建角色。");
+            throw new InvalidOperationException(LauncherText.Get("ExternalCharacterMissing"));
         }
         var chosen = profiles.Count == 1 ? profiles[0] : await chooseProfile(profiles);
         if (profiles.All(profile => profile.Id != chosen.Id))
         {
-            throw new InvalidDataException("选择的角色不属于此账号。");
+            throw new InvalidDataException(LauncherText.Get("ExternalCharacterMismatch"));
         }
         var account = new LauncherAccount
         {
@@ -95,16 +95,34 @@ public sealed class AccountService : IDisposable
         return account;
     }
 
-    public async Task<AuthenticatedSession> GetSessionAsync(LauncherAccount account, Action<string> report, CancellationToken cancellationToken)
+    public async Task<AuthenticatedSession> GetSessionAsync(LauncherAccount account, Action<string> report,
+        CancellationToken cancellationToken, bool needsXboxProfile = false)
+    {
+        await storage.AccountSessionGate.WaitAsync(cancellationToken);
+        try
+        {
+            account = storage.Accounts.FirstOrDefault(current => current.Id == account.Id) ??
+                throw new InvalidOperationException(LauncherText.Get("AccountRemoved"));
+            return await GetSessionCoreAsync(account, report, cancellationToken, needsXboxProfile);
+        }
+        finally
+        {
+            storage.AccountSessionGate.Release();
+        }
+    }
+
+    private async Task<AuthenticatedSession> GetSessionCoreAsync(LauncherAccount account, Action<string> report,
+        CancellationToken cancellationToken, bool needsXboxProfile)
     {
         var tokens = LauncherStorage.Unprotect(account);
         if (account.Kind == AccountKind.Microsoft)
         {
             if (!string.Equals(account.MicrosoftClientId, MicrosoftAccountAuthentication.ClientId, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException("此账号保存自旧版登录方式，请在账号页重新进行 Microsoft 登录。");
+                throw new InvalidOperationException(LauncherText.Get("LegacyMicrosoftAccount"));
             }
-            if (account.ExpiresAt <= DateTimeOffset.UtcNow.AddMinutes(5))
+            if (account.ExpiresAt <= DateTimeOffset.UtcNow.AddMinutes(5) || needsXboxProfile &&
+                (string.IsNullOrWhiteSpace(tokens.XboxUserToken) || tokens.XboxUserTokenExpiresAt <= DateTimeOffset.UtcNow.AddMinutes(5)))
             {
                 account = await new MicrosoftAccountAuthentication(storage, client).RefreshAsync(account, tokens, report, cancellationToken);
                 tokens = LauncherStorage.Unprotect(account);
@@ -112,7 +130,7 @@ public sealed class AccountService : IDisposable
         }
         else
         {
-            report("正在校验外置认证会话");
+            report(LauncherText.Get("ExternalSessionChecking"));
             var server = NormalizeServer(account.ServerAddress);
             using var response = await client.PostAsJsonAsync(new Uri(server, "authserver/validate"),
                 new { accessToken = tokens.AccessToken, clientToken = tokens.ClientToken }, cancellationToken);
@@ -120,10 +138,10 @@ public sealed class AccountService : IDisposable
             {
                 if (response.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized))
                 {
-                    throw new InvalidOperationException($"认证服务器暂时无法校验账号（HTTP {(int)response.StatusCode}）。");
+                    throw new InvalidOperationException(LauncherText.Get("ExternalSessionCheckFailed", (int)response.StatusCode));
                 }
                 tokens = await RefreshExternalAsync(account, tokens, cancellationToken);
-                storage.SaveAccount(account, tokens);
+                storage.SaveAccount(account, tokens, selectAccount: false);
             }
         }
         account.LastUsedAt = DateTimeOffset.UtcNow;
@@ -131,6 +149,19 @@ public sealed class AccountService : IDisposable
     }
 
     public async Task RemoveAccountAsync(LauncherAccount account, CancellationToken cancellationToken)
+    {
+        await storage.AccountSessionGate.WaitAsync(cancellationToken);
+        try
+        {
+            await RemoveAccountCoreAsync(account, cancellationToken);
+        }
+        finally
+        {
+            storage.AccountSessionGate.Release();
+        }
+    }
+
+    private async Task RemoveAccountCoreAsync(LauncherAccount account, CancellationToken cancellationToken)
     {
         if (account.Kind == AccountKind.External)
         {
@@ -157,11 +188,11 @@ public sealed class AccountService : IDisposable
             requestUser = true
         }, cancellationToken);
         using var document = await ReadJsonAsync(response, cancellationToken);
-        EnsureSuccess(response, document.RootElement, "刷新外置认证会话，请重新登录后重试");
+        EnsureSuccess(response, document.RootElement, LauncherText.Get("ExternalSessionRefresh"));
         if (!document.RootElement.TryGetProperty("selectedProfile", out var selectedElement) ||
             ReadProfile(selectedElement).Id != account.PlayerUuid)
         {
-            throw new InvalidDataException("认证服务器返回的角色与所选角色不一致。");
+            throw new InvalidDataException(LauncherText.Get("ExternalSessionCharacterMismatch"));
         }
         account.PlayerName = ReadProfile(selectedElement).Name;
         return new AccountTokens
@@ -177,7 +208,7 @@ public sealed class AccountService : IDisposable
             !(uri.Scheme == "https" || uri.Scheme == "http" && uri.IsLoopback) ||
             !string.IsNullOrEmpty(uri.UserInfo) || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment))
         {
-            throw new InvalidOperationException("请填写完整的 HTTPS Yggdrasil API 根地址，例如 https://skin.example/api/yggdrasil/。本机调试地址可使用 HTTP。");
+            throw new InvalidOperationException(LauncherText.Get("YggdrasilAddressInvalid"));
         }
         return uri;
     }
@@ -187,7 +218,7 @@ public sealed class AccountService : IDisposable
         var id = RequiredString(element, "id");
         if (!Guid.TryParse(id, out var uuid))
         {
-            throw new InvalidDataException("认证服务器返回了无效的角色 UUID。");
+            throw new InvalidDataException(LauncherText.Get("ExternalUuidInvalid"));
         }
         return new GameProfile(uuid.ToString("N"), RequiredString(element, "name"));
     }
@@ -195,7 +226,7 @@ public sealed class AccountService : IDisposable
     private static string RequiredString(JsonElement element, string name)
     {
         var value = OptionalString(element, name);
-        return string.IsNullOrEmpty(value) ? throw new InvalidDataException($"认证响应缺少字段：{name}") : value;
+        return string.IsNullOrEmpty(value) ? throw new InvalidDataException(LauncherText.Get("AuthResponseFieldMissing", name)) : value;
     }
 
     private static string OptionalString(JsonElement element, string name, string fallback = "")
@@ -212,12 +243,12 @@ public sealed class AccountService : IDisposable
         var error = OptionalString(body, "error");
         var explanation = error switch
         {
-            "invalid_client" or "unauthorized_client" => "认证服务器拒绝了当前客户端，请检查该认证站的接入设置。",
-            "invalid_grant" or "interaction_required" => "会话已失效，请重新登录。",
-            "ForbiddenOperationException" => "账号、密码或会话无效。",
-            _ => "请检查网络、账号状态及认证服务器地址。"
+            "invalid_client" or "unauthorized_client" => LauncherText.Get("ExternalClientRejected"),
+            "invalid_grant" or "interaction_required" => LauncherText.Get("SessionExpired"),
+            "ForbiddenOperationException" => LauncherText.Get("ExternalCredentialsInvalid"),
+            _ => LauncherText.Get("ExternalTroubleshoot")
         };
-        throw new InvalidOperationException($"{operation}失败（HTTP {(int)response.StatusCode}）。{explanation}");
+        throw new InvalidOperationException(LauncherText.Get("AuthHttpFailure", operation, (int)response.StatusCode, explanation));
     }
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -229,7 +260,7 @@ public sealed class AccountService : IDisposable
         }
         catch (JsonException exception)
         {
-            throw new InvalidOperationException($"认证服务返回了无法识别的响应（HTTP {(int)response.StatusCode}）。", exception);
+            throw new InvalidOperationException(LauncherText.Get("AuthResponseUnrecognized", (int)response.StatusCode), exception);
         }
     }
 

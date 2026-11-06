@@ -33,8 +33,8 @@
         <GradientStop Color="#C014101B" Offset="1" />
     </LinearGradientBrush>
     <LinearGradientBrush x:Key="CardBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#E32A2033" Offset="0" />
-        <GradientStop Color="#E21D1627" Offset="1" />
+        <GradientStop Color="#D52A2033" Offset="0" />
+        <GradientStop Color="#DB1D1627" Offset="1" />
     </LinearGradientBrush>
     <LinearGradientBrush x:Key="MemorySystemBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#B39CC9" Offset="0" />
@@ -447,6 +447,9 @@
         <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="PanningMode" Value="VerticalOnly" />
     </Style>
+    <Style TargetType="{x:Type local:SmoothScrollViewer}" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+        <Setter Property="CanContentScroll" Value="False" />
+    </Style>
 
     <ControlTemplate x:Key="InputTemplate" TargetType="Control">
         <Border x:Name="Field" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
@@ -523,9 +526,9 @@
                             <Border Background="#251B2E" BorderBrush="#674E73" BorderThickness="1" CornerRadius="10" Padding="4"
                                     MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <ScrollViewer>
+                                <local:SmoothScrollViewer>
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
-                                </ScrollViewer>
+                                </local:SmoothScrollViewer>
                             </Border>
                         </Popup>
                     </Grid>

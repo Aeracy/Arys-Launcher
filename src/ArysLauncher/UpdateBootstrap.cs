@@ -11,7 +11,7 @@ internal static class UpdateBootstrap
         if (arguments.Length != 5 || !int.TryParse(arguments[2], NumberStyles.None, CultureInfo.InvariantCulture, out var parentId) ||
             !long.TryParse(arguments[3], NumberStyles.None, CultureInfo.InvariantCulture, out var parentStart))
         {
-            throw new InvalidDataException("更新程序参数无效。");
+            throw new InvalidDataException(LauncherText.Get("UpdaterArgumentsInvalid"));
         }
         var applicationRoot = Path.GetFullPath(arguments[4]);
         var storage = new LauncherStorage(applicationRoot);
@@ -20,7 +20,7 @@ internal static class UpdateBootstrap
             !Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar).Equals(
                 Path.Combine(transaction.DirectoryPath, "helper"), StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException("更新程序位置与工作记录不符。");
+            throw new InvalidDataException(LauncherText.Get("UpdaterLocationMismatch"));
         }
         var executable = UpdatePaths.Target(applicationRoot, "ArysLauncher.exe");
         try
@@ -29,7 +29,7 @@ internal static class UpdateBootstrap
             if (parent.StartTime.ToUniversalTime().Ticks != parentStart ||
                 !string.Equals(parent.MainModule?.FileName, executable, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidDataException("待更新的启动器进程不匹配。");
+                throw new InvalidDataException(LauncherText.Get("UpdaterProcessMismatch"));
             }
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
             await parent.WaitForExitAsync(timeout.Token);
@@ -39,6 +39,6 @@ internal static class UpdateBootstrap
         }
         await transaction.ApplyAsync(CancellationToken.None);
         var info = new ProcessStartInfo(executable) { UseShellExecute = false, WorkingDirectory = applicationRoot };
-        using var restarted = Process.Start(info) ?? throw new IOException("更新已完成，请手动打开启动器。");
+        using var restarted = Process.Start(info) ?? throw new IOException(LauncherText.Get("UpdateCompleteReopen"));
     }
 }

@@ -21,7 +21,7 @@ public static class AuthenticationServer
         if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Scheme != "https" ||
             !string.IsNullOrEmpty(uri.UserInfo))
         {
-            throw new InvalidOperationException("注册链接需要填写完整的 HTTPS 网页地址。");
+            throw new InvalidOperationException(LauncherText.Get("RegistrationUrlInvalid"));
         }
         return uri;
     }
@@ -37,7 +37,7 @@ public static class AuthenticationServer
             !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment) ||
             uri.AbsolutePath is not ("" or "/") || uri.Port == 0 || uri.Port > 65535)
         {
-            throw new InvalidOperationException("自动进入服务器请填写域名或 IP，可附端口，例如 play.example.com:25565。");
+            throw new InvalidOperationException(LauncherText.Get("AutoJoinAddressInvalid"));
         }
         return (uri.Host.Trim('[', ']'), uri.Port < 0 ? 25565 : uri.Port);
     }

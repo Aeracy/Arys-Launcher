@@ -48,11 +48,11 @@ public static class JvmArgumentPolicy
             argument.StartsWith("-XX:MaxHeapSize=", StringComparison.Ordinal) ||
             argument.StartsWith("-XX:InitialHeapSize=", StringComparison.Ordinal)))
         {
-            throw new InvalidOperationException("初始内存由启动器管理。请在「内存分配」调整游戏内存上限。");
+            throw new InvalidOperationException(LauncherText.Get("JvmInitialMemoryManaged"));
         }
         if (EnabledCollectors(custom).Length > 1)
         {
-            throw new InvalidOperationException("JVM 参数中只能启用一种垃圾回收器。");
+            throw new InvalidOperationException(LauncherText.Get("JvmCollectorsConflict"));
         }
         var arguments = custom.Any(argument => OptionKey(argument) == Log4jProperty) ? custom : custom.Prepend(Log4jProperty + "=true");
         return arguments.Select(argument => new MArgument(argument)).ToArray();

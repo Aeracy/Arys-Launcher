@@ -1,6 +1,11 @@
 Unicode True
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
+!ifndef AppIcon
+!define AppIcon "${__FILEDIR__}\src\ArysLauncher\Assets\app.ico"
+!endif
+!define MUI_ICON "${AppIcon}"
+!define MUI_UNICON "${AppIcon}"
 
 Name "Ary's Launcher"
 OutFile "${OutputFile}"
@@ -26,14 +31,18 @@ VIAddVersionKey "LegalCopyright" "Copyright © 2026 Aeracy"
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "SimpChinese"
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "SimpChinese"
+!insertmacro MUI_LANGUAGE "TradChinese"
 
 Section "Launcher"
     SetOutPath "$INSTDIR\app"
     File "${AppDirectory}\ArysLauncher.exe"
     File "${AppDirectory}\release-channel.json"
     File "${AppDirectory}\README.md"
+    !ifdef BundledPack
+        File /oname=Arys-Modpack.mrpack "${BundledPack}"
+    !endif
     SetOutPath "$INSTDIR\app\Licenses"
     File "${AppDirectory}\Licenses\*.txt"
     File "${AppDirectory}\Licenses\ThirdPartyNotices.md"
@@ -64,6 +73,7 @@ Section "Uninstall"
     Delete "$INSTDIR\app\release-channel.json"
     Delete "$INSTDIR\app\README.md"
     Delete "$INSTDIR\app\BrowserRuntime.cab"
+    Delete "$INSTDIR\app\Arys-Modpack.mrpack"
     !include "${UninstallLicenses}"
     RMDir "$INSTDIR\app\Licenses"
     RMDir "$INSTDIR\app"
