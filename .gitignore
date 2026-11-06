@@ -1,0 +1,12 @@
+.tools/
+.staging/
+artifacts/
+app/
+data/
+.minecraft/
+**/bin/
+**/obj/
+*.user
+*.log
+*.pem
+pack-mod-inventory.json
