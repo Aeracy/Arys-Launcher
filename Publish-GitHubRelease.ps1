@@ -10,17 +10,22 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Confirm-PublicArchive([IO.FileInfo]$File) {
+function Confirm-PublicArchive([IO.FileInfo]$File, [bool]$DataPack) {
     if ($File.Extension -notin @('.zip', '.mrpack')) {
         return
     }
-    $forbidden = '(?i)(?:^|/)(?:accounts\.json(?:\.[^/]*)?|launcher_accounts\.json|launcher_profiles\.json|cookies|login data|[^/]+\.pem)$|(?:^|/)(?:data|browser|startup-logs|\.tools|\.staging|\.git)/'
+    $forbidden = '(?i)(?:^|/)(?:accounts\.json(?:\.[^/]*)?|launcher_accounts\.json|launcher_profiles\.json|cookies|login data|[^/]+\.pem)$|(?:^|/)(?:browser|startup-logs|\.tools|\.staging|\.git)/'
     $secrets = '(?:ghp|gho|ghu|ghs)_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{50,}|(?i:"(?:accessToken|refreshToken|protectedTokens)"\s*:\s*"[^"\s]{12,}")'
     $archive = [IO.Compression.ZipFile]::OpenRead($File.FullName)
     try {
+        if ($DataPack -and $null -eq $archive.GetEntry('pack.mcmeta')) {
+            throw "The datapack is missing pack.mcmeta: $($File.Name)"
+        }
         foreach ($entry in $archive.Entries) {
             $path = $entry.FullName.Replace('\', '/')
-            if ($path -match $forbidden) {
+            $packData = $DataPack -and $path.StartsWith('data/', [StringComparison]::Ordinal) -and
+                $path -match '^(?:data/)(?:[a-z0-9_.-]+/)*[a-z0-9_.-]*$' -and $path -notmatch '(?:^|/)\.\.?(?:/|$)'
+            if ($path -match $forbidden -or ($path -match '(?i)(?:^|/)data/' -and -not $packData)) {
                 throw "The public archive contains private runtime data: $($File.Name)/$path"
             }
             if ($entry.Length -gt 4MB -or [IO.Path]::GetExtension($path) -notin @('.json', '.cs', '.ps1', '.txt', '.md', '.xml', '.config', '.ini')) {
@@ -91,6 +96,7 @@ try {
     }
     $assets = [Collections.Generic.List[IO.FileInfo]]::new()
     $assetNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $dataPacks = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     foreach ($manifestName in @('launcher-update.json', 'pack-update.json')) {
         $manifestPath = Join-Path $AssetsDirectory $manifestName
         if (-not (Test-Path -LiteralPath $manifestPath)) {
@@ -117,6 +123,9 @@ try {
             }
             if ($assetNames.Add($name)) {
                 $assets.Add($file)
+            }
+            if ($manifestName -eq 'pack-update.json' -and $record.Path -match '^(?:moonlight-global-datapacks|datapacks)/.+\.zip$') {
+                $dataPacks.Add($name) | Out-Null
             }
         }
     }
@@ -149,7 +158,7 @@ try {
         throw 'Release attachments have duplicate names.'
     }
     foreach ($asset in $assets) {
-        Confirm-PublicArchive $asset
+        Confirm-PublicArchive $asset ($dataPacks.Contains($asset.Name))
     }
     if (-not $existing) {
         $releaseDefinition = @{ tag_name = $Tag; name = $Title; body = $notes; draft = $true; prerelease = $false }
