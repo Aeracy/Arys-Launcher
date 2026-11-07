@@ -83,7 +83,7 @@
   <data name="CurseForgeManifestUnsupported" xml:space="preserve"><value>这是仅列出 CurseForge 项目编号的整合包，需要 CurseForge API 下载授权。请导出 .mrpack，或导出包含实际 mods 文件的 ZIP。</value></data>
   <data name="CustomAllocation" xml:space="preserve"><value>自定义</value></data>
   <data name="CustomYggdrasilServer" xml:space="preserve"><value>自定义 Authlib Injector 认证服务器</value></data>
-  <data name="DefaultDisplayMode" xml:space="preserve"><value>默认全屏，分辨率 1920 × 1080。</value></data>
+  <data name="DefaultDisplayMode" xml:space="preserve"><value>首次启动按当前主屏幕的分辨率和刷新率全屏运行。之后在 Minecraft 内调整，启动器沿用游戏保存的显示设置。</value></data>
   <data name="Done" xml:space="preserve"><value>完成。</value></data>
   <data name="DownloadAlgorithmUnsupported" xml:space="preserve"><value>不支持的文件校验算法。</value></data>
   <data name="DownloadCacheLimit" xml:space="preserve"><value>下载缓存上限为 1 GiB，可随时清理。</value></data>
@@ -151,7 +151,7 @@
   <data name="GameProcessStarted" xml:space="preserve"><value>游戏进程已启动。日志：{0}</value></data>
   <data name="GameRunning" xml:space="preserve"><value>游戏运行中</value></data>
   <data name="GameStartFailed" xml:space="preserve"><value>游戏进程未能启动。</value></data>
-  <data name="GameWindow" xml:space="preserve"><value>游戏窗口</value></data>
+  <data name="GameWindow" xml:space="preserve"><value>游戏显示</value></data>
   <data name="HeightPixels" xml:space="preserve"><value>高度（像素）</value></data>
   <data name="Home" xml:space="preserve"><value>首页</value></data>
   <data name="HomeMotto" xml:space="preserve"><value>准备好游戏，随时出发。</value></data>
@@ -487,4 +487,9 @@
   <data name="XboxRegionUnsupported" xml:space="preserve"><value>此账号所在地区暂不支持 Xbox Live。</value></data>
   <data name="XboxUserIdMissing" xml:space="preserve"><value>Xbox 档案缺少用户标识。</value></data>
   <data name="YggdrasilAddressInvalid" xml:space="preserve"><value>请填写完整的 HTTPS Yggdrasil API 根地址，例如 https://skin.example/api/yggdrasil/。本机调试地址可使用 HTTP。</value></data>
+  <data name="DisplayArgumentsManagedByGame" xml:space="preserve"><value>请移除附加游戏参数中的全屏和分辨率选项，并在 Minecraft 内调整显示设置。</value></data>
+  <data name="GameOptionsTooLarge" xml:space="preserve"><value>options.txt 过大，无法读取显示设置。请先检查该文件再启动游戏。</value></data>
+  <data name="UpdateTagVersionMismatch" xml:space="preserve"><value>更新清单版本与发布 tag 不一致。</value></data>
+  <data name="UpdateReleaseCatalogInvalid" xml:space="preserve"><value>GitHub 返回的版本列表无效。</value></data>
+  <data name="UpdateChannelReleaseMissing" xml:space="preserve"><value>此更新入口尚未找到带签名的发布版本。</value></data>
 </root>

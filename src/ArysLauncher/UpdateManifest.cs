@@ -16,13 +16,17 @@ public sealed class UpdateChannel
 {
     public string LauncherRepository { get; set; } = "";
     public string PackManifestUrl { get; set; } = "";
+    public string LauncherTagPrefix { get; set; } = "v";
+    public string PackTagPrefix { get; set; } = "pack-v";
     public string PublicKey { get; set; } = "";
 
     public Uri? ManifestAddress(UpdateKind kind)
     {
-        if (kind == UpdateKind.Pack)
+        var legacyPackAddress = $"https://github.com/{LauncherRepository}/releases/latest/download/pack-update.json";
+        if (kind == UpdateKind.Pack && !string.IsNullOrWhiteSpace(PackManifestUrl) &&
+            !PackManifestUrl.Equals(legacyPackAddress, StringComparison.OrdinalIgnoreCase))
         {
-            return string.IsNullOrWhiteSpace(PackManifestUrl) ? null : UpdatePaths.HttpsAddress(PackManifestUrl);
+            return UpdatePaths.HttpsAddress(PackManifestUrl);
         }
         if (string.IsNullOrWhiteSpace(LauncherRepository))
         {
@@ -33,7 +37,7 @@ public sealed class UpdateChannel
         {
             throw new InvalidDataException(LauncherText.Get("SeparateReleaseRepositoryRequired"));
         }
-        return new Uri($"https://github.com/{LauncherRepository}/releases/latest/download/launcher-update.json");
+        return new Uri($"https://api.github.com/repos/{LauncherRepository}/releases?per_page=100");
     }
 }
 

@@ -5,17 +5,10 @@ namespace ArysLauncher;
 
 public sealed class LauncherSettings
 {
-    public const int DefaultWindowWidth = 1920;
-    public const int DefaultWindowHeight = 1080;
-    public const bool DefaultFullscreen = true;
-
     public string JavaPath { get; set; } = "";
     public bool AutomaticJavaSelection { get; set; } = true;
     public bool AutomaticMemoryAllocation { get; set; } = true;
     public int MaximumMemoryMb { get; set; } = 8192;
-    public int WindowWidth { get; set; } = DefaultWindowWidth;
-    public int WindowHeight { get; set; } = DefaultWindowHeight;
-    public bool Fullscreen { get; set; } = DefaultFullscreen;
     public string JvmArguments { get; set; } = "";
     public bool JvmArgumentsAreComplete { get; set; }
     public string GameArguments { get; set; } = "";
@@ -40,10 +33,6 @@ public sealed class LauncherSettings
         if (MaximumMemoryMb < 256 || MaximumMemoryMb > 131072)
         {
             throw new InvalidOperationException(LauncherText.Get("MemoryLimitInvalid"));
-        }
-        if (WindowWidth < 640 || WindowWidth > 16384 || WindowHeight < 360 || WindowHeight > 16384)
-        {
-            throw new InvalidOperationException(LauncherText.Get("WindowSizeInvalid"));
         }
         if (DownloadConcurrency < 1 || DownloadConcurrency > 32 || PerHostConnections < 1 || PerHostConnections > 16)
         {

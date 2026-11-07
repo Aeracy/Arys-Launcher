@@ -69,7 +69,7 @@ if (Test-Path -LiteralPath $source) {
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 New-Item -ItemType Directory -Path $source | Out-Null
-$files = @('Build.ps1', 'Package.ps1', 'Setup.nsi', 'PrepareWebView2.ps1', 'Prepare-Pack.py', 'pack_worlds.py', 'Publish-Pack.ps1', 'New-UpdateRelease.ps1', 'Publish-GitHubRelease.ps1', 'release-channel.json', 'Start.cmd', '.gitignore', 'SourceREADME.md')
+$files = @('Build.ps1', 'Package.ps1', 'Setup.nsi', 'PrepareWebView2.ps1', 'Prepare-Pack.py', 'pack_worlds.py', 'Publish-Pack.ps1', 'Get-ChannelRelease.ps1', 'New-UpdateRelease.ps1', 'Publish-GitHubRelease.ps1', 'release-channel.json', 'Start.cmd', '.gitignore', 'SourceREADME.md')
 foreach ($file in $files) {
     Copy-Item -LiteralPath (Join-Path $launcherRoot $file) -Destination (Join-Path $source $file)
 }

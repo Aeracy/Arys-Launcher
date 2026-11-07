@@ -1,5 +1,6 @@
 {
   "LauncherRepository": "Aeracy/Arys-Launcher",
-  "PackManifestUrl": "https://github.com/Aeracy/Arys-Launcher/releases/latest/download/pack-update.json",
+  "LauncherTagPrefix": "v",
+  "PackTagPrefix": "pack-v",
   "PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvDsnQDZSg8BqJ0U60v+BXgHln2qg6e0EBkjjP3rBMNv0smqfexE7eoWojm5Ap8dEt2bU5TZ34zM6oSXPaMzOqg=="
 }

@@ -58,7 +58,7 @@ if (-not [version]::TryParse($MinimumLauncherVersion, [ref]$parsedMinimum)) {
     throw 'MinimumLauncherVersion must contain a numeric version.'
 }
 if (-not $Tag) {
-    $Tag = 'v' + $Version
+    $Tag = if ($Kind -eq 'Launcher') { 'v' + $Version } else { 'pack-v' + $Version }
 }
 if ($Tag -notmatch '^[A-Za-z0-9_.-]+$') {
     throw 'Use a tag containing only letters, numbers, periods, hyphens and underscores.'

@@ -548,20 +548,9 @@
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">
                                         <StackPanel>
-                                            <Grid Margin="0,0,0,9">
-                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                <TextBlock Text="{local:Text GameWindow}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
-                                                <Button Grid.Column="1" Content="{local:Text RestoreDefaults}" Style="{StaticResource QuietButton}" MinHeight="31"
-                                                        Padding="11,5" Click="ResetWindowSettings_Click" />
-                                            </Grid>
-                                            <TextBlock Text="{local:Text DefaultDisplayMode}" Style="{StaticResource MutedText}" Margin="0,0,0,14" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
-                                                <StackPanel><TextBlock Text="{local:Text WidthPixels}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowWidthText" /></StackPanel>
-                                                <StackPanel Grid.Column="2"><TextBlock Text="{local:Text HeightPixels}" Style="{StaticResource FieldLabel}" Margin="0,0,0,7" /><TextBox x:Name="WindowHeightText" /></StackPanel>
-                                                <CheckBox x:Name="FullscreenCheck" Grid.Column="3" Content="{local:Text LaunchFullscreen}" VerticalAlignment="Bottom" Margin="22,0,0,7" />
-                                            </Grid>
-                                            <CheckBox x:Name="MinimizeOnLaunchCheck" Content="{local:Text MinimizeAfterLaunch}" Margin="0,20,0,3" />
+                                            <TextBlock Text="{local:Text GameWindow}" Style="{StaticResource SectionTitle}" />
+                                            <TextBlock Text="{local:Text DefaultDisplayMode}" Style="{StaticResource MutedText}" TextWrapping="Wrap" />
+                                            <CheckBox x:Name="MinimizeOnLaunchCheck" Content="{local:Text MinimizeAfterLaunch}" Margin="0,18,0,3" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource Card}" Margin="0,0,0,18">

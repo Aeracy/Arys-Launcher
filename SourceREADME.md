@@ -16,6 +16,8 @@ Arys 整合包带有 Mod 配置和资源包加载顺序。发行时跳过存档�
 
 游戏文件保存在启动器自己的 `.minecraft` 中，账号与设置保存在 `data`。Microsoft 授权在内嵌的官方网页中完成。
 
+新安装首次启动时全屏运行，使用主屏幕当前的分辨率和刷新率。之后在 Minecraft 内修改画面设置，启动器沿用游戏保存的结果。已有实例的显示设置也会保留。
+
 整合包卡片右下角可检查更新，发现文件差异后下载并应用。更换 Mod 版本时，启动器通过 Mod ID 识别旧 JAR，并在安装新版前移走旧文件。文件校验和恢复记录用于处理下载失败或应用中断。
 
 登录账号保存在本机 `data/accounts.json`，令牌通过 Windows DPAPI 绑定当前 Windows 用户加密。发布附件会检查账号文件、浏览器缓存和疑似令牌。
@@ -31,7 +33,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 ```powershell
 .\Build.ps1
 .\Build.ps1 -Package
-.\Build.ps1 -Package -BundledPack .\artifacts\release-v1.0.5\Arys-Modpack.mrpack
+.\Build.ps1 -Package -BundledPack .\artifacts\release-pack-v1.2.0\Arys-Modpack.mrpack
 ```
 
 打包需要 NSIS 3.13，可放入 `.tools/nsis-3.13` 或通过 `NSIS_HOME` 指定目录。构建脚本获取并校验微软的离线 WebView2 组件，使用单节点编译，输出位于 `app` 和 `artifacts`。
@@ -42,12 +44,14 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 
 ## 发布更新
 
-`release-channel.json` 保存公开仓库、整合包清单地址和发行公钥。启动器与整合包分别发布版本。文件路径、大小及 SHA-256 写入更新清单，清单使用 ECDSA P-256 签名。
+`release-channel.json` 保存公开仓库、两个 tag 前缀和发行公钥。`v*` 发布启动器，例如 `v1.0.6`；`pack-v*` 发布整合包，例如 `pack-v1.2.0`。Mod、配置和资源包的改动都通过整合包 tag 发布。启动器分别查找各序列中带签名清单的最高版本，不依赖仓库统一的 Latest 标记。
+
+每个 Release 只携带所属更新清单。文件路径、大小及 SHA-256 写入清单，并使用 ECDSA P-256 签名。整合包发布不会改变 GitHub 为启动器保留的 Latest 标记。
 
 ```powershell
-.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.5
-.\Publish-Pack.ps1 -Version 1.0.6 -InstanceDirectory D:\Pack
-.\Publish-Pack.ps1 -Version 1.0.6 -InstanceDirectory D:\Pack -NotesFile .\changes.md -Publish
+.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.6
+.\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack
+.\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack -NotesFile .\changes.md -Publish
 ```
 
 发行私钥由作者保存在仓库外，默认路径为 `.tools/signing/updates-private.pem`。请保留可恢复的备份，后续版本使用同一把密钥签名。将生成的清单、签名和文件上传至同一 Release，附件名称保持生成时的名称。

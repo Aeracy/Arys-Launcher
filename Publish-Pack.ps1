@@ -46,17 +46,13 @@ $work = Join-Path $root ('.staging\pack-export-' + [Guid]::NewGuid().ToString('N
 New-Item -ItemType Directory -Path $work -Force | Out-Null
 try {
     $previous = Join-Path $work 'previous-pack.json'
-    try {
-        Invoke-WebRequest -Uri $channel.PackManifestUrl -OutFile $previous -TimeoutSec 40
-    } catch {
-        if ([int]$_.Exception.Response.StatusCode -ne 404) {
-            throw
-        }
-    }
+    $latestPack = & (Join-Path $root 'Get-ChannelRelease.ps1') -Kind Pack -Repository $repository
+    $manifestAsset = $latestPack.assets | Where-Object name -eq 'pack-update.json' | Select-Object -First 1
+    Invoke-WebRequest -Uri $manifestAsset.browser_download_url -OutFile $previous -TimeoutSec 40
     $previousArgument = @{}
     if (Test-Path -LiteralPath $previous) {
         $signaturePath = $previous + '.sig'
-        Invoke-WebRequest -Uri ($channel.PackManifestUrl + '.sig') -OutFile $signaturePath -TimeoutSec 40
+        Invoke-WebRequest -Uri ($manifestAsset.browser_download_url + '.sig') -OutFile $signaturePath -TimeoutSec 40
         $signature = [IO.File]::ReadAllText($signaturePath).Trim()
         $signer = [Security.Cryptography.ECDsa]::Create()
         try {
@@ -78,7 +74,11 @@ try {
     }
     if (-not $Template) {
         $Template = Join-Path $work 'previous.mrpack'
-        Invoke-WebRequest -Uri "https://github.com/$repository/releases/latest/download/Arys-Modpack.mrpack" -OutFile $Template -TimeoutSec 60
+        $bundleAsset = $latestPack.assets | Where-Object name -eq 'Arys-Modpack.mrpack' | Select-Object -First 1
+        if (-not $bundleAsset) {
+            throw 'The current pack release is missing Arys-Modpack.mrpack.'
+        }
+        Invoke-WebRequest -Uri $bundleAsset.browser_download_url -OutFile $Template -TimeoutSec 60
     }
     $Template = (Get-Item -LiteralPath $Template).FullName
     $content = Join-Path $work 'content'

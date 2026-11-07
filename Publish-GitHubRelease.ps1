@@ -5,6 +5,7 @@ param(
     [string]$Title,
     [string]$NotesFile,
     [string]$TargetCommit,
+    [ValidateSet('Launcher', 'Pack')][string]$Kind,
     [string]$Repository = 'Aeracy/Arys-Launcher'
 )
 
@@ -53,6 +54,22 @@ if (-not $AssetsDirectory) {
 }
 if (-not $Title) {
     $Title = $Tag
+}
+$manifestFiles = @(@('launcher-update.json', 'pack-update.json') | Where-Object {
+    Test-Path -LiteralPath (Join-Path $AssetsDirectory $_)
+})
+if (@($manifestFiles).Count -ne 1) {
+    throw 'Each release must contain exactly one launcher or modpack manifest.'
+}
+$releaseManifest = Get-Content -LiteralPath (Join-Path $AssetsDirectory $manifestFiles[0]) -Raw | ConvertFrom-Json
+if ($Kind -and $Kind -ne $releaseManifest.Kind) {
+    throw 'The selected release channel does not match its manifest.'
+}
+$Kind = $releaseManifest.Kind
+$channel = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'release-channel.json') -Raw | ConvertFrom-Json
+$tagPrefix = if ($Kind -eq 'Launcher') { $channel.LauncherTagPrefix } else { $channel.PackTagPrefix }
+if (-not $tagPrefix -or $Tag -cne ($tagPrefix + $releaseManifest.Version)) {
+    throw 'Use the configured channel prefix followed by the manifest version for the release tag.'
 }
 $notes = if ($NotesFile) { Get-Content -LiteralPath $NotesFile -Raw } else { '' }
 if ($TargetCommit -and $TargetCommit -notmatch '^[0-9a-f]{40}$') {
@@ -136,28 +153,6 @@ try {
     foreach ($path in $Attachment) {
         $assets.Add((Get-Item -LiteralPath $path))
     }
-    $names = @($assets.Name)
-    foreach ($name in @('launcher-update.json', 'pack-update.json')) {
-        if ($names -contains $name) {
-            continue
-        }
-        try {
-            $latest = Invoke-RestMethod -Uri "$api/releases/latest" -Headers $headers
-        } catch {
-            if ([int]$_.Exception.Response.StatusCode -eq 404) {
-                continue
-            }
-            throw
-        }
-        foreach ($assetName in @($name, ($name + '.sig'))) {
-            $old = $latest.assets | Where-Object name -eq $assetName | Select-Object -First 1
-            if ($old) {
-                $path = Join-Path $AssetsDirectory $assetName
-                Invoke-WebRequest -Uri $old.browser_download_url -OutFile $path
-                $assets.Add((Get-Item -LiteralPath $path))
-            }
-        }
-    }
     if ($assets.Name | Group-Object | Where-Object Count -gt 1) {
         throw 'Release attachments have duplicate names.'
     }
@@ -194,7 +189,8 @@ try {
         }
         Write-Output $file.Name
     }
-    $finalRelease = @{ draft = $false; prerelease = $false; make_latest = 'true'; name = $Title; body = $notes }
+    $latestMode = if ($Kind -eq 'Launcher') { 'true' } else { 'false' }
+    $finalRelease = @{ draft = $false; prerelease = $false; make_latest = $latestMode; name = $Title; body = $notes }
     if ($TargetCommit) {
         $finalRelease.target_commitish = $TargetCommit
     }

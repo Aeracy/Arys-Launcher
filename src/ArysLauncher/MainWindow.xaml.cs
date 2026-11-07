@@ -832,9 +832,6 @@ public partial class MainWindow : Window
         MaximumMemoryText.Text = (settings.MaximumMemoryMb / 1024.0).ToString("0.0", CultureInfo.InvariantCulture);
         AutomaticMemoryRadio.IsChecked = settings.AutomaticMemoryAllocation;
         CustomMemoryRadio.IsChecked = !settings.AutomaticMemoryAllocation;
-        WindowWidthText.Text = settings.WindowWidth.ToString(CultureInfo.InvariantCulture);
-        WindowHeightText.Text = settings.WindowHeight.ToString(CultureInfo.InvariantCulture);
-        FullscreenCheck.IsChecked = settings.Fullscreen;
         MinimizeOnLaunchCheck.IsChecked = settings.MinimizeOnLaunch;
         JvmArgumentsText.Text = JvmArgumentPolicy.GetEditableText(settings);
         GameArgumentsText.Text = settings.GameArguments;
@@ -872,9 +869,6 @@ public partial class MainWindow : Window
             settings.AutomaticJavaSelection = JavaRuntimeCombo.SelectedItem is not JavaChoice { Runtime: not null };
             settings.AutomaticMemoryAllocation = AutomaticMemoryRadio.IsChecked == true;
             settings.MaximumMemoryMb = ParseMemoryGiB(MaximumMemoryText.Text);
-            settings.WindowWidth = ParseInteger(WindowWidthText.Text, LauncherText.Get("WindowWidth"));
-            settings.WindowHeight = ParseInteger(WindowHeightText.Text, LauncherText.Get("WindowHeight"));
-            settings.Fullscreen = FullscreenCheck.IsChecked == true;
             settings.MinimizeOnLaunch = MinimizeOnLaunchCheck.IsChecked == true;
             settings.JvmArguments = JvmArgumentsText.Text.Trim();
             settings.JvmArgumentsAreComplete = true;
@@ -906,14 +900,6 @@ public partial class MainWindow : Window
     private void ResetJvmArguments_Click(object sender, RoutedEventArgs e)
     {
         JvmArgumentsText.Text = JvmArgumentPolicy.RecommendedText;
-    }
-
-    private void ResetWindowSettings_Click(object sender, RoutedEventArgs e)
-    {
-        WindowWidthText.Text = LauncherSettings.DefaultWindowWidth.ToString(CultureInfo.InvariantCulture);
-        WindowHeightText.Text = LauncherSettings.DefaultWindowHeight.ToString(CultureInfo.InvariantCulture);
-        FullscreenCheck.IsChecked = LauncherSettings.DefaultFullscreen;
-        SetStatus(LauncherText.Get("WindowDefaultsRestored"));
     }
 
     private void DownloadConnections_Changed(object sender, RoutedEventArgs e)

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -65,9 +64,6 @@ public sealed class GameRuntime
         {
             MaximumRamMb = maximumMemory,
             MinimumRamMb = Math.Min(MemoryAllocation.InitialHeapMb, maximumMemory),
-            ScreenWidth = settings.WindowWidth,
-            ScreenHeight = settings.WindowHeight,
-            FullScreen = settings.Fullscreen,
             JavaPath = selectedJava?.ExecutablePath,
             GameLauncherName = "ArysLauncher",
             GameLauncherVersion = App.LauncherVersion,
@@ -99,20 +95,12 @@ public sealed class GameRuntime
         {
             throw new InvalidOperationException(LauncherText.Get("ProtectedGameArguments"));
         }
-        option.ExtraJvmArguments = JvmArgumentPolicy.Build(settings);
-        var extraArguments = gameArguments.Select(argument => new MArgument(argument)).ToList();
-        if (settings.Fullscreen && instance.MinecraftVersion == "1.20.1")
+        if (argumentNames.Overlaps(new[] { "--width", "--height", "--fullscreen", "--fullscreenWidth", "--fullscreenHeight" }))
         {
-            if (!argumentNames.Contains("--fullscreenWidth"))
-            {
-                extraArguments.Add(new MArgument(new[] { "--fullscreenWidth", settings.WindowWidth.ToString(CultureInfo.InvariantCulture) }));
-            }
-            if (!argumentNames.Contains("--fullscreenHeight"))
-            {
-                extraArguments.Add(new MArgument(new[] { "--fullscreenHeight", settings.WindowHeight.ToString(CultureInfo.InvariantCulture) }));
-            }
+            throw new InvalidOperationException(LauncherText.Get("DisplayArgumentsManagedByGame"));
         }
-        option.ExtraGameArguments = extraArguments;
+        option.ExtraJvmArguments = JvmArgumentPolicy.Build(settings);
+        option.ExtraGameArguments = gameArguments.Select(argument => new MArgument(argument)).ToArray();
         if (session.Account.Kind == AccountKind.External)
         {
             var injector = await GetAuthlibInjectorAsync(client, progress, cancellationToken);
@@ -138,6 +126,7 @@ public sealed class GameRuntime
                 throw;
             }
         }
+        option.FullScreen = await GameDisplaySettings.InitializeAsync(instance.DirectoryPath, cancellationToken);
         var process = await launcher.BuildProcessAsync(version, option, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         process.StartInfo.UseShellExecute = false;

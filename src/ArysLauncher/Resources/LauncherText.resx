@@ -83,7 +83,7 @@
   <data name="CurseForgeManifestUnsupported" xml:space="preserve"><value>This CurseForge archive requires CurseForge API access. Export an .mrpack or a ZIP containing the actual mod files.</value></data>
   <data name="CustomAllocation" xml:space="preserve"><value>Custom</value></data>
   <data name="CustomYggdrasilServer" xml:space="preserve"><value>Custom authlib-injector server</value></data>
-  <data name="DefaultDisplayMode" xml:space="preserve"><value>Defaults to fullscreen at 1920 × 1080.</value></data>
+  <data name="DefaultDisplayMode" xml:space="preserve"><value>The first launch uses fullscreen at the primary display's current resolution and refresh rate. After that, change display settings in Minecraft; the launcher follows what the game saves.</value></data>
   <data name="Done" xml:space="preserve"><value>Done.</value></data>
   <data name="DownloadAlgorithmUnsupported" xml:space="preserve"><value>The file verification algorithm is unsupported.</value></data>
   <data name="DownloadCacheLimit" xml:space="preserve"><value>The download cache is capped at 1 GiB. You can clear it at any time.</value></data>
@@ -151,7 +151,7 @@
   <data name="GameProcessStarted" xml:space="preserve"><value>Game started. Log file at {0}</value></data>
   <data name="GameRunning" xml:space="preserve"><value>Game running</value></data>
   <data name="GameStartFailed" xml:space="preserve"><value>The game process could not start.</value></data>
-  <data name="GameWindow" xml:space="preserve"><value>Game window</value></data>
+  <data name="GameWindow" xml:space="preserve"><value>Game display</value></data>
   <data name="HeightPixels" xml:space="preserve"><value>Height (pixels)</value></data>
   <data name="Home" xml:space="preserve"><value>Home</value></data>
   <data name="HomeMotto" xml:space="preserve"><value>Get ready. Head out when you are.</value></data>
@@ -487,4 +487,9 @@
   <data name="XboxRegionUnsupported" xml:space="preserve"><value>Xbox Live is unavailable in this account's region.</value></data>
   <data name="XboxUserIdMissing" xml:space="preserve"><value>The Xbox profile has no user ID.</value></data>
   <data name="YggdrasilAddressInvalid" xml:space="preserve"><value>Enter the full HTTPS Yggdrasil API address, such as https://skin.example/api/yggdrasil/. HTTP is available for local testing.</value></data>
+  <data name="DisplayArgumentsManagedByGame" xml:space="preserve"><value>Remove fullscreen and resolution flags from the extra game arguments. Change these settings in Minecraft.</value></data>
+  <data name="GameOptionsTooLarge" xml:space="preserve"><value>Cannot read display settings because options.txt is too large. Check the file before launching.</value></data>
+  <data name="UpdateTagVersionMismatch" xml:space="preserve"><value>The update manifest version does not match its release tag.</value></data>
+  <data name="UpdateReleaseCatalogInvalid" xml:space="preserve"><value>GitHub returned an invalid release list.</value></data>
+  <data name="UpdateChannelReleaseMissing" xml:space="preserve"><value>No signed release was found for this update channel.</value></data>
 </root>
