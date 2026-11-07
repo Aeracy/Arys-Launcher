@@ -9,7 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>ArysLauncher</AssemblyName>
     <RootNamespace>ArysLauncher</RootNamespace>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <Description>The Maiden's Eternal Dungeon launcher</Description>
     <Authors>Aeracy</Authors>

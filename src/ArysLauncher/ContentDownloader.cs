@@ -13,6 +13,7 @@ public sealed record ContentRequest(long Size, string Hash, HashAlgorithmName Al
 public sealed class ContentDownloader : IDisposable
 {
     private readonly HttpClient client;
+    private readonly DownloadSourceSelection sourceSelection;
     private readonly string cacheRoot;
     private readonly int perHostLimit;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> hostGates = new(StringComparer.OrdinalIgnoreCase);
@@ -22,6 +23,8 @@ public sealed class ContentDownloader : IDisposable
     public ContentDownloader(LauncherStorage storage, HttpClient client)
     {
         this.client = client;
+        sourceSelection = new DownloadSourceSelection((message, token) => client.SendAsync(message,
+            HttpCompletionOption.ResponseHeadersRead, token));
         cacheRoot = storage.Cache;
         perHostLimit = DownloadPolicy.HostConnections(storage.Settings);
     }
@@ -50,7 +53,8 @@ public sealed class ContentDownloader : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             var temporary = destination + ".part";
             Exception? lastFailure = null;
-            foreach (var source in request.Sources)
+            var sources = await sourceSelection.OrderAsync(request.Sources, cancellationToken);
+            foreach (var source in sources)
             {
                 for (var attempt = 0; attempt < 3; attempt++)
                 {
@@ -61,7 +65,7 @@ public sealed class ContentDownloader : IDisposable
                         await hostGate.WaitAsync(cancellationToken);
                         try
                         {
-                            await DownloadAsync(source, temporary, request, progressIndex, progress, cancellationToken);
+                            await DownloadAsync(source, temporary, request, progressIndex, progress, attempt > 0, cancellationToken);
                         }
                         finally
                         {
@@ -96,7 +100,7 @@ public sealed class ContentDownloader : IDisposable
     }
 
     private async Task DownloadAsync(Uri source, string destination, ContentRequest request, int index,
-        WorkProgress progress, CancellationToken cancellationToken)
+        WorkProgress progress, bool retrySource, CancellationToken cancellationToken)
     {
         var offset = File.Exists(destination) ? new FileInfo(destination).Length : 0;
         if (offset > request.Size)
@@ -115,6 +119,7 @@ public sealed class ContentDownloader : IDisposable
             offset = 0;
         }
         using var message = new HttpRequestMessage(HttpMethod.Get, source);
+        message.Options.Set(new HttpRequestOptionsKey<bool>("Arys.RetrySource"), retrySource);
         if (offset > 0)
         {
             message.Headers.Range = new RangeHeaderValue(offset, null);
@@ -242,6 +247,7 @@ public sealed class ContentDownloader : IDisposable
 
     public void Dispose()
     {
+        sourceSelection.Dispose();
         foreach (var gate in hostGates.Values.Concat(contentGates.Values))
         {
             gate.Dispose();

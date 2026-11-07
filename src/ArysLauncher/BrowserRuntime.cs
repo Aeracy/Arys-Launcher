@@ -11,7 +11,7 @@ internal static class BrowserRuntime
     private const long ArchiveSize = 310195262;
     private const string ArchiveHash = "857DCFD6F7035508A29645FA2978C3A6A841F220DF77CC366D318894E19F4792";
 
-    public static async Task<string?> ResolveAsync(LauncherStorage storage, CancellationToken token)
+    public static async Task<string?> ResolveAsync(LauncherStorage storage, Action<string> report, CancellationToken token)
     {
         try
         {
@@ -38,8 +38,25 @@ internal static class BrowserRuntime
         var archive = Path.Combine(AppContext.BaseDirectory, "BrowserRuntime.cab");
         if (!await UpdatePaths.MatchesAsync(archive, expected, token))
         {
-            throw new FileNotFoundException(LauncherText.Get("OfflineBrowserMissing"));
+            archive = Path.Combine(components, Version + ".cab");
+            if (!await UpdatePaths.MatchesAsync(archive, expected, token))
+            {
+                report(LauncherText.Get("DownloadingSignInComponent"));
+                using var client = NetworkClients.Create(storage.Settings);
+                using var downloader = new ContentDownloader(storage, client);
+                var progress = new WorkProgress(new CallbackProgress<WorkSnapshot>(snapshot =>
+                {
+                    var percentage = (int)Math.Clamp(100.0 * snapshot.CompletedBytes / ArchiveSize, 0, 100);
+                    report(LauncherText.Get("DownloadingSignInComponentProgress", percentage));
+                }), 1, ArchiveSize);
+                var source = new Uri("https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/b7919cc9-680d-4253-bf32-732988e68aa6/Microsoft.WebView2.FixedVersionRuntime.156.0.4314.58.x64.cab");
+                var cached = await downloader.FetchAsync(new ContentRequest(ArchiveSize, ArchiveHash,
+                    HashAlgorithmName.SHA256, new[] { source }), 0, progress, token);
+                Directory.CreateDirectory(components);
+                File.Move(cached, archive, true);
+            }
         }
+        report(LauncherText.Get("PreparingSignInComponent"));
         var stagingRoot = Path.Combine(components, "staging");
         var staging = Path.Combine(stagingRoot, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(staging);

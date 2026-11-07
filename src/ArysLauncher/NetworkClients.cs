@@ -5,7 +5,7 @@ namespace ArysLauncher;
 
 public static class NetworkClients
 {
-    public static HttpClient Create(LauncherSettings settings, bool allowRedirect = true, bool download = false)
+    public static HttpClient Create(LauncherSettings settings, bool allowRedirect = true, bool download = false, bool gameSources = false)
     {
         var handler = new SocketsHttpHandler
         {
@@ -23,8 +23,11 @@ public static class NetworkClients
         {
             handler.Proxy = new WebProxy(settings.ProxyAddress);
         }
-        HttpMessageHandler pipeline = download && settings.DownloadLimitMiBPerSecond > 0 ?
-            new DownloadBandwidthHandler(handler, settings.DownloadLimitMiBPerSecond) : handler;
+        HttpMessageHandler pipeline = gameSources ? new GameDownloadHandler(handler) : handler;
+        if (download && settings.DownloadLimitMiBPerSecond > 0)
+        {
+            pipeline = new DownloadBandwidthHandler(pipeline, settings.DownloadLimitMiBPerSecond);
+        }
         var client = new HttpClient(pipeline)
         {
             Timeout = TimeSpan.FromMinutes(15),

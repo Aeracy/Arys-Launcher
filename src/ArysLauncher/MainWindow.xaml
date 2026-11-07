@@ -320,7 +320,16 @@
                         </local:SmoothScrollViewer>
                         <local:SmoothScrollViewer x:Name="AccountsPage" Visibility="Collapsed">
                             <StackPanel Margin="0,2,0,20">
-                                <ListBox x:Name="AccountList" Background="Transparent" BorderThickness="0" MaxHeight="200" ItemContainerStyle="{StaticResource CardListItem}" SelectionChanged="AccountList_SelectionChanged">
+                                <ListBox x:Name="AccountList" Background="Transparent" BorderThickness="0" MaxHeight="200"
+                                         FocusVisualStyle="{x:Null}" ItemContainerStyle="{StaticResource CardListItem}" SelectionChanged="AccountList_SelectionChanged">
+                                    <ListBox.Template>
+                                        <ControlTemplate TargetType="ListBox">
+                                            <ScrollViewer Background="Transparent" Focusable="False" Padding="0" BorderThickness="0"
+                                                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                                <ItemsPresenter />
+                                            </ScrollViewer>
+                                        </ControlTemplate>
+                                    </ListBox.Template>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>

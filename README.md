@@ -8,7 +8,11 @@
 
 ## 使用
 
-下载 Release 中的安装程序，或解压便携包。启动器随 Windows 显示语言使用简体中文或英文。首页的「安装整合包」会选中随附的官方包，确认后下载清单中的依赖。也可以选择本地的 .mrpack 或 ZIP。安装完成后，在账号页登录并启动游戏。
+下载 Release 中的安装程序，或解压便携包。启动器随 Windows 显示语言使用简体中文或英文。首页的「安装整合包」会选中随附的官方包，确认后一次准备整合包、Minecraft 和 Forge。也可以选择本地的 .mrpack 或 ZIP。全部准备完成后即可启动游戏。
+
+账号页在安装前和下载期间都可登录。系统缺少 WebView2 时，优先使用安装程序随附的组件；便携包会从微软获取所需组件。登录窗口使用独立任务，关闭它不会取消游戏下载。
+
+安装过程共用一条总体进度，切换阶段不再归零。游戏下载支持官方源与 BMCLAPI 自动选择和回退，文件仍按清单校验；默认并发为 16 个文件、单站点最多 8 个连接，可在设置页调整。[BMCLAPI](https://bmclapidoc.bangbang93.com/)
 
 Arys 整合包带有 Mod 配置和资源包加载顺序。发行时跳过存档、备份、服务器列表和个人设置，首次启动前清理残留头像与开场播放标记。
 
@@ -40,7 +44,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 
 主程序是包含 .NET 运行时的压缩 exe。安装程序优先复用系统 WebView2，缺少时保留离线组件，在首次登录时解压。
 
-轻量便携包使用系统 WebView2。需要离线备用组件时，使用完整安装程序。
+便携包优先使用系统 WebView2，缺少时自动下载。需要离线备用组件时，使用完整安装程序。
 
 ## 发布更新
 
@@ -49,7 +53,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 每个 Release 只携带所属更新清单。文件路径、大小及 SHA-256 写入清单，并使用 ECDSA P-256 签名。整合包发布不会改变 GitHub 为启动器保留的 Latest 标记。
 
 ```powershell
-.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.6
+.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.7
 .\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack
 .\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack -NotesFile .\changes.md -Publish
 ```

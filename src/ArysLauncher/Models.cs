@@ -120,6 +120,7 @@ public sealed class GameInstallation
     public int ModCount { get; set; }
     public DateTimeOffset ImportedAt { get; set; } = DateTimeOffset.UtcNow;
     public bool NeedsFirstLaunchCleanup { get; set; }
+    public bool RuntimePrepared { get; set; } = true;
 
     [JsonIgnore]
     public string VersionLabel
@@ -172,7 +173,8 @@ public sealed record WorkSnapshot(
     int TotalFiles,
     long NetworkBytes,
     int CacheHits,
-    bool Indeterminate = false);
+    bool Indeterminate = false,
+    double? OverallProgress = null);
 
 public sealed record GameProfile(string Id, string Name);
 

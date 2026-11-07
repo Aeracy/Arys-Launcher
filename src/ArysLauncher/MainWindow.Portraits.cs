@@ -13,7 +13,7 @@ public partial class MainWindow
 {
     private void RefreshAccountPortrait(LauncherAccount? account)
     {
-        if (IsBusy || account != null && portraitAccountId == account.Id)
+        if (IsBusy || authenticationCancellation != null || account != null && portraitAccountId == account.Id)
         {
             return;
         }

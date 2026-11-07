@@ -492,4 +492,10 @@
   <data name="UpdateTagVersionMismatch" xml:space="preserve"><value>The update manifest version does not match its release tag.</value></data>
   <data name="UpdateReleaseCatalogInvalid" xml:space="preserve"><value>GitHub returned an invalid release list.</value></data>
   <data name="UpdateChannelReleaseMissing" xml:space="preserve"><value>No signed release was found for this update channel.</value></data>
+  <data name="FinishGameInstallation" xml:space="preserve"><value>Finish installation</value></data>
+  <data name="AuthenticationCancelled" xml:space="preserve"><value>Sign-in cancelled.</value></data>
+  <data name="DownloadingSignInComponent" xml:space="preserve"><value>Downloading the embedded sign-in browser from Microsoft. No modpack installation is required.</value></data>
+  <data name="DownloadingSignInComponentProgress" xml:space="preserve"><value>Downloading the sign-in browser from Microsoft: {0}%.</value></data>
+  <data name="PreparingSignInComponent" xml:space="preserve"><value>Preparing the embedded sign-in browser.</value></data>
+  <data name="GameDownloadSourcesUnavailable" xml:space="preserve"><value>The game download sources could not be reached. Check your connection and try again.</value></data>
 </root>

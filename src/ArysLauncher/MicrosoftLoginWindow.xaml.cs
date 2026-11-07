@@ -225,7 +225,13 @@ public partial class MicrosoftLoginWindow : Window, IWebUI
         {
             options.AdditionalBrowserArguments = "--proxy-server=" + new Uri(storage.Settings.ProxyAddress).GetLeftPart(UriPartial.Authority);
         }
-        var runtimePath = await BrowserRuntime.ResolveAsync(storage, cancellationToken);
+        var runtimePath = await BrowserRuntime.ResolveAsync(storage, message => Dispatcher.BeginInvoke(() =>
+        {
+            if (!windowClosed)
+            {
+                ShowMessage(LauncherText.Get("PreparingSignInWindow"), message);
+            }
+        }), cancellationToken);
         if (runtimePath != null)
         {
             PrepareSandboxAccess(runtimePath);

@@ -220,6 +220,7 @@ internal sealed class FileUpdateTransaction
             if (instance.MinecraftVersion != release.MinecraftVersion || instance.ForgeVersion != release.ForgeVersion)
             {
                 instance.LaunchVersion = "";
+                instance.RuntimePrepared = false;
             }
             instance.PackVersion = Journal.Release.Version;
             instance.Name = release.Name;

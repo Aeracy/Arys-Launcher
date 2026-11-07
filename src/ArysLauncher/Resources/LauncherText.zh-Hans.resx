@@ -492,4 +492,10 @@
   <data name="UpdateTagVersionMismatch" xml:space="preserve"><value>更新清单版本与发布 tag 不一致。</value></data>
   <data name="UpdateReleaseCatalogInvalid" xml:space="preserve"><value>GitHub 返回的版本列表无效。</value></data>
   <data name="UpdateChannelReleaseMissing" xml:space="preserve"><value>此更新入口尚未找到带签名的发布版本。</value></data>
+  <data name="FinishGameInstallation" xml:space="preserve"><value>继续安装</value></data>
+  <data name="AuthenticationCancelled" xml:space="preserve"><value>已取消登录。</value></data>
+  <data name="DownloadingSignInComponent" xml:space="preserve"><value>正在从微软下载内嵌登录组件，无需先安装整合包。</value></data>
+  <data name="DownloadingSignInComponentProgress" xml:space="preserve"><value>正在从微软下载登录组件：{0}%。</value></data>
+  <data name="PreparingSignInComponent" xml:space="preserve"><value>正在准备内嵌登录组件。</value></data>
+  <data name="GameDownloadSourcesUnavailable" xml:space="preserve"><value>暂时无法连接游戏下载源，请检查网络后重试。</value></data>
 </root>

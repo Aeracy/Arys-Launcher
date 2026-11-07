@@ -12,6 +12,7 @@ internal sealed class GameInstallProgress
     private readonly string stage;
     private readonly string detail;
     private readonly bool hasSingleBatch;
+    private readonly long networkOrigin;
     private ByteProgress bytes;
     private int completedFiles;
     private int totalFiles;
@@ -28,6 +29,7 @@ internal sealed class GameInstallProgress
         this.stage = stage;
         this.detail = detail;
         this.hasSingleBatch = hasSingleBatch;
+        networkOrigin = installer.NetworkBytes;
         if (hasSingleBatch)
         {
             Files = new CallbackProgress<InstallerProgressChangedEventArgs>(OnFiles);
@@ -66,6 +68,6 @@ internal sealed class GameInstallProgress
         lastReport = Stopwatch.GetTimestamp();
         var total = hasSingleBatch ? Math.Max(0, bytes.TotalBytes) : 0;
         progress.Report(new WorkSnapshot(stage, detail, Math.Clamp(bytes.ProgressedBytes, 0, total), total,
-            completedFiles, totalFiles, installer.NetworkBytes, 0, total == 0));
+            completedFiles, totalFiles, Math.Max(0, installer.NetworkBytes - networkOrigin), 0, total == 0));
     }
 }

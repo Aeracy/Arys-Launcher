@@ -182,6 +182,7 @@ public sealed class PackImporter
                 SourceFormat = plan.Format,
                 DirectoryPath = final,
                 NeedsFirstLaunchCleanup = plan.IsArysPack,
+                RuntimePrepared = false,
                 ModCount = Directory.Exists(Path.Combine(staging, "mods")) ? Directory.EnumerateFiles(Path.Combine(staging, "mods"), "*.jar").Count() : 0
             };
             await File.WriteAllTextAsync(Path.Combine(staging, "arys-installation.json"),

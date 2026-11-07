@@ -28,10 +28,12 @@ public sealed class GameRuntime
     {
         storage.Settings.Validate();
         var java = await javaCatalog.ResolveAsync(storage.Settings, cancellationToken);
-        using var client = NetworkClients.Create(storage.Settings, download: true);
+        using var client = NetworkClients.Create(storage.Settings, download: true, gameSources: true);
         var launcher = CreateLauncher(instance, client, java?.ExecutablePath);
         using var installer = (GameFileInstaller)launcher.GameInstaller;
-        return await PrepareAsync(instance, launcher, java?.ExecutablePath, progress, cancellationToken);
+        var version = await PrepareAsync(instance, launcher, java?.ExecutablePath, progress, cancellationToken);
+        instance.RuntimePrepared = true;
+        return version;
     }
 
     public async Task<RunningGame> LaunchAsync(GameInstallation instance, LauncherAccount account,
@@ -52,13 +54,16 @@ public sealed class GameRuntime
         {
             throw new DirectoryNotFoundException(LauncherText.Get("GameDirectoryMissing"));
         }
+        var preparation = new InstallationProgress(progress);
+        var authenticationProgress = preparation.Phase(0, 0.02);
         using var accounts = new AccountService(storage);
         var session = await accounts.GetSessionAsync(account,
-            message => progress.Report(new WorkSnapshot(LauncherText.Get("SigningIn"), message, 0, 0, 0, 0, 0, 0, true)), cancellationToken);
-        using var client = NetworkClients.Create(storage.Settings, download: true);
+            message => authenticationProgress.Report(new WorkSnapshot(LauncherText.Get("SigningIn"), message, 0, 0, 0, 0, 0, 0, true)), cancellationToken);
+        using var client = NetworkClients.Create(storage.Settings, download: true, gameSources: true);
         var launcher = CreateLauncher(instance, client, selectedJava?.ExecutablePath);
         using var installer = (GameFileInstaller)launcher.GameInstaller;
-        var version = await PrepareAsync(instance, launcher, selectedJava?.ExecutablePath, progress, cancellationToken);
+        var version = await PrepareAsync(instance, launcher, selectedJava?.ExecutablePath, preparation.Phase(0.02, 0.95), cancellationToken);
+        instance.RuntimePrepared = true;
         var settings = storage.Settings;
         var option = new MLaunchOption
         {
@@ -103,7 +108,7 @@ public sealed class GameRuntime
         option.ExtraGameArguments = gameArguments.Select(argument => new MArgument(argument)).ToArray();
         if (session.Account.Kind == AccountKind.External)
         {
-            var injector = await GetAuthlibInjectorAsync(client, progress, cancellationToken);
+            var injector = await GetAuthlibInjectorAsync(client, preparation.Phase(0.95, 0.99), cancellationToken);
             option.ExtraJvmArguments = option.ExtraJvmArguments.Concat(new[]
             {
                 new MArgument($"-javaagent:{injector}={session.Account.ServerAddress}"),
@@ -111,7 +116,7 @@ public sealed class GameRuntime
             }).ToArray();
         }
         cancellationToken.ThrowIfCancellationRequested();
-        progress.Report(new WorkSnapshot(LauncherText.Get("StartingGame"), LauncherText.Get("PreparingGameProcess"), 0, 0, 0, 0, 0, 0, true));
+        preparation.Phase(0.99, 0.99).Report(new WorkSnapshot(LauncherText.Get("StartingGame"), LauncherText.Get("PreparingGameProcess"), 0, 0, 0, 0, 0, 0));
         if (instance.NeedsFirstLaunchCleanup)
         {
             PackContentPolicy.PrepareFirstLaunch(instance.DirectoryPath);
@@ -159,13 +164,17 @@ public sealed class GameRuntime
         string? selectedJavaPath, IProgress<WorkSnapshot> progress, CancellationToken cancellationToken)
     {
         var gameInstaller = (GameFileInstaller)launcher.GameInstaller;
+        var installationProgress = new InstallationProgress(progress);
+        var fullInstallation = string.IsNullOrWhiteSpace(instance.LaunchVersion) && !string.IsNullOrWhiteSpace(instance.ForgeVersion);
+        var initial = installationProgress.Phase(0, 0);
+        initial.Report(new WorkSnapshot(LauncherText.Get("PrepareGameFiles"), LauncherText.Get("CheckingGameResources"), 0, 0, 0, 0, 0, 0));
         var version = instance.LaunchVersion;
         if (string.IsNullOrWhiteSpace(version))
         {
             version = instance.MinecraftVersion;
             if (!string.IsNullOrWhiteSpace(instance.ForgeVersion))
             {
-                var vanillaProgress = new GameInstallProgress(progress, gameInstaller,
+                var vanillaProgress = new GameInstallProgress(installationProgress.Phase(0, 0.68), gameInstaller,
                     LauncherText.Get("InstallingMinecraft"), LauncherText.Get("CheckingMinecraftFiles"));
                 var vanilla = await launcher.GetVersionAsync(instance.MinecraftVersion, cancellationToken);
                 await launcher.InstallAsync(vanilla, vanillaProgress.Files, vanillaProgress.Bytes, cancellationToken);
@@ -179,19 +188,20 @@ public sealed class GameRuntime
                 var artifact = new ForgeV12VersionArtifact(instance.MinecraftVersion, instance.ForgeVersion, version,
                     $"https://maven.minecraftforge.net/net/minecraftforge/forge/{artifactCoordinate}/forge-{artifactCoordinate}-installer.jar",
                     $"maven/net/minecraftforge/forge/{artifactCoordinate}/forge-{artifactCoordinate}.jar");
-                var forgeProgress = new GameInstallProgress(progress, gameInstaller,
+                var forgeProgress = new GameInstallProgress(installationProgress.Phase(0.68, 0.94), gameInstaller,
                     LauncherText.Get("InstallingForge"), LauncherText.Get("PreparingForge"), hasSingleBatch: false);
                 var installer = new ForgeV12Installer(artifact);
                 await installer.Install(launcher.MinecraftPath, launcher.GameInstaller, new ForgeInstallOptions
                 {
                     JavaPath = javaPath,
+                    FileProgress = forgeProgress.Files,
                     ByteProgress = forgeProgress.Bytes,
                     CancellationToken = cancellationToken
                 });
                 await launcher.GetAllVersionsAsync(cancellationToken);
             }
         }
-        var resourceProgress = new GameInstallProgress(progress, gameInstaller,
+        var resourceProgress = new GameInstallProgress(installationProgress.Phase(fullInstallation ? 0.94 : 0, 0.99), gameInstaller,
             LauncherText.Get("VerifyingGameResources"), LauncherText.Get("CheckingGameResources"));
         await launcher.InstallAsync(version, resourceProgress.Files, resourceProgress.Bytes, cancellationToken);
         instance.LaunchVersion = version;

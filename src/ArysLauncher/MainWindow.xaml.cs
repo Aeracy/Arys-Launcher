@@ -32,6 +32,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer memoryRefresh = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly List<string> history = new();
     private CancellationTokenSource? operationCancellation;
+    private CancellationTokenSource? authenticationCancellation;
     private PackPlan? importPlan;
     private GameInstallation? editingInstallation;
     private RunningGame? runningGame;
@@ -282,14 +283,15 @@ public partial class MainWindow : Window
                 selectedAccount == null ? LauncherText.Get("SignInAfterImport") : $"{selectedAccount.PlayerName}  ·  {installation.MinecraftVersion}";
             HeaderImportButton.Content = installation == null ? importLabel : LauncherText.Get("OpenGameDirectoryLink");
             LaunchButton.Content = runningGame != null ? LauncherText.Get("GameRunning") : installation == null ? importLabel :
+                !installation.RuntimePrepared ? LauncherText.Get("FinishGameInstallation") :
                 selectedAccount == null ? LauncherText.Get("SignIn") : LauncherText.Get("Play");
-            LaunchButton.IsEnabled = !IsBusy && runningGame == null;
+            LaunchButton.IsEnabled = !IsBusy && authenticationCancellation == null && runningGame == null;
             HeaderImportButton.IsEnabled = !IsBusy;
             PrepareButton.IsEnabled = !IsBusy && runningGame == null && installation != null;
-            MicrosoftLoginButton.IsEnabled = !IsBusy;
-            ExternalLoginButton.IsEnabled = !IsBusy;
+            MicrosoftLoginButton.IsEnabled = authenticationCancellation == null;
+            ExternalLoginButton.IsEnabled = authenticationCancellation == null;
             SaveSettingsButton.IsEnabled = !IsBusy && !scanningJava;
-            AccountList.IsEnabled = !IsBusy;
+            AccountList.IsEnabled = authenticationCancellation == null;
             ChooseArchiveButton.IsEnabled = !IsBusy;
             CommitImportButton.IsEnabled = !IsBusy && (importPlan != null || editingInstallation != null);
             TaskCancelButton.Visibility = IsBusy ? Visibility.Visible : Visibility.Collapsed;
@@ -413,6 +415,7 @@ public partial class MainWindow : Window
                 if (edited.MinecraftVersion != minecraft || edited.ForgeVersion != forge)
                 {
                     edited.LaunchVersion = "";
+                    edited.RuntimePrepared = false;
                 }
                 edited.MinecraftVersion = minecraft;
                 edited.ForgeVersion = forge;
@@ -440,10 +443,15 @@ public partial class MainWindow : Window
         HideImportDialog();
         await RunOperationAsync(LauncherText.Get("ImportModpack"), async (token, progress) =>
         {
+            var installationProgress = new InstallationProgress(progress);
             var importer = new PackImporter(storage);
-            var installation = await Task.Run(() => importer.ImportAsync(plan, name, minecraftVersion, forgeVersion, progress, token), token);
+            var installation = await Task.Run(() => importer.ImportAsync(plan, name, minecraftVersion, forgeVersion,
+                installationProgress.Phase(0, 0.45), token), token);
             storage.SaveInstallation(installation);
             importPlan = null;
+            var runtime = new GameRuntime(storage, javaCatalog);
+            await Task.Run(() => runtime.PrepareAsync(installation, installationProgress.Phase(0.45, 0.99), token), token);
+            storage.SaveInstallation(installation);
             LoadSettings();
             RefreshPresentation();
         });
@@ -483,12 +491,12 @@ public partial class MainWindow : Window
 
     private async Task OpenMicrosoftLoginAsync()
     {
-        await RunOperationAsync(LauncherText.Get("MicrosoftJavaSignIn"), async (token, _) =>
+        await RunAuthenticationAsync(LauncherText.Get("MicrosoftJavaSignIn"), async token =>
         {
             var window = new MicrosoftLoginWindow(storage, token) { Owner = this };
             await window.SignInAsync();
             RefreshPresentation();
-        }, false);
+        });
     }
 
     private async void ExternalLogin_Click(object sender, RoutedEventArgs e)
@@ -497,13 +505,13 @@ public partial class MainWindow : Window
         var username = ExternalUsernameText.Text.Trim();
         var password = ExternalPasswordBox.Password;
         ExternalPasswordBox.Clear();
-        await RunOperationAsync(LauncherText.Get("ExternalAuthenticationSignIn"), async (token, _) =>
+        await RunAuthenticationAsync(LauncherText.Get("ExternalAuthenticationSignIn"), async token =>
         {
             SaveAuthenticationSettings();
             using var service = new AccountService(storage);
             await service.LoginExternalAsync(server, username, password, storage.Settings.AuthenticationServerName, ChooseProfileAsync, token);
             RefreshPresentation();
-        }, false);
+        });
     }
 
     private Task<GameProfile> ChooseProfileAsync(IReadOnlyList<GameProfile> profiles)
@@ -536,22 +544,22 @@ public partial class MainWindow : Window
 
     private async void RemoveAccount_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { DataContext: LauncherAccount account } || IsBusy)
+        if (sender is not Button { DataContext: LauncherAccount account } || authenticationCancellation != null)
         {
             return;
         }
-        await RunOperationAsync(LauncherText.Get("RemoveAccount"), async (token, _) =>
+        await RunAuthenticationAsync(LauncherText.Get("RemoveAccount"), async token =>
         {
             using var service = new AccountService(storage);
             await service.RemoveAccountAsync(account, token);
             portraits.Remove(account);
             RefreshPresentation();
-        }, false);
+        });
     }
 
     private void AccountList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!initialized || refreshing || IsBusy || AccountList.SelectedItem is not LauncherAccount account)
+        if (!initialized || refreshing || authenticationCancellation != null || AccountList.SelectedItem is not LauncherAccount account)
         {
             return;
         }
@@ -576,6 +584,11 @@ public partial class MainWindow : Window
         if (storage.Installation is not { } installation)
         {
             await ShowImportAsync();
+            return;
+        }
+        if (!installation.RuntimePrepared)
+        {
+            Prepare_Click(sender, e);
             return;
         }
         var account = storage.Accounts.FirstOrDefault(account => account.Id == storage.Settings.SelectedAccountId)
@@ -760,7 +773,6 @@ public partial class MainWindow : Window
         if (stageChanged)
         {
             lastStage = snapshot.Stage;
-            displayedProgress = 0;
             TaskTitle.Text = snapshot.Stage;
             WorkStripTitle.Text = snapshot.Stage;
             AddHistory(snapshot.Stage);
@@ -769,13 +781,13 @@ public partial class MainWindow : Window
         {
             TaskDetail.Text = snapshot.Detail;
         }
-        var ratio = snapshot.TotalBytes > 0 ? (double)snapshot.CompletedBytes / snapshot.TotalBytes :
-            snapshot.TotalFiles > 0 ? (double)snapshot.CompletedFiles / snapshot.TotalFiles : 0;
+        var ratio = snapshot.OverallProgress ?? (snapshot.TotalBytes > 0 ? (double)snapshot.CompletedBytes / snapshot.TotalBytes :
+            snapshot.TotalFiles > 0 ? (double)snapshot.CompletedFiles / snapshot.TotalFiles : 0);
         if (!snapshot.Indeterminate)
         {
             displayedProgress = Math.Max(displayedProgress, Math.Clamp(ratio * 100, 0, 99));
         }
-        PresentProgress(displayedProgress, snapshot.Indeterminate, immediate: stageChanged && displayedProgress < WorkProgressValue);
+        PresentProgress(displayedProgress, snapshot.Indeterminate && displayedProgress == 0);
         var now = Stopwatch.GetTimestamp();
         var elapsed = Stopwatch.GetElapsedTime(speedSampleTime, now).TotalSeconds;
         if (snapshot.NetworkBytes < speedSampleBytes)
