@@ -171,6 +171,10 @@ public sealed class PackImporter
                 await ExtractAsync(overrideEntries);
             }
             cancellationToken.ThrowIfCancellationRequested();
+            if (plan.IsArysPack)
+            {
+                await GameOptionsSettings.InitializeAsync(staging, cancellationToken);
+            }
             var instance = new GameInstallation
             {
                 Id = id,
@@ -447,19 +451,10 @@ public sealed class PackImporter
                 await using var input = entry.Open();
                 if (isArysPack && file.TargetPath.Equals("options.txt", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (file.Size <= 64 * 1024)
+                    if (file.Size > 65536)
                     {
-                        var length = (int)file.Size;
-                        await input.ReadExactlyAsync(buffer.AsMemory(0, length), cancellationToken);
-                        var defaults = Encoding.UTF8.GetString(buffer, 0, length).Split('\n')
-                            .Select(line => line.Trim())
-                            .Where(line => line.StartsWith("resourcePacks:", StringComparison.Ordinal) ||
-                                line.StartsWith("incompatibleResourcePacks:", StringComparison.Ordinal) ||
-                                line.StartsWith("version:", StringComparison.Ordinal) && int.TryParse(line.AsSpan(8), out _));
-                        await File.WriteAllLinesAsync(target, defaults, cancellationToken);
+                        throw new IOException(LauncherText.Get("GameOptionsTooLarge"));
                     }
-                    progress.FileDone(index);
-                    continue;
                 }
                 await using var output = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None,
                     128 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);

@@ -8,6 +8,15 @@ internal static class PackContentPolicy
 {
     private static readonly ContentRules Rules = Load();
 
+    public static GameOptionRules GameOptions => Rules.GameOptions;
+
+    public static bool IsInitialSettingsPath(string path)
+    {
+        return !Rules.ManagedSettingsPaths.Contains(path, StringComparer.OrdinalIgnoreCase) &&
+            (Rules.InitialSettingsPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) ||
+                path.StartsWith("shaderpacks/", StringComparison.OrdinalIgnoreCase) && path.EndsWith(".zip.txt", StringComparison.OrdinalIgnoreCase));
+    }
+
     public static bool IsArysMod(string path)
     {
         var normalized = path.Replace('\\', '/');
@@ -75,6 +84,18 @@ internal static class PackContentPolicy
         return JsonSerializer.Deserialize<ContentRules>(stream) ?? throw new InvalidDataException(LauncherText.Get("PackRulesEmpty"));
     }
 
+    public sealed class GameOptionRules
+    {
+        public GameOptionRules()
+        {
+        }
+
+        public string[] Keys { get; set; } = Array.Empty<string>();
+        public string[] Prefixes { get; set; } = Array.Empty<string>();
+        public Dictionary<string, string> Defaults { get; set; } = new();
+        public string[] Languages { get; set; } = Array.Empty<string>();
+    }
+
     private sealed class ContentRules
     {
         public ContentRules()
@@ -87,6 +108,9 @@ internal static class PackContentPolicy
         public string[] ExcludedPrefixes { get; set; } = Array.Empty<string>();
         public string[] LegacyConfigPaths { get; set; } = Array.Empty<string>();
         public string[] LegacyConfigPrefixes { get; set; } = Array.Empty<string>();
+        public string[] InitialSettingsPrefixes { get; set; } = Array.Empty<string>();
+        public string[] ManagedSettingsPaths { get; set; } = Array.Empty<string>();
+        public GameOptionRules GameOptions { get; set; } = new();
         public string[] FirstLaunchCleanup { get; set; } = Array.Empty<string>();
     }
 }

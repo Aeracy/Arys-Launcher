@@ -14,6 +14,7 @@ from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from pack_worlds import clean_world_archives
+from pack_settings import pack_game_options
 
 
 ROOT = Path(__file__).parent
@@ -174,7 +175,9 @@ def collect_content(instance, rules, installed):
                     if file.suffix.lower() != ".jar":
                         continue
                     relative = "mods/" + MOD_LABEL.sub("", name)
-                if directory in ("resourcepacks", "shaderpacks") and file.suffix.lower() != ".zip":
+                if directory in ("resourcepacks", "shaderpacks") and file.suffix.lower() != ".zip" and not (
+                    directory == "shaderpacks" and name.lower().endswith(".zip.txt") and (folder / name[:-4]).is_file()
+                ):
                     continue
                 key = relative.casefold()
                 if key in names:
@@ -259,21 +262,11 @@ def prepare_text(relative, source, work):
     return target
 
 
-def pack_options(instance, content):
+def pack_options(instance, content, rules):
     file = instance / "options.txt"
     check_source(file)
-    if not file.is_file():
-        return ""
-    options = {}
-    supported = {"vanilla", "mod_resources", "mod/punchy:punchy", "Moonlight Mods Dynamic Assets"}
-    supported.update("file/" + path.removeprefix("resourcepacks/") for path in content if path.startswith("resourcepacks/"))
-    for line in file.read_text(encoding="utf-8-sig").splitlines():
-        key, _, value = line.partition(":")
-        if key == "version" and value.isdecimal():
-            options[key] = value
-        if key in ("resourcePacks", "incompatibleResourcePacks"):
-            options[key] = json.dumps([name for name in json.loads(value) if name in supported], ensure_ascii=False)
-    return "".join(f"{key}:{value}\n" for key, value in options.items())
+    text = file.read_text(encoding="utf-8-sig") if file.is_file() else ""
+    return pack_game_options(text, content, rules)
 
 
 def prepare_pack(instance, template, destination, version, release_tag, repository, content_output, download_index, normalize_local):
@@ -322,7 +315,7 @@ def prepare_pack(instance, template, destination, version, release_tag, reposito
             ref = reference.get(hashes["sha1"])
             record = None
             if relative.startswith("mods/arysdungeonmod-") and release_tag:
-                url = f"https://github.com/{repository}/releases/download/{release_tag}/{hashes['sha256']}.jar"
+                url = f"https://github.com/{repository}/releases/download/{release_tag}/{Path(relative).name}"
                 record = download_record(relative, hashes, size, [url])
             elif ref is not None and ref["fileSize"] == size and ref["hashes"]["sha512"] == hashes["sha512"]:
                 record = download_record(relative, hashes, size, ref["downloads"], ref.get("env"))
@@ -336,6 +329,8 @@ def prepare_pack(instance, template, destination, version, release_tag, reposito
             if record is not None:
                 downloads.append(record)
                 update_sources[relative] = {"Size": size, "Sha256": hashes["sha256"], "Downloads": record["downloads"]}
+                if relative.startswith("mods/arysdungeonmod-") and release_tag:
+                    update_sources[relative]["AssetName"] = Path(relative).name
                 if original_mod_hash is not None:
                     update_sources[relative]["CleanedFromSha256"] = original_mod_hash
             else:
@@ -349,7 +344,7 @@ def prepare_pack(instance, template, destination, version, release_tag, reposito
         temporary = work / destination.name
         with ZipFile(temporary, "x", compression=ZIP_DEFLATED, compresslevel=6) as archive:
             archive.writestr("modrinth.index.json", json.dumps(index, ensure_ascii=False, indent=2) + "\n")
-            options = pack_options(instance, content)
+            options = pack_options(instance, content, rules)
             if options:
                 archive.writestr("overrides/options.txt", options)
             for relative, source in overrides:

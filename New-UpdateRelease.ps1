@@ -131,10 +131,22 @@ foreach ($file in $sourceFiles) {
     $releaseUrl = "https://github.com/$Repository/releases/download/$Tag/$asset"
     $urls = @($releaseUrl)
     $preserve = $Kind -eq 'Pack' -and $folder -in @('config', 'defaultconfigs', 'kubejs', 'scripts')
+    $prior = $previousFiles[$relative]
+    if ($Kind -eq 'Pack' -and $prior -and $prior.Size -eq $file.Length -and $prior.Sha256 -eq $digest -and $prior.Downloads) {
+        $urls = @($prior.Downloads)
+    }
     if ($downloadSources.ContainsKey($relative)) {
         $record = $downloadSources[$relative]
         if ($record.Size -ne $file.Length -or $record.Sha256 -ne $digest -or -not $record.Downloads) {
             throw "A download entry does not match the prepared pack file: $relative"
+        }
+        if ($record.AssetName) {
+            if ($Kind -ne 'Pack' -or $relative -notlike 'mods/arysdungeonmod-*' -or
+                $record.AssetName -cne [IO.Path]::GetFileName($relative) -or $record.AssetName -notmatch '^[A-Za-z0-9_.+-]+\.jar$') {
+                throw 'Use the original English ArysMod filename for the release attachment.'
+            }
+            $asset = $record.AssetName
+            $releaseUrl = "https://github.com/$Repository/releases/download/$Tag/$asset"
         }
         $urls = @($record.Downloads)
         $prior = $previousFiles[$relative]

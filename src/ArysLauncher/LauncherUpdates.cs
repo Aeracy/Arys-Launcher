@@ -191,6 +191,10 @@ internal sealed class LauncherUpdates
         foreach (var file in release.Files)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (release.Kind == UpdateKind.Pack && PackContentPolicy.IsInitialSettingsPath(file.Path))
+            {
+                continue;
+            }
             var target = UpdatePaths.Target(targetRoot, file.Path);
             if (await UpdatePaths.MatchesAsync(target, file, cancellationToken))
             {
@@ -232,6 +236,10 @@ internal sealed class LauncherUpdates
         var targetPaths = release.Files.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var group in knownByPath.Where(group => !targetPaths.Contains(group.Key)))
         {
+            if (release.Kind == UpdateKind.Pack && PackContentPolicy.IsInitialSettingsPath(group.Key))
+            {
+                continue;
+            }
             var target = UpdatePaths.Target(targetRoot, group.Key);
             if (!File.Exists(target))
             {

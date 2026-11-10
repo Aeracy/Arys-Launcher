@@ -17,10 +17,8 @@
     "config/embeddium-fingerprint.json",
     "config/etf_warnings.json",
     "config/xaeropatreon.txt",
-    "config/xaerohud.txt",
     "config/transition.json",
     "config/presencefootsteps/updater.json",
-    "config/punchy/triggerable-keybindings.json",
     "resourcepacks/Quark Programmer Art.zip",
     "arys_player_cache.json",
     "arys_player_cache.json.part",
@@ -45,7 +43,7 @@
     "config/tiedup-client.toml"
   ],
   "LegacyConfigPrefixes": [
-    "config/carpet/", "config/fpsreducer/", "config/obscuria/", "config/superleadrope/"
+    "config/carpet/", "config/fpsreducer/", "config/superleadrope/"
   ],
   "ConfigOwners": {
     "forge": ["fml.toml", "forge-client.toml", "splash.properties"],
@@ -78,6 +76,7 @@
     "imblocker": ["imblocker.json"],
     "immediatelyfast": ["immediatelyfast.json"],
     "itemphysic": ["itemphysic-client.json", "itemphysic.json"],
+    "loot_journal": ["obscuria/loot_journal-client.toml"],
     "mobplayeranimator": ["mobplayeranimator/client.json5"],
     "modernfix": ["modernfix-common.toml", "modernfix-mixins.properties"],
     "modernui": ["ModernUI/bootstrap.properties", "ModernUI/client.toml", "ModernUI/common.toml", "ModernUI/text.toml"],
@@ -89,7 +88,7 @@
     "patchouli": ["patchouli-client.toml"],
     "ponder": ["ponder-client.toml"],
     "presencefootsteps": ["presencefootsteps/userconfig.json"],
-    "punchy": ["punchy/merged_animation_selection.json", "punchy/punchy_config.json"],
+    "punchy": ["punchy/merged_animation_selection.json", "punchy/punchy_config.json", "punchy/triggerable-keybindings.json"],
     "quark": ["quark-common.toml"],
     "radium": ["lithium.properties"],
     "rrls": ["rrls.toml"],
@@ -100,7 +99,7 @@
     "trender": ["trender.json"],
     "worldedit": ["worldedit/worldedit.properties"],
     "worldeditcui": ["worldeditcui.config.json"],
-    "xaerolib": ["xaero/lib/client.cfg", "xaero/lib/common.cfg", "xaero/lib/profiles/default.cfg", "xaero/lib/server_profiles/default.cfg"],
+    "xaerolib": ["xaerohud.txt", "xaero/lib/client.cfg", "xaero/lib/common.cfg", "xaero/lib/profiles/default.cfg", "xaero/lib/server_profiles/default.cfg"],
     "xaerominimap": [
       "xaero/minimap/client.cfg", "xaero/minimap/common.cfg", "xaero/minimap/default_radar_categories_client.json",
       "xaero/minimap/default_radar_categories_server.json", "xaero/minimap/profiles/default.cfg",
@@ -113,6 +112,56 @@
     ],
     "yet_another_config_lib_v3": ["yacl.json5"],
     "zeta": ["zeta-common.toml"]
+  },
+  "InitialSettingsPrefixes": ["config/", "defaultconfigs/"],
+  "ManagedSettingsPaths": ["config/arysdungeonmod-common.toml", "config/arysdungeonmod-shop.toml"],
+  "GameOptions": {
+    "Keys": [
+      "version", "autoJump", "operatorItemsTab", "autoSuggestions", "chatColors", "chatLinks", "chatLinksPrompt",
+      "enableVsync", "entityShadows", "forceUnicodeFont", "discrete_mouse_scroll", "invertYMouse",
+      "realmsNotifications", "reducedDebugInfo", "showSubtitles", "directionalAudio", "touchscreen", "fullscreen",
+      "bobView", "toggleCrouch", "toggleSprint", "darkMojangStudiosBackground", "hideLightningFlashes",
+      "mouseSensitivity", "fov", "screenEffectScale", "fovEffectScale", "darknessEffectScale", "glintSpeed",
+      "glintStrength", "damageTiltStrength", "highContrast", "gamma", "renderDistance", "simulationDistance",
+      "entityDistanceScaling", "guiScale", "particles", "maxFps", "graphicsMode", "ao", "prioritizeChunkUpdates",
+      "biomeBlendRadius", "renderClouds", "resourcePacks", "incompatibleResourcePacks", "chatVisibility",
+      "chatOpacity", "chatLineSpacing", "textBackgroundOpacity", "backgroundForChatOnly", "hideServerAddress",
+      "advancedItemTooltips", "pauseOnLostFocus", "chatHeightFocused", "chatDelay", "chatHeightUnfocused",
+      "chatScale", "chatWidth", "notificationDisplayTime", "mipmapLevels", "useNativeTransport", "mainHand",
+      "attackIndicator", "narrator", "tutorialStep", "mouseWheelSensitivity", "rawMouseInput", "glDebugVerbosity",
+      "skipMultiplayerWarning", "skipRealms32bitWarning", "hideMatchedNames", "joinedFirstServer",
+      "hideBundleTutorial", "syncChunkWrites", "showAutosaveIndicator", "allowServerListing", "onlyShowSecureChat",
+      "panoramaScrollSpeed", "telemetryOptInExtra", "onboardAccessibility"
+    ],
+    "Prefixes": ["key_", "soundCategory_", "modelPart_"],
+    "Defaults": {
+      "fullscreen": "true",
+      "overrideWidth": "0",
+      "overrideHeight": "0",
+      "lang": "en_us",
+      "tutorialStep": "none",
+      "joinedFirstServer": "true",
+      "hideBundleTutorial": "true",
+      "onboardAccessibility": "false",
+      "skipMultiplayerWarning": "true",
+      "skipRealms32bitWarning": "true",
+      "telemetryOptInExtra": "false"
+    },
+    "Languages": [
+      "en_us", "af_za", "esan", "enp", "ast_es", "az_az", "id_id", "ms_my", "tzo_mx", "qid", "be_latn",
+      "bar", "bs_ba", "brb", "br_fr", "ca_es", "val_es", "cy_gb", "qcb_es", "da_dk", "se_no", "de_at",
+      "de_de", "et_ee", "en_au", "en_ca", "en_nz", "en_gb", "es_ar", "es_cl", "es_ec", "es_es", "es_mx",
+      "es_uy", "es_ve", "eo_uy", "eu_es", "fil_ph", "fr_ca", "fr_fr", "fr_ch", "fy_nl", "fra_de", "fur_it",
+      "fo_fo", "ga_ie", "gl_es", "go_fr", "gd_gb", "hr_hr", "hn_no", "io_en", "ig_ng", "it_it", "kw_gb",
+      "ksh", "lol_us", "la_la", "lv_lv", "lt_lt", "li_li", "lmo", "lb_lu", "hu_hu", "mt_mt", "isv", "nah",
+      "nl_nl", "pls", "no_no", "nn_no", "oc_fr", "en_pt", "nds_de", "pl_pl", "pt_br", "pt_pt", "qya_aa",
+      "ro_ro", "de_ch", "enws", "sq_al", "sk_sk", "sl_si", "so_so", "sr_cs", "fi_fi", "sv_se", "sxu",
+      "tl_ph", "vi_vn", "tr_tr", "vp_vl", "nl_be", "vec_it", "vro", "yo_ng", "jbo_en", "tlh_aa", "tok",
+      "is_is", "ovd", "uz_uz", "cs_cz", "szl", "en_ud", "haw_us", "el_gr", "ba_ru", "be_by", "bg_bg",
+      "hal_ua", "ky_kg", "mk_mk", "mn_mn", "ry_ua", "ru_ru", "rpr", "sah_sah", "sr_sp", "tt_ru", "uk_ua",
+      "cv_cu", "kk_kz", "hy_am", "yi_de", "he_il", "ar_sa", "zlm_arab", "fa_ir", "hi_in", "ta_in",
+      "kn_in", "th_th", "lo_la", "ka_ge", "lzh", "ja_jp", "zh_cn", "zh_tw", "zh_hk", "ko_kr", "got_de"
+    ]
   },
   "FirstLaunchCleanup": [
     "config/arysintro.cfg",

@@ -14,7 +14,9 @@
 
 安装过程共用一条总体进度，切换阶段不再归零。游戏下载支持官方源与 BMCLAPI 自动选择和回退，文件仍按清单校验；默认并发为 16 个文件、单站点最多 8 个连接，可在设置页调整。[BMCLAPI](https://bmclapidoc.bangbang93.com/)
 
-Arys 整合包带有 Mod 配置和资源包加载顺序。发行时跳过存档、备份、服务器列表和个人设置，首次启动前清理残留头像与开场播放标记。
+Arys 整合包带有 Mod 配置、光影预设和原版设置，包括默认按键、FOV 与鼠标灵敏度。首次导入时按 Windows 显示语言选择游戏语言，关闭原版初始引导与教程提示，保留 Mod 自己的开场。后续更新保留玩家已经调整的设置。
+
+发行时排除存档、备份、服务器记录、音频设备名称和本机窗口尺寸，首次启动前清理残留头像与开场播放标记。
 
 新装使用清理过测试玩家数据的内置地图。整合包更新会保留同一版本的已安装 ArysMod，避免仅因归档校验值变化而重新生成已有维度。Mod 升级时按新版本替换。
 
@@ -37,7 +39,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 ```powershell
 .\Build.ps1
 .\Build.ps1 -Package
-.\Build.ps1 -Package -BundledPack .\artifacts\release-pack-v1.2.0\Arys-Modpack.mrpack
+.\Build.ps1 -Package -BundledPack .\artifacts\release-pack-v1.2.1\Arys-Modpack.mrpack
 ```
 
 打包需要 NSIS 3.13，可放入 `.tools/nsis-3.13` 或通过 `NSIS_HOME` 指定目录。构建脚本获取并校验微软的离线 WebView2 组件，使用单节点编译，输出位于 `app` 和 `artifacts`。
@@ -53,7 +55,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 每个 Release 只携带所属更新清单。文件路径、大小及 SHA-256 写入清单，并使用 ECDSA P-256 签名。整合包发布不会改变 GitHub 为启动器保留的 Latest 标记。
 
 ```powershell
-.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.7
+.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.8
 .\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack
 .\Publish-Pack.ps1 -Version 1.2.1 -InstanceDirectory D:\Pack -NotesFile .\changes.md -Publish
 ```
@@ -62,7 +64,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 
 整合包工具需要 Python 3.12 或以上版本。它默认复用上一版公开包的下载索引，按 SHA-1、SHA-512 和文件大小核对下载项。CurseForge 文件变动后，可用 `-Template` 指向更新过的 .mrpack。新配置的归属登记在 `src/ArysLauncher/pack-content-policy.json`。`-NormalizeLocal` 会整理本机 Mod 文件名，将同内容的副本和已卸载 Mod 的配置移入实例的 `.arysmod-backups`。加 `-Publish` 才会上传，工具从 Git Credential Manager 获取当前 GitHub 登录。
 
-整合包更新按发行清单比较文件，并识别同 Mod 的旧 JAR。替换前核对现有文件，准备完整后写入恢复记录，再应用变更。新增文件与旧文件的移除可跨版本执行。配置默认保留本地内容，其他文件发生冲突时会指出位置。下载缓存按 1 GiB 上限清理。
+整合包更新按发行清单比较文件，并识别同 Mod 的旧 JAR。替换前核对现有文件，准备完整后写入恢复记录，再应用变更。新增文件与旧文件的移除可跨版本执行。其他 Mod 的配置、原版选项和光影参数只在首装时应用，ArysMod 公共配置保留已有文件。其他文件发生冲突时会指出位置。下载缓存按 1 GiB 上限清理，发行时复用未变化文件的既有下载地址。
 
 启动器更新由副进程等待主程序退出后应用，完成后重新打开。网络失败可重试，应用文件时中断会在下次打开时恢复。
 
