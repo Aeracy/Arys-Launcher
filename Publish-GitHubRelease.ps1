@@ -69,7 +69,8 @@ if ($releaseManifest.Kind -eq 'Pack') {
     $packRules = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'src\ArysLauncher\pack-content-policy.json') -Raw | ConvertFrom-Json
     foreach ($record in @($releaseManifest.Files) + @($releaseManifest.RetiredFiles)) {
         if ($record.Path -match '(?i)(?:^|/)(?:config|defaultconfigs|serverconfig)/arys' -or
-            $record.Path -in $packRules.ExcludedPaths -or $record.Path.Split('/')[0] -in $packRules.ExcludedRoots) {
+            ($record.Path -cne 'options.txt' -and $record.Path -in $packRules.ExcludedPaths) -or
+            $record.Path.Split('/')[0] -in $packRules.ExcludedRoots) {
             throw "The modpack manifest contains excluded runtime data: $($record.Path)"
         }
         foreach ($prefix in $packRules.ExcludedPrefixes) {
