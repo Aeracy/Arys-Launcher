@@ -52,7 +52,7 @@ public sealed class UpdateManifest
     public List<ReleaseFile> Files { get; set; } = new();
     public List<ManagedFile> RetiredFiles { get; set; } = new();
 
-    public void Validate(UpdateKind expectedKind)
+    public void Validate(UpdateKind expectedKind, bool legacyState = false)
     {
         if (SchemaVersion != 1 || Kind != expectedKind || !System.Version.TryParse(Version, out _) ||
             !System.Version.TryParse(MinimumLauncherVersion, out var minimum) ||
@@ -72,12 +72,12 @@ public sealed class UpdateManifest
         long total = 0;
         foreach (var file in Files)
         {
-            UpdatePaths.ValidateFile(file, Kind);
+            UpdatePaths.ValidateFile(file, Kind, legacyState);
             if (!paths.Add(file.Path))
             {
                 throw new InvalidDataException(LauncherText.Get("UpdateDuplicateFilePath"));
             }
-            if (file.Downloads.Count is 0 or > 8)
+            if (file.Downloads.Count is 0 or > 8 || file.Path == "options.txt" && file.Size > 65536)
             {
                 throw new InvalidDataException(LauncherText.Get("UpdateDownloadAddressMissing"));
             }
@@ -93,7 +93,7 @@ public sealed class UpdateManifest
         }
         foreach (var file in RetiredFiles)
         {
-            UpdatePaths.ValidateFile(file, Kind);
+            UpdatePaths.ValidateFile(file, Kind, legacyState);
         }
         if (Kind == UpdateKind.Launcher && !paths.Contains("ArysLauncher.exe"))
         {
@@ -148,13 +148,14 @@ internal static class UpdatePaths
         return uri;
     }
 
-    public static void ValidateFile(ManagedFile file, UpdateKind kind)
+    public static void ValidateFile(ManagedFile file, UpdateKind kind, bool legacyState = false)
     {
         LauncherStorage.SafeTarget(System.IO.Path.GetTempPath(), file.Path);
         var segments = file.Path.Split('/');
         var launcherFile = file.Path is "ArysLauncher.exe" or "release-channel.json" or "README.md" ||
             segments.Length > 1 && segments[0] == "Licenses";
-        var packFile = segments.Length > 1 && PackDirectories.Contains(segments[0]) && PackContentPolicy.IsDistributable(file.Path);
+        var packFile = file.Path == "options.txt" || segments.Length > 1 && PackDirectories.Contains(segments[0]) &&
+            (PackContentPolicy.IsDistributable(file.Path) || legacyState && PackContentPolicy.IsArysConfiguration(file.Path));
         if (file.Path.Contains('\\') || file.Size < 0 || file.Size > 16L * 1024 * 1024 * 1024 ||
             file.Sha256.Length != 64 || !file.Sha256.All(Uri.IsHexDigit) ||
             !(kind == UpdateKind.Launcher ? launcherFile : packFile))

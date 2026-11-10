@@ -120,6 +120,7 @@ public sealed class GameInstallation
     public int ModCount { get; set; }
     public DateTimeOffset ImportedAt { get; set; } = DateTimeOffset.UtcNow;
     public bool NeedsFirstLaunchCleanup { get; set; }
+    public bool PackDefaultsApplied { get; set; }
     public bool RuntimePrepared { get; set; } = true;
 
     [JsonIgnore]

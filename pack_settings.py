@@ -7,6 +7,12 @@ KEY_BINDING = re.compile(r"(?:key\.(?:keyboard|mouse)\.[a-z0-9_.-]+|scancode\.\d
 SETTING_NAME = re.compile(r"[A-Za-z0-9_.:-]+\Z")
 
 
+def is_arys_configuration(path):
+    parts = path.replace("\\", "/").casefold().strip("/").split("/")
+    return any(part in ("config", "defaultconfigs", "serverconfig") and parts[index + 1].startswith("arys")
+               for index, part in enumerate(parts[:-1]))
+
+
 def is_pack_name(name):
     if not isinstance(name, str) or len(name) > 256:
         return False

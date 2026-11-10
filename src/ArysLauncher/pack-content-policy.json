@@ -29,6 +29,8 @@
     "patchouli_data.json"
   ],
   "ExcludedPrefixes": [
+    "config/arys",
+    "defaultconfigs/arys",
     "config/worldedit/.archive-unpack/",
     "CustomSkinLoader/caches/",
     "CustomSkinLoader/logs/",
@@ -50,7 +52,6 @@
     "aiimprovements": ["aiimprovements-common.toml"],
     "amendments": ["amendments-client.toml", "amendments-common.toml"],
     "armourers_workshop": ["armourers_workshop-client.toml", "armourers_workshop-common.toml"],
-    "arysdungeonmod": ["arysdungeonmod-common.toml", "arysdungeonmod-shop.toml"],
     "attributefix": ["attributefix.json"],
     "balm": ["balm-common.toml"],
     "bettercombat": ["bettercombat/client.json5", "bettercombat/fallback_compatibility.json", "bettercombat/server.json5"],
@@ -114,7 +115,6 @@
     "zeta": ["zeta-common.toml"]
   },
   "InitialSettingsPrefixes": ["config/", "defaultconfigs/"],
-  "ManagedSettingsPaths": ["config/arysdungeonmod-common.toml", "config/arysdungeonmod-shop.toml"],
   "GameOptions": {
     "Keys": [
       "version", "autoJump", "operatorItemsTab", "autoSuggestions", "chatColors", "chatLinks", "chatLinksPrompt",

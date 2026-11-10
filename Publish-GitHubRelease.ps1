@@ -24,6 +24,9 @@ function Confirm-PublicArchive([IO.FileInfo]$File, [bool]$DataPack) {
         }
         foreach ($entry in $archive.Entries) {
             $path = $entry.FullName.Replace('\', '/')
+            if ($File.Extension -eq '.mrpack' -and $path -match '(?i)(?:^|/)(?:config|defaultconfigs|serverconfig)/arys') {
+                throw "The public modpack contains ArysMod configuration: $path"
+            }
             $packData = $DataPack -and $path.StartsWith('data/', [StringComparison]::Ordinal) -and
                 $path -match '^(?:data/)(?:[a-z0-9_.-]+/)*[a-z0-9_.-]*$' -and $path -notmatch '(?:^|/)\.\.?(?:/|$)'
             if ($path -match $forbidden -or ($path -match '(?i)(?:^|/)data/' -and -not $packData)) {
@@ -62,6 +65,20 @@ if (@($manifestFiles).Count -ne 1) {
     throw 'Each release must contain exactly one launcher or modpack manifest.'
 }
 $releaseManifest = Get-Content -LiteralPath (Join-Path $AssetsDirectory $manifestFiles[0]) -Raw | ConvertFrom-Json
+if ($releaseManifest.Kind -eq 'Pack') {
+    $packRules = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'src\ArysLauncher\pack-content-policy.json') -Raw | ConvertFrom-Json
+    foreach ($record in @($releaseManifest.Files) + @($releaseManifest.RetiredFiles)) {
+        if ($record.Path -match '(?i)(?:^|/)(?:config|defaultconfigs|serverconfig)/arys' -or
+            $record.Path -in $packRules.ExcludedPaths -or $record.Path.Split('/')[0] -in $packRules.ExcludedRoots) {
+            throw "The modpack manifest contains excluded runtime data: $($record.Path)"
+        }
+        foreach ($prefix in $packRules.ExcludedPrefixes) {
+            if ($record.Path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "The modpack manifest contains excluded runtime data: $($record.Path)"
+            }
+        }
+    }
+}
 if ($Kind -and $Kind -ne $releaseManifest.Kind) {
     throw 'The selected release channel does not match its manifest.'
 }

@@ -3,6 +3,8 @@ from copy import copy
 from shutil import copyfileobj
 from zipfile import ZipFile
 
+from pack_settings import is_arys_configuration
+
 
 WORLD_DIRECTORY = "assets/arysdungeonmod/builtin_worlds/"
 OBSOLETE_HUB_ARCHIVE = WORLD_DIRECTORY + "hub_dimension_old.zip"
@@ -16,7 +18,7 @@ def is_world_archive(name):
 
 def is_world_runtime_entry(name):
     parts = name.replace("\\", "/").casefold().strip("/").split("/")
-    return parts[-1] in WORLD_RUNTIME_FILES or any(part in PLAYER_DIRECTORIES for part in parts)
+    return parts[-1] in WORLD_RUNTIME_FILES or any(part in PLAYER_DIRECTORIES for part in parts) or is_arys_configuration(name)
 
 
 def copy_entry(source, target, entry):

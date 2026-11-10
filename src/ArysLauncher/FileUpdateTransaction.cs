@@ -18,6 +18,7 @@ internal sealed class UpdateJournal
     public string State { get; set; } = "prepared";
     public UpdateManifest Release { get; set; } = new();
     public InstalledFiles Installed { get; set; } = new();
+    public bool ApplyPackDefaults { get; set; }
     public List<PendingFileChange> Changes { get; set; } = new();
 }
 
@@ -68,17 +69,22 @@ internal sealed class FileUpdateTransaction
         {
             throw new InvalidDataException(LauncherText.Get("UpdateJournalLocationMismatch"));
         }
-        journal.Release.Validate(journal.Kind);
+        journal.Release.Validate(journal.Kind, legacyState: true);
+        if (journal.ApplyPackDefaults && (journal.Kind != UpdateKind.Pack ||
+            !journal.Release.Files.Any(file => file.Path == "options.txt")))
+        {
+            throw new InvalidDataException(LauncherText.Get("UpdateJournalLocationMismatch"));
+        }
         foreach (var change in journal.Changes)
         {
-            UpdatePaths.ValidateFile(new ManagedFile { Path = change.Path, Size = 0, Sha256 = new string('0', 64) }, journal.Kind);
+            UpdatePaths.ValidateFile(new ManagedFile { Path = change.Path, Size = 0, Sha256 = new string('0', 64) }, journal.Kind, legacyState: true);
             if (change.Original == null && change.Replacement == null)
             {
                 throw new InvalidDataException(LauncherText.Get("UpdateJournalMissingFiles"));
             }
             foreach (var file in new[] { change.Original, change.Replacement }.OfType<ManagedFile>())
             {
-                UpdatePaths.ValidateFile(file, journal.Kind);
+                UpdatePaths.ValidateFile(file, journal.Kind, legacyState: true);
                 if (!file.Path.Equals(change.Path, StringComparison.Ordinal))
                 {
                     throw new InvalidDataException(LauncherText.Get("UpdateJournalPathMismatch"));
@@ -223,6 +229,7 @@ internal sealed class FileUpdateTransaction
                 instance.RuntimePrepared = false;
             }
             instance.PackVersion = Journal.Release.Version;
+            instance.PackDefaultsApplied |= Journal.ApplyPackDefaults;
             instance.Name = release.Name;
             instance.MinecraftVersion = release.MinecraftVersion;
             instance.ForgeVersion = release.ForgeVersion;

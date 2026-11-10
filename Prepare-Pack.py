@@ -250,8 +250,6 @@ def prepare_text(relative, source, work):
     data = source.read_text(encoding="utf-8-sig")
     sanitized = "".join(line for line in data.splitlines(keepends=True)
                         if not (line.lstrip().startswith(("#", "//")) and PRIVATE_TEXT.search(line)))
-    if relative == "config/arysdungeonmod-common.toml":
-        sanitized = re.sub(r"(?m)^([ \t]*enableExpeditionTelemetry[ \t]*=[ \t]*)true\b", r"\g<1>false", sanitized)
     if PRIVATE_TEXT.search(sanitized):
         raise ValueError(f"Review possible private settings in {relative} before publishing.")
     if sanitized == data:
@@ -347,6 +345,8 @@ def prepare_pack(instance, template, destination, version, release_tag, reposito
             options = pack_options(instance, content, rules)
             if options:
                 archive.writestr("overrides/options.txt", options)
+                if content_output is not None:
+                    (content_output / "options.txt").write_bytes(options.encode("utf-8"))
             for relative, source in overrides:
                 archive.write(source, f"overrides/{relative}")
         temporary.rename(destination)

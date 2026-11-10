@@ -86,7 +86,7 @@ internal sealed class LauncherUpdates
                 await AddModReplacementsAsync(journal, null, cancellationToken);
             }
             var instance = storage.Installation!;
-            if (journal.Changes.Count == 0 && releaseVersion == installed &&
+            if (journal.Changes.Count == 0 && !journal.ApplyPackDefaults && releaseVersion == installed &&
                 instance.MinecraftVersion == release.Pack!.MinecraftVersion && instance.ForgeVersion == release.Pack.ForgeVersion)
             {
                 return null;
@@ -175,7 +175,8 @@ internal sealed class LauncherUpdates
         {
             throw new InvalidDataException(LauncherText.Get("PackUpdateSourceUnlinked"));
         }
-        var knownFiles = installed.Files.Concat(release.RetiredFiles).ToArray();
+        var knownFiles = installed.Files.Concat(release.RetiredFiles)
+            .Where(file => release.Kind != UpdateKind.Pack || !PackContentPolicy.IsArysConfiguration(file.Path)).ToArray();
         foreach (var file in knownFiles)
         {
             UpdatePaths.ValidateFile(file, release.Kind);
@@ -186,16 +187,30 @@ internal sealed class LauncherUpdates
             Kind = release.Kind,
             TargetRoot = targetRoot,
             Release = release,
+            ApplyPackDefaults = release.Kind == UpdateKind.Pack && !storage.Installation!.PackDefaultsApplied &&
+                release.Files.Any(file => file.Path == "options.txt"),
             Installed = new InstalledFiles { ProductId = productId, Version = release.Version }
         };
         foreach (var file in release.Files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (release.Kind == UpdateKind.Pack && PackContentPolicy.IsInitialSettingsPath(file.Path))
+            var initialSettings = release.Kind == UpdateKind.Pack && PackContentPolicy.IsInitialSettingsPath(file.Path);
+            if (initialSettings && !journal.ApplyPackDefaults)
             {
                 continue;
             }
             var target = UpdatePaths.Target(targetRoot, file.Path);
+            if (initialSettings)
+            {
+                var originalSettings = File.Exists(target) ? await ReadLocalFileAsync(targetRoot, file.Path, cancellationToken) : null;
+                if (file.Path != "options.txt" && originalSettings != null && originalSettings.Size == file.Size &&
+                    originalSettings.Sha256.Equals(file.Sha256, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                journal.Changes.Add(new PendingFileChange { Path = file.Path, Original = originalSettings, Replacement = file });
+                continue;
+            }
             if (await UpdatePaths.MatchesAsync(target, file, cancellationToken))
             {
                 journal.Installed.Files.Add(file);
@@ -291,6 +306,13 @@ internal sealed class LauncherUpdates
             });
             if (release.Kind == UpdateKind.Pack)
             {
+                if (journal.ApplyPackDefaults)
+                {
+                    var optionsRoot = Path.Combine(transaction.DirectoryPath, "new");
+                    await GameOptionsSettings.InitializeAsync(optionsRoot, cancellationToken);
+                    var optionsChange = journal.Changes.Single(change => change.Path == "options.txt");
+                    optionsChange.Replacement = await ReadLocalFileAsync(optionsRoot, "options.txt", cancellationToken);
+                }
                 await AddModReplacementsAsync(journal, transaction, cancellationToken);
                 transaction.Save();
             }

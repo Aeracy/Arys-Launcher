@@ -27,6 +27,9 @@ $packRules = if ($Kind -eq 'Pack') {
 }
 
 function Test-PackReleaseFile([string]$Relative) {
+    if ($Relative -ceq 'options.txt') {
+        return $true
+    }
     $segments = $Relative.Split('/')
     $folder = $segments[0]
     if ($folder -in $packRules.ExcludedRoots -or $Relative -in $packRules.ExcludedPaths -or
@@ -116,7 +119,7 @@ foreach ($file in $sourceFiles) {
         continue
     }
     $folder = $relative.Split('/')[0]
-    if ($Kind -eq 'Pack' -and $folder -notin @('mods', 'config', 'defaultconfigs', 'resourcepacks', 'shaderpacks', 'datapacks', 'resources', 'resource', 'kubejs', 'scripts', 'patchouli_books', 'openloader', 'global_packs', 'paxi', 'fancymenu', 'moonlight-global-datapacks')) {
+    if ($Kind -eq 'Pack' -and $relative -cne 'options.txt' -and $folder -notin @('mods', 'config', 'defaultconfigs', 'resourcepacks', 'shaderpacks', 'datapacks', 'resources', 'resource', 'kubejs', 'scripts', 'patchouli_books', 'openloader', 'global_packs', 'paxi', 'fancymenu', 'moonlight-global-datapacks')) {
         throw "The update path is outside the managed pack folders: $relative"
     }
     if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {

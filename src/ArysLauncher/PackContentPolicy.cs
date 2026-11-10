@@ -12,9 +12,16 @@ internal static class PackContentPolicy
 
     public static bool IsInitialSettingsPath(string path)
     {
-        return !Rules.ManagedSettingsPaths.Contains(path, StringComparer.OrdinalIgnoreCase) &&
-            (Rules.InitialSettingsPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) ||
-                path.StartsWith("shaderpacks/", StringComparison.OrdinalIgnoreCase) && path.EndsWith(".zip.txt", StringComparison.OrdinalIgnoreCase));
+        return !IsArysConfiguration(path) && (path.Equals("options.txt", StringComparison.OrdinalIgnoreCase) ||
+            Rules.InitialSettingsPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) ||
+            path.StartsWith("shaderpacks/", StringComparison.OrdinalIgnoreCase) && path.EndsWith(".zip.txt", StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static bool IsArysConfiguration(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+        return normalized.StartsWith("config/arys", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("defaultconfigs/arys", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsArysMod(string path)
@@ -109,7 +116,6 @@ internal static class PackContentPolicy
         public string[] LegacyConfigPaths { get; set; } = Array.Empty<string>();
         public string[] LegacyConfigPrefixes { get; set; } = Array.Empty<string>();
         public string[] InitialSettingsPrefixes { get; set; } = Array.Empty<string>();
-        public string[] ManagedSettingsPaths { get; set; } = Array.Empty<string>();
         public GameOptionRules GameOptions { get; set; } = new();
         public string[] FirstLaunchCleanup { get; set; } = Array.Empty<string>();
     }
