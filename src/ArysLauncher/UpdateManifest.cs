@@ -52,14 +52,21 @@ public sealed class UpdateManifest
     public List<ReleaseFile> Files { get; set; } = new();
     public List<ManagedFile> RetiredFiles { get; set; } = new();
 
-    public void Validate(UpdateKind expectedKind, bool legacyState = false)
+    [JsonIgnore]
+    public bool RequiresNewerLauncher => System.Version.TryParse(MinimumLauncherVersion, out var minimum) &&
+        minimum > System.Version.Parse(App.LauncherVersion);
+
+    public void Validate(UpdateKind expectedKind, bool legacyState = false, bool requireCompatibleLauncher = true)
     {
         if (SchemaVersion != 1 || Kind != expectedKind || !System.Version.TryParse(Version, out _) ||
-            !System.Version.TryParse(MinimumLauncherVersion, out var minimum) ||
-            minimum > System.Version.Parse(App.LauncherVersion) || Files.Count is 0 or > 10000 ||
+            !System.Version.TryParse(MinimumLauncherVersion, out _) || Files.Count is 0 or > 10000 ||
             RetiredFiles.Count > 30000 || ReleaseNotes.Length > 16000)
         {
             throw new InvalidDataException(LauncherText.Get("UpdateManifestIncompatible"));
+        }
+        if (requireCompatibleLauncher && RequiresNewerLauncher)
+        {
+            throw new IOException(LauncherText.Get("UpdateRequiresNewerLauncher", Version, MinimumLauncherVersion));
         }
         if (Kind == UpdateKind.Pack && (Pack == null || string.IsNullOrWhiteSpace(Pack.Id) ||
             Pack.Id.Length > 100 || string.IsNullOrWhiteSpace(Pack.Name) ||

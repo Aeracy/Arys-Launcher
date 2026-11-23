@@ -498,4 +498,10 @@
   <data name="DownloadingSignInComponentProgress" xml:space="preserve"><value>Downloading the sign-in browser from Microsoft: {0}%.</value></data>
   <data name="PreparingSignInComponent" xml:space="preserve"><value>Preparing the embedded sign-in browser.</value></data>
   <data name="GameDownloadSourcesUnavailable" xml:space="preserve"><value>The game download sources could not be reached. Check your connection and try again.</value></data>
+  <data name="UpdateRequiresNewerLauncher" xml:space="preserve"><value>Version {0} is available. Update the launcher to {1} or later first.</value></data>
+  <data name="UpdateRequestTimedOut" xml:space="preserve"><value>The update service connection timed out. Try again later.</value></data>
+  <data name="UpdateRateLimited" xml:space="preserve"><value>The update service has limited requests from this network. Try again later.</value></data>
+  <data name="UpdateHttpFailure" xml:space="preserve"><value>The update service returned HTTP {0}. Try again later.</value></data>
+  <data name="UpdateConnectionFailed" xml:space="preserve"><value>Cannot connect to the update service. Check your network or launcher proxy settings.</value></data>
+  <data name="UpdateResponseInvalid" xml:space="preserve"><value>The update service returned invalid content. Try again later.</value></data>
 </root>

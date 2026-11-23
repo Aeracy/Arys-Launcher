@@ -498,4 +498,10 @@
   <data name="DownloadingSignInComponentProgress" xml:space="preserve"><value>正在从微软下载登录组件：{0}%。</value></data>
   <data name="PreparingSignInComponent" xml:space="preserve"><value>正在准备内嵌登录组件。</value></data>
   <data name="GameDownloadSourcesUnavailable" xml:space="preserve"><value>暂时无法连接游戏下载源，请检查网络后重试。</value></data>
+  <data name="UpdateRequiresNewerLauncher" xml:space="preserve"><value>发现 {0}，请先将启动器升级至 {1} 或更高版本。</value></data>
+  <data name="UpdateRequestTimedOut" xml:space="preserve"><value>连接更新服务超时，请稍后重试。</value></data>
+  <data name="UpdateRateLimited" xml:space="preserve"><value>更新服务限制了当前网络的请求，请稍后重试。</value></data>
+  <data name="UpdateHttpFailure" xml:space="preserve"><value>更新服务返回 HTTP {0}，请稍后重试。</value></data>
+  <data name="UpdateConnectionFailed" xml:space="preserve"><value>无法连接更新服务，请检查网络或启动器代理设置。</value></data>
+  <data name="UpdateResponseInvalid" xml:space="preserve"><value>更新服务返回的内容无效，请稍后重试。</value></data>
 </root>

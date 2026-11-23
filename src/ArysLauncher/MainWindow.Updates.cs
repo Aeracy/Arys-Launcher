@@ -49,6 +49,7 @@ public partial class MainWindow
                     var source = updates.Channel.ManifestAddress(kind);
                     status.Text = source == null ? LauncherText.Get("UpdateSourceUnconfigured") : release == null ?
                         kind == UpdateKind.Pack && storage.Installation == null ? LauncherText.Get("InstallBeforeChecking") : LauncherText.Get("UpToDate") :
+                        release.RequiresNewerLauncher ? LauncherText.Get("UpdateRequiresNewerLauncher", release.Version, release.MinimumLauncherVersion) :
                         LauncherText.Get("UpdateAvailable", release.Version);
                     status.ToolTip = release?.ReleaseNotes;
                     if (kind == UpdateKind.Pack)
@@ -61,7 +62,7 @@ public partial class MainWindow
                 {
                     return;
                 }
-                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Net.Http.HttpRequestException or
+                catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or System.Net.Http.HttpRequestException or
                     System.Security.Cryptography.CryptographicException or OperationCanceledException or System.Text.Json.JsonException)
                 {
                     if (kind == UpdateKind.Launcher)
@@ -72,7 +73,8 @@ public partial class MainWindow
                     {
                         packRelease = null;
                     }
-                    status.Text = LauncherText.Get("UpdateCheckFailed");
+                    updates.RecordCheckFailure(kind, exception);
+                    status.Text = UpdateFailureText(exception);
                     status.ToolTip = exception.Message;
                     if (kind == UpdateKind.Pack)
                     {
@@ -82,8 +84,10 @@ public partial class MainWindow
                 }
             }
         }
-        catch (Exception exception) when (exception is IOException or System.Text.Json.JsonException)
+        catch (Exception exception) when (exception is IOException or InvalidDataException or System.Text.Json.JsonException)
         {
+            launcherRelease = null;
+            packRelease = null;
             LauncherUpdateStatus.Text = PackUpdateStatus.Text = exception.Message;
             InstallationUpdateStatus.Text = exception.Message;
         }
@@ -94,8 +98,31 @@ public partial class MainWindow
         }
         if (applyPack && packRelease != null && !closed)
         {
-            await ApplyUpdateAsync(UpdateKind.Pack, packRelease);
+            if (packRelease.RequiresNewerLauncher)
+            {
+                await CheckUpdatesAsync(UpdateKind.Launcher);
+            }
+            else
+            {
+                await ApplyUpdateAsync(UpdateKind.Pack, packRelease);
+            }
         }
+    }
+
+    private static string UpdateFailureText(Exception exception)
+    {
+        return exception switch
+        {
+            OperationCanceledException => LauncherText.Get("UpdateRequestTimedOut"),
+            System.Net.Http.HttpRequestException { StatusCode: System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.TooManyRequests } =>
+                LauncherText.Get("UpdateRateLimited"),
+            System.Net.Http.HttpRequestException { StatusCode: { } status } => LauncherText.Get("UpdateHttpFailure", (int)status),
+            System.Net.Http.HttpRequestException => LauncherText.Get("UpdateConnectionFailed"),
+            InvalidDataException => exception.Message,
+            System.Text.Json.JsonException => LauncherText.Get("UpdateResponseInvalid"),
+            System.Security.Cryptography.CryptographicException => LauncherText.Get("UpdateSignatureInvalid"),
+            _ => exception.Message
+        };
     }
 
     private void RefreshUpdateButtons()
@@ -106,8 +133,8 @@ public partial class MainWindow
         }
         var available = !IsBusy && !checkingUpdates && runningGame == null;
         CheckUpdatesButton.IsEnabled = !IsBusy && !checkingUpdates;
-        ApplyLauncherUpdateButton.IsEnabled = available && launcherRelease != null;
-        ApplyPackUpdateButton.IsEnabled = available && packRelease != null && storage.Installation != null;
+        ApplyLauncherUpdateButton.IsEnabled = available && launcherRelease is { RequiresNewerLauncher: false };
+        ApplyPackUpdateButton.IsEnabled = available && packRelease is { RequiresNewerLauncher: false } && storage.Installation != null;
         CheckPackUpdatesButton.IsEnabled = available && storage.Installation != null;
         CheckPackUpdatesButton.Content = checkingUpdates ? LauncherText.Get("CheckingUpdates") : LauncherText.Get("CheckForUpdates");
         ClearCacheButton.IsEnabled = !IsBusy;

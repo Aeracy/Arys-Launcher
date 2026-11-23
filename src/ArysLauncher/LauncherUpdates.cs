@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -10,8 +9,7 @@ internal sealed class LauncherUpdates
 {
     private readonly LauncherStorage storage;
     private readonly string applicationRoot;
-    private readonly Dictionary<UpdateKind, TaggedRelease> taggedReleases = new();
-    private bool releaseCatalogLoaded;
+    private readonly SignedUpdateSource source;
 
     public UpdateChannel Channel { get; }
 
@@ -23,60 +21,35 @@ internal sealed class LauncherUpdates
         Channel = File.Exists(channelPath) ?
             JsonSerializer.Deserialize<UpdateChannel>(File.ReadAllText(channelPath), LauncherStorage.JsonOptions) ??
                 throw new InvalidDataException(LauncherText.Get("UpdateChannelEmpty")) : new UpdateChannel();
+        source = new SignedUpdateSource(storage, Channel);
+    }
+
+    public void RecordCheckFailure(UpdateKind kind, Exception exception)
+    {
+        source.RecordFailure(kind, "check", exception);
     }
 
     public async Task<UpdateManifest?> CheckAsync(UpdateKind kind, CancellationToken cancellationToken)
     {
-        var address = Channel.ManifestAddress(kind);
-        if (address == null)
-        {
-            return null;
-        }
-        if (string.IsNullOrWhiteSpace(Channel.PublicKey))
-        {
-            throw new InvalidDataException(LauncherText.Get("UpdatePublicKeyMissing"));
-        }
-        using var client = NetworkClients.Create(storage.Settings);
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(30));
-        if (address.Host.Equals("api.github.com", StringComparison.OrdinalIgnoreCase))
-        {
-            address = await ResolveTaggedReleaseAsync(client, kind, timeout.Token);
-        }
-        var bytes = await DownloadMetadataAsync(client, address, 4 * 1024 * 1024, timeout.Token);
-        var signatureAddress = UpdatePaths.HttpsAddress(address.AbsoluteUri + ".sig");
-        var signature = await DownloadMetadataAsync(client, signatureAddress, 1024, timeout.Token);
-        using var signer = ECDsa.Create();
-        try
-        {
-            signer.ImportSubjectPublicKeyInfo(Convert.FromBase64String(Channel.PublicKey), out _);
-            if (!signer.VerifyData(bytes, Convert.FromBase64String(System.Text.Encoding.UTF8.GetString(signature).Trim()),
-                    HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation))
-            {
-                throw new CryptographicException();
-            }
-        }
-        catch (Exception exception) when (exception is CryptographicException or FormatException)
-        {
-            throw new InvalidDataException(LauncherText.Get("UpdateSignatureInvalid"), exception);
-        }
-        var release = JsonSerializer.Deserialize<UpdateManifest>(bytes, LauncherStorage.JsonOptions)
-            ?? throw new InvalidDataException(LauncherText.Get("UpdateManifestEmpty"));
-        release.Validate(kind);
-        if (taggedReleases.TryGetValue(kind, out var taggedRelease) && Version.Parse(release.Version) != taggedRelease.Version)
-        {
-            throw new InvalidDataException(LauncherText.Get("UpdateTagVersionMismatch"));
-        }
-        var currentVersion = kind == UpdateKind.Launcher ? App.LauncherVersion : storage.Installation?.PackVersion;
         if (kind == UpdateKind.Pack && storage.Installation == null)
         {
             return null;
         }
+        var release = await source.ReadAsync(kind, cancellationToken);
+        if (release == null)
+        {
+            return null;
+        }
+        var currentVersion = kind == UpdateKind.Launcher ? App.LauncherVersion : storage.Installation?.PackVersion;
         var releaseVersion = Version.Parse(release.Version);
         if (Version.TryParse(currentVersion, out var installed) &&
             (releaseVersion < installed || kind == UpdateKind.Launcher && releaseVersion == installed))
         {
             return null;
+        }
+        if (release.RequiresNewerLauncher)
+        {
+            return release;
         }
         if (kind == UpdateKind.Pack)
         {
@@ -94,69 +67,6 @@ internal sealed class LauncherUpdates
         }
         return release;
     }
-
-    private async Task<Uri> ResolveTaggedReleaseAsync(HttpClient client, UpdateKind kind, CancellationToken cancellationToken)
-    {
-        if (!releaseCatalogLoaded)
-        {
-            for (var page = 1; page <= 10; page++)
-            {
-                var url = new Uri($"https://api.github.com/repos/{Channel.LauncherRepository}/releases?per_page=100&page={page}");
-                var bytes = await DownloadMetadataAsync(client, url, 4 * 1024 * 1024, cancellationToken);
-                using var document = JsonDocument.Parse(bytes);
-                var releases = document.RootElement;
-                if (releases.ValueKind != JsonValueKind.Array)
-                {
-                    throw new InvalidDataException(LauncherText.Get("UpdateReleaseCatalogInvalid"));
-                }
-                foreach (var release in releases.EnumerateArray())
-                {
-                    if (release.GetProperty("draft").GetBoolean() || release.GetProperty("prerelease").GetBoolean())
-                    {
-                        continue;
-                    }
-                    var tag = release.GetProperty("tag_name").GetString() ?? "";
-                    foreach (var candidateKind in Enum.GetValues<UpdateKind>())
-                    {
-                        var prefix = candidateKind == UpdateKind.Launcher ? Channel.LauncherTagPrefix : Channel.PackTagPrefix;
-                        if (string.IsNullOrWhiteSpace(prefix) || !tag.StartsWith(prefix, StringComparison.Ordinal) ||
-                            !Version.TryParse(tag[prefix.Length..], out var version) ||
-                            taggedReleases.TryGetValue(candidateKind, out var current) && current.Version >= version)
-                        {
-                            continue;
-                        }
-                        var manifestName = candidateKind == UpdateKind.Launcher ? "launcher-update.json" : "pack-update.json";
-                        var assets = release.GetProperty("assets").EnumerateArray().ToArray();
-                        var manifest = assets.FirstOrDefault(asset => asset.GetProperty("name").GetString() == manifestName);
-                        if (manifest.ValueKind == JsonValueKind.Undefined ||
-                            !assets.Any(asset => asset.GetProperty("name").GetString() == manifestName + ".sig"))
-                        {
-                            continue;
-                        }
-                        var address = manifest.GetProperty("browser_download_url").GetString() ?? "";
-                        var expected = $"https://github.com/{Channel.LauncherRepository}/releases/download/{tag}/{manifestName}";
-                        if (address != expected)
-                        {
-                            throw new InvalidDataException(LauncherText.Get("UpdateAddressRequiresHttps"));
-                        }
-                        taggedReleases[candidateKind] = new TaggedRelease(version, UpdatePaths.HttpsAddress(address));
-                    }
-                }
-                if (releases.GetArrayLength() < 100)
-                {
-                    break;
-                }
-            }
-            releaseCatalogLoaded = true;
-        }
-        if (!taggedReleases.TryGetValue(kind, out var selected))
-        {
-            throw new InvalidDataException(LauncherText.Get("UpdateChannelReleaseMissing"));
-        }
-        return selected.Address;
-    }
-
-    private sealed record TaggedRelease(Version Version, Uri Address);
 
     private async Task<UpdateJournal> BuildJournalAsync(UpdateManifest release, CancellationToken cancellationToken)
     {
@@ -487,30 +397,5 @@ internal sealed class LauncherUpdates
             }
         }
         return null;
-    }
-
-    private static async Task<byte[]> DownloadMetadataAsync(HttpClient client, Uri address, int maximumBytes, CancellationToken token)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Get, address);
-        request.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
-        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
-        if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps || response.Content.Headers.ContentLength > maximumBytes)
-        {
-            throw new InvalidDataException(LauncherText.Get("UpdateResponseOutOfRange"));
-        }
-        await using var input = await response.Content.ReadAsStreamAsync(token);
-        using var output = new MemoryStream();
-        var buffer = new byte[16 * 1024];
-        int count;
-        while ((count = await input.ReadAsync(buffer, token)) > 0)
-        {
-            if (output.Length + count > maximumBytes)
-            {
-                throw new InvalidDataException(LauncherText.Get("UpdateResponseTooLarge"));
-            }
-            output.Write(buffer, 0, count);
-        }
-        return output.ToArray();
     }
 }

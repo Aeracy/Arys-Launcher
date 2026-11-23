@@ -52,12 +52,18 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 
 ## 发布更新
 
-`release-channel.json` 保存公开仓库、两个 tag 前缀和发行公钥。`v*` 发布启动器，例如 `v1.0.6`；`pack-v*` 发布整合包，例如 `pack-v1.2.0`。Mod、配置和资源包的改动都通过整合包 tag 发布。启动器分别查找各序列中带签名清单的最高版本，不依赖仓库统一的 Latest 标记。
+`release-channel.json` 保存公开仓库、两个 tag 前缀和发行公钥。`v*` 发布启动器，`pack-v*` 发布整合包。Mod、配置和资源包的改动都通过整合包 tag 发布。两个更新入口位于 `updates/launcher.json` 和 `updates/pack.json`，包含原始清单及其签名。
+
+启动器先读取独立入口，连接失败时切换下载地址，再回退 Release 查询。启动器更新也可从 GitHub Latest 获取，整合包仍按独立 tag 选择。所有入口都验证发行签名，下载文件按清单校验。
+
+整合包需要更高版本启动器时，界面会提示先升级启动器。两条更新检查分别处理错误，整合包检查失败不会清除已找到的启动器更新。连接失败、超时和服务限流会显示具体提示，诊断保存在本机 `data/logs/updates.log`。
 
 每个 Release 只携带所属更新清单。文件路径、大小及 SHA-256 写入清单，并使用 ECDSA P-256 签名。整合包发布不会改变 GitHub 为启动器保留的 Latest 标记。
 
+`Publish-GitHubRelease.ps1` 完成发布后调用 `Publish-UpdateFeed.ps1`，先核对线上清单与签名附件的哈希，再更新对应入口。入口同步失败时可单独重跑后者，不必改动已发布文件。
+
 ```powershell
-.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.9
+.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.10
 .\Publish-Pack.ps1 -Version 1.2.2 -InstanceDirectory D:\Pack
 .\Publish-Pack.ps1 -Version 1.2.2 -InstanceDirectory D:\Pack -Publish
 ```

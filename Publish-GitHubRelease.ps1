@@ -215,6 +215,7 @@ try {
     $body = $finalRelease | ConvertTo-Json
     $release = Invoke-RestMethod -Method Patch -Uri "$api/releases/$($existing.id)" -Headers $headers -ContentType 'application/json' -Body $body
     Write-Output $release.html_url
+    & (Join-Path $PSScriptRoot 'Publish-UpdateFeed.ps1') -Kind $Kind -Tag $Tag -Repository $Repository -AssetsDirectory $AssetsDirectory
 } finally {
     $credential.Clear()
     $credentialLines = $null
