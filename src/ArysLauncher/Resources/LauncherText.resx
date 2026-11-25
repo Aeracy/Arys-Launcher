@@ -93,6 +93,8 @@
   <data name="DownloadingAuthlib" xml:space="preserve"><value>Downloading authlib-injector</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>Downloading update</value></data>
   <data name="DownloadLimitHelp" xml:space="preserve"><value>Use 0 for unlimited. All downloads share this limit. Sign-in is unaffected.</value></data>
+  <data name="AutomaticGitHubAcceleration" xml:space="preserve"><value>Automatically choose a GitHub download route</value></data>
+  <data name="GitHubAccelerationHelp" xml:space="preserve"><value>Choose between GitHub and free relay services, switching if a connection fails. Turn off to use original download URLs only.</value></data>
   <data name="DownloadPartialChanged" xml:space="preserve"><value>The partial download has changed.</value></data>
   <data name="DownloadProgressHelp" xml:space="preserve"><value>Import and game setup progress appear here.</value></data>
   <data name="DownloadRangeMismatch" xml:space="preserve"><value>The server returned an invalid range for this download.</value></data>
@@ -504,4 +506,28 @@
   <data name="UpdateHttpFailure" xml:space="preserve"><value>The update service returned HTTP {0}. Try again later.</value></data>
   <data name="UpdateConnectionFailed" xml:space="preserve"><value>Cannot connect to the update service. Check your network or launcher proxy settings.</value></data>
   <data name="UpdateResponseInvalid" xml:space="preserve"><value>The update service returned invalid content. Try again later.</value></data>
+  <data name="PlayerProfileTitle" xml:space="preserve"><value>Avatar and banner</value></data>
+  <data name="PlayerProfileHelp" xml:space="preserve"><value>Choose an image, then drag to adjust the crop.</value></data>
+  <data name="PlayerProfileSignIn" xml:space="preserve"><value>Sign in to set your avatar and banner.</value></data>
+  <data name="PlayerProfileSyncReady" xml:space="preserve"><value>Changes sync to the game automatically.</value></data>
+  <data name="PlayerProfileReadFailed" xml:space="preserve"><value>Could not load your avatar and banner. Try again later.</value></data>
+  <data name="PlayerProfileInvalid" xml:space="preserve"><value>Could not read the image or profile. Check the selected account or choose the image again.</value></data>
+  <data name="ProfileEditAvatar" xml:space="preserve"><value>Choose avatar</value></data>
+  <data name="ProfileEditBanner" xml:space="preserve"><value>Choose banner</value></data>
+  <data name="ProfileResetAvatar" xml:space="preserve"><value>Remove avatar</value></data>
+  <data name="ProfileResetBanner" xml:space="preserve"><value>Remove banner</value></data>
+  <data name="ProfileCustomAvatar" xml:space="preserve"><value>Custom avatar</value></data>
+  <data name="ProfileCropHelp" xml:space="preserve"><value>Drag to move the image. Scroll or use the slider to zoom. Arrow keys fine-tune the position; hold Shift to move faster.</value></data>
+  <data name="ProfileZoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="ProfileCenterCrop" xml:space="preserve"><value>Center image</value></data>
+  <data name="ProfileApplyCrop" xml:space="preserve"><value>Use this image</value></data>
+  <data name="ProfileCropDimensions" xml:space="preserve"><value>Crop: {0} × {1} pixels · Original: {2} × {3}</value></data>
+  <data name="ProfileReadingImage" xml:space="preserve"><value>Opening image…</value></data>
+  <data name="ProfileSavingImage" xml:space="preserve"><value>Saving…</value></data>
+  <data name="ProfileImageSizeLimit" xml:space="preserve"><value>The image is over 5 MB. Choose a smaller image.</value></data>
+  <data name="ProfileImageDimensionLimit" xml:space="preserve"><value>The image dimensions are too large. Resize it and try again.</value></data>
+  <data name="ProfileImageFormatLimit" xml:space="preserve"><value>Could not open the image. Choose a valid PNG or JPG file.</value></data>
+  <data name="ProfileLinkUnavailable" xml:space="preserve"><value>Your avatar and banner could not sync this time. You can still change them in the game.</value></data>
+  <data name="ProfileStorageFull" xml:space="preserve"><value>Image storage is full. Remove unused images before trying again.</value></data>
+  <data name="ProfileImageLimits" xml:space="preserve"><value>PNG or JPG, up to 5 MB per image.</value></data>
 </root>

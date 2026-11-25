@@ -32,7 +32,7 @@ internal sealed class SignedUpdateSource
         {
             throw new InvalidDataException(LauncherText.Get("UpdatePublicKeyMissing"));
         }
-        using var client = NetworkClients.Create(storage.Settings);
+        using var client = NetworkClients.Create(storage.Settings, publicContent: true);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(100));
         if (!configured.Host.Equals("api.github.com", StringComparison.OrdinalIgnoreCase))
@@ -49,25 +49,19 @@ internal sealed class SignedUpdateSource
         {
             try
             {
-                var bytes = await DownloadMetadataAsync(client, address, 6 * 1024 * 1024, deadline.Token);
-                var feed = JsonSerializer.Deserialize<SignedFeed>(bytes, LauncherStorage.JsonOptions);
-                if (feed == null || feed.SchemaVersion != 1 || feed.Manifest.Length is 0 or > 5600000 ||
-                    feed.Signature.Length is 0 or > 128)
+                return await ReadRoutesAsync(address, kind, async (route, token) =>
                 {
-                    throw new InvalidDataException(LauncherText.Get("UpdateManifestEmpty"));
-                }
-                byte[] manifest;
-                try
-                {
-                    manifest = Convert.FromBase64String(feed.Manifest);
-                }
-                catch (FormatException exception)
-                {
-                    throw new InvalidDataException(LauncherText.Get("UpdateManifestEmpty"), exception);
-                }
-                var release = ReadManifest(manifest, feed.Signature, kind, null);
-                Record(kind, address.Host, "signed-feed " + release.Version);
-                return release;
+                    var bytes = await DownloadMetadataAsync(client, route, 6 * 1024 * 1024, token);
+                    var feed = JsonSerializer.Deserialize<SignedFeed>(bytes, LauncherStorage.JsonOptions);
+                    if (feed == null || feed.SchemaVersion != 1 || feed.Manifest is not { Length: > 0 and <= 5600000 } ||
+                        feed.Signature is not { Length: > 0 and <= 128 })
+                    {
+                        throw new InvalidDataException(LauncherText.Get("UpdateManifestEmpty"));
+                    }
+                    var release = ReadManifest(Convert.FromBase64String(feed.Manifest), feed.Signature, kind, null);
+                    Record(kind, route.Host, "signed-feed " + release.Version);
+                    return release;
+                }, deadline.Token, preferNewest: true);
             }
             catch (Exception exception) when (CanFallback(exception, deadline.Token))
             {
@@ -120,11 +114,81 @@ internal sealed class SignedUpdateSource
     private async Task<UpdateManifest> ReadPairAsync(HttpClient client, Uri address, UpdateKind kind, Version? expectedVersion,
         CancellationToken cancellationToken)
     {
-        var bytes = await DownloadMetadataAsync(client, address, 4 * 1024 * 1024, cancellationToken);
-        var signature = await DownloadMetadataAsync(client, UpdatePaths.HttpsAddress(address.AbsoluteUri + ".sig"), 1024, cancellationToken);
-        var release = ReadManifest(bytes, Encoding.UTF8.GetString(signature).Trim(), kind, expectedVersion);
-        Record(kind, address.Host, "signed-manifest " + release.Version);
-        return release;
+        return await ReadRoutesAsync(address, kind, async (route, token) =>
+        {
+            var bytes = await DownloadMetadataAsync(client, route, 4 * 1024 * 1024, token);
+            var signature = await DownloadMetadataAsync(client, UpdatePaths.HttpsAddress(route.AbsoluteUri + ".sig"), 1024, token);
+            var release = ReadManifest(bytes, Encoding.UTF8.GetString(signature).Trim(), kind, expectedVersion);
+            Record(kind, route.Host, "signed-manifest " + release.Version);
+            return release;
+        }, cancellationToken, preferNewest: expectedVersion == null);
+    }
+
+    private async Task<T> ReadRoutesAsync<T>(Uri address, UpdateKind kind, Func<Uri, CancellationToken, Task<T>> read,
+        CancellationToken cancellationToken, bool preferNewest = false) where T : class
+    {
+        var routes = GitHubDownloadRoutes.Expand(new[] { address }, storage.Settings.AutomaticGitHubAcceleration);
+        using var requests = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        async Task<(T? Value, Exception? Failure)> AttemptAsync(Uri route)
+        {
+            try
+            {
+                return (await read(route, requests.Token), null);
+            }
+            catch (Exception exception) when (IsRecoverable(exception))
+            {
+                if (!requests.IsCancellationRequested)
+                {
+                    RecordFailure(kind, route.Host, exception);
+                }
+                return (null, exception);
+            }
+        }
+        var pending = routes.Select(AttemptAsync).ToList();
+        var allRequests = pending.ToArray();
+        Exception? failure = null;
+        T? selected = null;
+        Task? freshnessWindow = null;
+        try
+        {
+            while (pending.Count > 0)
+            {
+                var completedRequest = freshnessWindow == null ? await Task.WhenAny(pending) :
+                    await Task.WhenAny(pending.Cast<Task>().Append(freshnessWindow));
+                cancellationToken.ThrowIfCancellationRequested();
+                if (completedRequest == freshnessWindow)
+                {
+                    return selected!;
+                }
+                var completed = (Task<(T? Value, Exception? Failure)>)completedRequest;
+                pending.Remove(completed);
+                var result = await completed;
+                cancellationToken.ThrowIfCancellationRequested();
+                if (result.Value != null)
+                {
+                    if (!preferNewest || result.Value is not UpdateManifest candidate)
+                    {
+                        return result.Value;
+                    }
+                    if (selected is not UpdateManifest current || Version.Parse(candidate.Version) > Version.Parse(current.Version))
+                    {
+                        selected = result.Value;
+                    }
+                    freshnessWindow ??= Task.Delay(TimeSpan.FromMilliseconds(750), cancellationToken);
+                }
+                failure = result.Failure;
+            }
+            if (selected != null)
+            {
+                return selected;
+            }
+            throw failure ?? new IOException(LauncherText.Get("UpdateManifestEmpty"));
+        }
+        finally
+        {
+            requests.Cancel();
+            await Task.WhenAll(allRequests);
+        }
     }
 
     private UpdateManifest ReadManifest(byte[] bytes, string signature, UpdateKind kind, Version? expectedVersion)
@@ -161,7 +225,16 @@ internal sealed class SignedUpdateSource
             for (var page = 1; page <= 10; page++)
             {
                 var url = new Uri($"https://api.github.com/repos/{channel.LauncherRepository}/releases?per_page=100&page={page}");
-                var bytes = await DownloadMetadataAsync(client, url, 4 * 1024 * 1024, cancellationToken);
+                var bytes = await ReadRoutesAsync(url, kind, async (route, token) =>
+                {
+                    var response = await DownloadMetadataAsync(client, route, 4 * 1024 * 1024, token);
+                    using var catalog = JsonDocument.Parse(response);
+                    if (catalog.RootElement.ValueKind != JsonValueKind.Array)
+                    {
+                        throw new InvalidDataException(LauncherText.Get("UpdateReleaseCatalogInvalid"));
+                    }
+                    return response;
+                }, cancellationToken);
                 using var document = JsonDocument.Parse(bytes);
                 var releases = document.RootElement;
                 if (releases.ValueKind != JsonValueKind.Array)
@@ -220,7 +293,12 @@ internal sealed class SignedUpdateSource
 
     private static bool CanFallback(Exception exception, CancellationToken cancellationToken)
     {
-        return !cancellationToken.IsCancellationRequested && exception is HttpRequestException or IOException or OperationCanceledException;
+        return !cancellationToken.IsCancellationRequested && IsRecoverable(exception);
+    }
+
+    private static bool IsRecoverable(Exception exception)
+    {
+        return exception is HttpRequestException or IOException or InvalidDataException or JsonException or FormatException or OperationCanceledException;
     }
 
     private static async Task<byte[]> DownloadMetadataAsync(HttpClient client, Uri address, int maximumBytes, CancellationToken cancellationToken)

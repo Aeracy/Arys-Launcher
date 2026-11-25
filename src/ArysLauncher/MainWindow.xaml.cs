@@ -26,8 +26,6 @@ public partial class MainWindow : Window
     private readonly LauncherStorage storage;
     private readonly JavaRuntimeCatalog javaCatalog;
     private readonly AccountPortraits portraits;
-    private CancellationTokenSource? portraitCancellation;
-    private string portraitAccountId = "";
     private readonly CancellationTokenSource windowLifetime = new();
     private readonly DispatcherTimer memoryRefresh = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly List<string> history = new();
@@ -85,7 +83,7 @@ public partial class MainWindow : Window
         Closed += (_, _) =>
         {
             closed = true;
-            CancelPortraitLoad();
+            DisposeProfileWatcher();
             memoryRefresh.Stop();
             SystemParameters.StaticPropertyChanged -= SystemParameters_Changed;
             windowLifetime.Cancel();
@@ -259,8 +257,8 @@ public partial class MainWindow : Window
             HomeAccountName.Text = selectedAccount?.PlayerName ?? LauncherText.Get("SignedOut");
             HomeAccountKind.Text = selectedAccount?.Description ?? LauncherText.Get("SignInToPlay");
             HomeAccountButton.Content = selectedAccount == null ? LauncherText.Get("AddAccountLink") : LauncherText.Get("ManageAccountsLink");
-            AccountInitial.Text = selectedAccount == null ? "◇" : StringInfo.GetNextTextElement(selectedAccount.PlayerName);
             RefreshAccountPortrait(selectedAccount);
+            RefreshPlayerProfile(selectedAccount);
             HomeMemory.Text = $"{(physicalMemory == null ? storage.Settings.MaximumMemoryMb : MemoryAllocation.MaximumMb(storage.Settings, physicalMemory)) / 1024.0:0.0} GiB";
             var selectedJava = SelectedJavaRuntime(storage.Settings.AutomaticJavaSelection, storage.Settings.JavaPath);
             HomeJava.Text = selectedJava == null ? LauncherText.Get("JavaAutomatic") : "Java " + selectedJava.MajorVersion;
@@ -673,7 +671,6 @@ public partial class MainWindow : Window
         {
             return;
         }
-        CancelPortraitLoad();
         using var cancellation = new CancellationTokenSource();
         operationCancellation = cancellation;
         lastStage = "";
@@ -851,6 +848,7 @@ public partial class MainWindow : Window
         HostConcurrencyCombo.SelectedItem = settings.PerHostConnections;
         ManualDownloadConnectionsCheck.IsChecked = !settings.AutomaticDownloadConnections;
         ManualDownloadConnectionsPanel.IsEnabled = !settings.AutomaticDownloadConnections;
+        GitHubAccelerationCheck.IsChecked = settings.AutomaticGitHubAcceleration;
         DownloadLimitText.Text = settings.DownloadLimitMiBPerSecond.ToString("0.###", CultureInfo.InvariantCulture);
         ProxyText.Text = settings.ProxyAddress;
         InjectorPathText.Text = settings.AuthlibInjectorPath;
@@ -887,6 +885,7 @@ public partial class MainWindow : Window
             settings.GameArguments = GameArgumentsText.Text.Trim();
             JvmArgumentPolicy.Build(settings);
             settings.AutomaticDownloadConnections = ManualDownloadConnectionsCheck.IsChecked != true;
+            settings.AutomaticGitHubAcceleration = GitHubAccelerationCheck.IsChecked == true;
             if (!double.TryParse(DownloadLimitText.Text.Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var downloadLimit))
             {
                 throw new InvalidOperationException(LauncherText.Get("SpeedLimitNumberRequired"));

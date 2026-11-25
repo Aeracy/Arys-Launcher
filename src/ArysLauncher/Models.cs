@@ -13,6 +13,7 @@ public sealed class LauncherSettings
     public bool JvmArgumentsAreComplete { get; set; }
     public string GameArguments { get; set; } = "";
     public bool AutomaticDownloadConnections { get; set; } = true;
+    public bool AutomaticGitHubAcceleration { get; set; } = true;
     public double DownloadLimitMiBPerSecond { get; set; }
     public int DownloadConcurrency { get; set; } = 8;
     public int PerHostConnections { get; set; } = 4;

@@ -8,7 +8,6 @@ public partial class MainWindow
         {
             return;
         }
-        CancelPortraitLoad();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(windowLifetime.Token);
         authenticationCancellation = cancellation;
         RefreshPresentation();

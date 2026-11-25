@@ -115,6 +115,20 @@ public sealed class GameRuntime
                 new MArgument("-Dauthlibinjector.side=client")
             }).ToArray();
         }
+        var profileStore = new PlayerProfileStore(storage);
+        try
+        {
+            await profileStore.EnsureAsync(session.Account, cancellationToken);
+            option.ExtraJvmArguments = option.ExtraJvmArguments.Concat(new[]
+            {
+                new MArgument("-Darys.profileDirectory=" + profileStore.DirectoryPath),
+                new MArgument("-Darys.profileKey=" + PlayerProfileStore.ProfileKey(session.Account))
+            }).ToArray();
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or JsonException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            progress.Report(new WorkSnapshot(LauncherText.Get("StartingGame"), LauncherText.Get("ProfileLinkUnavailable"), 0, 0, 0, 0, 0, 0));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         preparation.Phase(0.99, 0.99).Report(new WorkSnapshot(LauncherText.Get("StartingGame"), LauncherText.Get("PreparingGameProcess"), 0, 0, 0, 0, 0, 0));
         if (instance.NeedsFirstLaunchCleanup)

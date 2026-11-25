@@ -16,6 +16,7 @@ public sealed class ContentDownloader : IDisposable
     private readonly DownloadSourceSelection sourceSelection;
     private readonly string cacheRoot;
     private readonly int perHostLimit;
+    private readonly bool automaticGitHubAcceleration;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> hostGates = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> contentGates = new();
     private readonly ConcurrentDictionary<string, byte> verified = new();
@@ -27,6 +28,8 @@ public sealed class ContentDownloader : IDisposable
             HttpCompletionOption.ResponseHeadersRead, token));
         cacheRoot = storage.Cache;
         perHostLimit = DownloadPolicy.HostConnections(storage.Settings);
+        automaticGitHubAcceleration = storage.Settings.AutomaticGitHubAcceleration &&
+            client.DefaultRequestHeaders.Authorization == null && !client.DefaultRequestHeaders.Contains("Cookie");
     }
 
     public async Task<string> FetchAsync(ContentRequest request, int progressIndex, WorkProgress progress, CancellationToken cancellationToken)
@@ -53,7 +56,8 @@ public sealed class ContentDownloader : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             var temporary = destination + ".part";
             Exception? lastFailure = null;
-            var sources = await sourceSelection.OrderAsync(request.Sources, cancellationToken);
+            var candidates = GitHubDownloadRoutes.Expand(request.Sources, automaticGitHubAcceleration);
+            var sources = await sourceSelection.OrderAsync(candidates, cancellationToken);
             foreach (var source in sources)
             {
                 for (var attempt = 0; attempt < 3; attempt++)
@@ -65,20 +69,27 @@ public sealed class ContentDownloader : IDisposable
                         await hostGate.WaitAsync(cancellationToken);
                         try
                         {
-                            await DownloadAsync(source, temporary, request, progressIndex, progress, attempt > 0, cancellationToken);
+                            await DownloadAsync(source, temporary, request, progressIndex, progress, attempt > 0,
+                                sources.Count > 1 && GitHubDownloadRoutes.IsGitHubRoute(source), cancellationToken);
                         }
                         finally
                         {
                             hostGate.Release();
                         }
                         File.Move(temporary, destination, true);
+                        sourceSelection.ReportSuccess(source);
                         verified.TryAdd(key, 0);
                         return destination;
                     }
-                    catch (Exception exception) when (exception is HttpRequestException or IOException or OperationCanceledException)
+                    catch (Exception exception) when (exception is HttpRequestException or IOException or InvalidDataException or OperationCanceledException)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         lastFailure = exception;
+                        if (sources.Count > 1 && GitHubDownloadRoutes.IsGitHubRoute(source))
+                        {
+                            sourceSelection.ReportFailure(source);
+                            break;
+                        }
                         if (exception is HttpRequestException httpException && httpException.StatusCode is
                             HttpStatusCode.NotFound or HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized)
                         {
@@ -100,7 +111,7 @@ public sealed class ContentDownloader : IDisposable
     }
 
     private async Task DownloadAsync(Uri source, string destination, ContentRequest request, int index,
-        WorkProgress progress, bool retrySource, CancellationToken cancellationToken)
+        WorkProgress progress, bool retrySource, bool alternateRoute, CancellationToken cancellationToken)
     {
         var offset = File.Exists(destination) ? new FileInfo(destination).Length : 0;
         if (offset > request.Size)
@@ -125,7 +136,8 @@ public sealed class ContentDownloader : IDisposable
             message.Headers.Range = new RangeHeaderValue(offset, null);
         }
         using var headerTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        headerTimeout.CancelAfter(TimeSpan.FromSeconds(45));
+        var connectionTimeout = TimeSpan.FromSeconds(GitHubDownloadRoutes.IsGitHubRoute(source) ? 12 : 45);
+        headerTimeout.CancelAfter(connectionTimeout);
         using var response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, headerTimeout.Token);
         headerTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
         if (response.RequestMessage?.RequestUri?.Scheme != "https")
@@ -136,7 +148,10 @@ public sealed class ContentDownloader : IDisposable
         {
             var delay = response.Headers.RetryAfter?.Delta ??
                 (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow) ?? TimeSpan.FromSeconds(2);
-            await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(delay.TotalSeconds, 1, 30)), cancellationToken);
+            if (!alternateRoute)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(delay.TotalSeconds, 1, 30)), cancellationToken);
+            }
             throw new HttpRequestException(LauncherText.Get("DownloadRateLimited"), null, response.StatusCode);
         }
         response.EnsureSuccessStatusCode();
@@ -145,7 +160,6 @@ public sealed class ContentDownloader : IDisposable
             var range = response.Content.Headers.ContentRange;
             if (range?.From != offset || range.Length != request.Size || range.To != request.Size - 1)
             {
-                File.Delete(destination);
                 throw new IOException(LauncherText.Get("DownloadRangeMismatch"));
             }
         }
@@ -188,7 +202,7 @@ public sealed class ContentDownloader : IDisposable
             var written = offset;
             while (true)
             {
-                idleTimeout.CancelAfter(TimeSpan.FromSeconds(45));
+                idleTimeout.CancelAfter(connectionTimeout);
                 var count = await input.ReadAsync(buffer.AsMemory(), idleTimeout.Token);
                 idleTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
                 if (count == 0)

@@ -5,7 +5,8 @@ namespace ArysLauncher;
 
 public static class NetworkClients
 {
-    public static HttpClient Create(LauncherSettings settings, bool allowRedirect = true, bool download = false, bool gameSources = false)
+    public static HttpClient Create(LauncherSettings settings, bool allowRedirect = true, bool download = false,
+        bool gameSources = false, bool publicContent = false)
     {
         var handler = new SocketsHttpHandler
         {
@@ -14,6 +15,7 @@ public static class NetworkClients
             PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
             ConnectTimeout = TimeSpan.FromSeconds(20),
             AllowAutoRedirect = allowRedirect,
+            UseCookies = !download && !publicContent,
             MaxAutomaticRedirections = 8,
             AutomaticDecompression = download ? DecompressionMethods.None :
                 DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,

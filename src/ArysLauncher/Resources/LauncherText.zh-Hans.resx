@@ -93,6 +93,8 @@
   <data name="DownloadingAuthlib" xml:space="preserve"><value>正在获取 authlib-injector 组件</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>正在下载更新</value></data>
   <data name="DownloadLimitHelp" xml:space="preserve"><value>0 表示不限速。此上限由所有下载共用，登录不受影响。</value></data>
+  <data name="AutomaticGitHubAcceleration" xml:space="preserve"><value>自动选择 GitHub 下载线路</value></data>
+  <data name="GitHubAccelerationHelp" xml:space="preserve"><value>在 GitHub 直连与免费中转线路中自动选择，连接失败时切换。关闭后仅使用原始下载地址。</value></data>
   <data name="DownloadPartialChanged" xml:space="preserve"><value>续传文件已改变。</value></data>
   <data name="DownloadProgressHelp" xml:space="preserve"><value>导入整合包或准备游戏时，可在这里查看进度。</value></data>
   <data name="DownloadRangeMismatch" xml:space="preserve"><value>下载源返回的续传范围与文件不一致。</value></data>
@@ -504,4 +506,28 @@
   <data name="UpdateHttpFailure" xml:space="preserve"><value>更新服务返回 HTTP {0}，请稍后重试。</value></data>
   <data name="UpdateConnectionFailed" xml:space="preserve"><value>无法连接更新服务，请检查网络或启动器代理设置。</value></data>
   <data name="UpdateResponseInvalid" xml:space="preserve"><value>更新服务返回的内容无效，请稍后重试。</value></data>
+  <data name="PlayerProfileTitle" xml:space="preserve"><value>头像与 Banner</value></data>
+  <data name="PlayerProfileHelp" xml:space="preserve"><value>选择图片后，可以拖动调整显示范围。</value></data>
+  <data name="PlayerProfileSignIn" xml:space="preserve"><value>登录后即可设置头像和 Banner。</value></data>
+  <data name="PlayerProfileSyncReady" xml:space="preserve"><value>修改会自动同步到游戏。</value></data>
+  <data name="PlayerProfileReadFailed" xml:space="preserve"><value>头像和 Banner 暂时加载不出来，请稍后重试。</value></data>
+  <data name="PlayerProfileInvalid" xml:space="preserve"><value>图片或头像资料无法读取，请检查账号或重新选择图片。</value></data>
+  <data name="ProfileEditAvatar" xml:space="preserve"><value>选择头像</value></data>
+  <data name="ProfileEditBanner" xml:space="preserve"><value>选择 Banner</value></data>
+  <data name="ProfileResetAvatar" xml:space="preserve"><value>移除头像</value></data>
+  <data name="ProfileResetBanner" xml:space="preserve"><value>移除 Banner</value></data>
+  <data name="ProfileCustomAvatar" xml:space="preserve"><value>自定义头像</value></data>
+  <data name="ProfileCropHelp" xml:space="preserve"><value>拖动图片调整位置，滚轮或滑块缩放。方向键可微调，按住 Shift 可加快。</value></data>
+  <data name="ProfileZoom" xml:space="preserve"><value>缩放</value></data>
+  <data name="ProfileCenterCrop" xml:space="preserve"><value>重新居中</value></data>
+  <data name="ProfileApplyCrop" xml:space="preserve"><value>使用这张图片</value></data>
+  <data name="ProfileCropDimensions" xml:space="preserve"><value>选中 {0} × {1} 像素 · 原图 {2} × {3}</value></data>
+  <data name="ProfileReadingImage" xml:space="preserve"><value>正在打开图片…</value></data>
+  <data name="ProfileSavingImage" xml:space="preserve"><value>正在保存…</value></data>
+  <data name="ProfileImageSizeLimit" xml:space="preserve"><value>图片不能超过 5 MB，请换一张小一些的图片。</value></data>
+  <data name="ProfileImageDimensionLimit" xml:space="preserve"><value>图片尺寸太大，请缩小后重试。</value></data>
+  <data name="ProfileImageFormatLimit" xml:space="preserve"><value>图片打不开，请选择有效的 PNG 或 JPG 文件。</value></data>
+  <data name="ProfileLinkUnavailable" xml:space="preserve"><value>这次未能同步头像和 Banner，你仍可在游戏内修改。</value></data>
+  <data name="ProfileStorageFull" xml:space="preserve"><value>已达到图片存储上限，请先清理旧图片。</value></data>
+  <data name="ProfileImageLimits" xml:space="preserve"><value>支持 PNG、JPG，每张不超过 5 MB。</value></data>
 </root>

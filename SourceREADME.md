@@ -14,6 +14,10 @@
 
 安装过程共用一条总体进度，切换阶段不再归零。游戏下载支持官方源与 BMCLAPI 自动选择和回退，文件仍按清单校验；默认并发为 16 个文件、单站点最多 8 个连接，可在设置页调整。[BMCLAPI](https://bmclapidoc.bangbang93.com/)
 
+GitHub 更新检查和文件下载默认自动选择线路。启动器比较直连与免费中转的响应，文件下载会少量读取数据来选择线路，失败时切换并继续下载。设置页可关闭此功能。发布者仍只需上传 GitHub，无需另建下载服务器。
+
+当前中转服务为 [GHFast](https://ghfast.top/) 和 [GH-Proxy](https://gh-proxy.com/docs/github-accelerator)。这些服务由第三方提供，速度与可用性取决于网络和服务负载。中转仅用于公开资源，账号登录不经过中转；更新清单始终验证发行签名，文件始终按原始清单校验。关闭自动选择后，Minecraft 官方源与 BMCLAPI 的原有选择规则仍保留。
+
 Arys 整合包带有其他 Mod 的配置、光影预设和原版设置，包括默认按键、FOV 与鼠标灵敏度。首次导入时按 Windows 显示语言选择游戏语言，关闭原版初始引导与教程提示，保留 Mod 自己的开场。
 
 1.2.2 为旧实例同步一次这套默认设置，完成后在本机记录。新安装直接记录完成。此后的更新不再覆盖、补齐或删除这些设置，也不会重设按键和 FOV。
@@ -30,7 +34,9 @@ Arys 整合包带有其他 Mod 的配置、光影预设和原版设置，包括�
 
 登录账号保存在本机 `data/accounts.json`，令牌通过 Windows DPAPI 绑定当前 Windows 用户加密。发布附件会检查账号文件、浏览器缓存和疑似令牌。
 
-Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft 皮肤头像。LittleSkin 和其他外置认证使用角色皮肤的脸部与帽子层。头像缓存在本机。窗口背景加入星雾、星轨与微光，窗口和 exe 使用 Mod 的紫色眼睛图标。
+启动器显示当前账号设置的自定义头像。没有设置或暂时无法加载时，头像显示纯黑。窗口背景加入星雾、星轨与微光，窗口和 exe 使用 Mod 的紫色眼睛图标。
+
+1.1.0 的账号页可更换头像与 Banner，选择图片后拖动调整显示范围。资料按认证来源和 UUID 分别保存，没有自定义头像时显示纯黑。游戏内同步需要配套版本的 ArysMod，旧版 Mod 仍使用游戏内的资料设置。游戏内的选图入口保留，独立启动 Mod 也可使用。图片限制沿用 Mod，高清图保留原图，启动器显示缩小预览。此版本沿用目前公开的整合包，整合包更新单独发布。
 
 背景星点按三层景深漂移并独立消退重生，流星通常间隔 4–7 秒随机出现。页面滚轮使用逐帧缓动，动画与滚动交由系统合成渲染节奏驱动。失去焦点或最小化时暂停背景动画。
 
@@ -63,7 +69,7 @@ Microsoft 账号优先显示 Xbox 档案头像，读取失败时尝试 Minecraft
 `Publish-GitHubRelease.ps1` 完成发布后调用 `Publish-UpdateFeed.ps1`，先核对线上清单与签名附件的哈希，再更新对应入口。入口同步失败时可单独重跑后者，不必改动已发布文件。
 
 ```powershell
-.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.0.10
+.\New-UpdateRelease.ps1 -Kind Launcher -Version 1.1.0
 .\Publish-Pack.ps1 -Version 1.2.2 -InstanceDirectory D:\Pack
 .\Publish-Pack.ps1 -Version 1.2.2 -InstanceDirectory D:\Pack -Publish
 ```

@@ -267,7 +267,7 @@ def pack_options(instance, content, rules):
     return pack_game_options(text, content, rules)
 
 
-def prepare_pack(instance, template, destination, version, release_tag, repository, content_output, download_index, normalize_local):
+def prepare_pack(instance, template, destination, version, release_tag, repository, content_output, download_index, normalize_local, local=False):
     if destination.suffix.lower() != ".mrpack" or destination.exists():
         raise ValueError("Choose an unused .mrpack output path.")
     for path in (instance, *instance.parents):
@@ -312,13 +312,17 @@ def prepare_pack(instance, template, destination, version, release_tag, reposito
             size = source.stat().st_size
             ref = reference.get(hashes["sha1"])
             record = None
-            if relative.startswith("mods/arysdungeonmod-") and release_tag:
+            if local and relative.startswith("mods/arysdungeonmod-"):
+                record = None
+            elif relative.startswith("mods/arysdungeonmod-") and release_tag:
                 url = f"https://github.com/{repository}/releases/download/{release_tag}/{Path(relative).name}"
                 record = download_record(relative, hashes, size, [url])
             elif ref is not None and ref["fileSize"] == size and ref["hashes"]["sha512"] == hashes["sha512"]:
                 record = download_record(relative, hashes, size, ref["downloads"], ref.get("env"))
             elif relative == BETTER_COMBAT_PATH and hashes["sha256"] == BETTER_COMBAT_SHA256:
                 record = download_record(relative, hashes, size, [BETTER_COMBAT_UPSTREAM])
+            elif local:
+                record = None
             elif relative.startswith(("mods/", "resourcepacks/", "shaderpacks/")) and source.suffix.lower() in (".jar", ".zip"):
                 if relative != TRANSLUCENT_GUI_PATH or hashes["sha1"] != TRANSLUCENT_GUI_HASH:
                     record = modrinth_record(relative, hashes, size)
@@ -366,9 +370,10 @@ def main():
     parser.add_argument("--content-output", type=Path)
     parser.add_argument("--download-index", type=Path)
     parser.add_argument("--normalize-local", action="store_true")
+    parser.add_argument("--local", action="store_true")
     args = parser.parse_args()
     prepare_pack(args.instance.absolute(), args.template, args.output, args.version, args.release_tag, args.repository,
-                 args.content_output, args.download_index, args.normalize_local)
+                 args.content_output, args.download_index, args.normalize_local, args.local)
 
 
 if __name__ == "__main__":
